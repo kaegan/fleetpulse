@@ -1,14 +1,30 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { BayStatusStrip } from "./bay-status-strip";
 import { KanbanBoard } from "./kanban-board";
 import { SectionPill } from "@/components/section-pill";
-import { workOrders } from "@/data/work-orders";
+import { workOrders as initialWorkOrders } from "@/data/work-orders";
+import type { WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 export function MechanicView() {
+  const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
+
+  const handleAdvance = useCallback((woId: string) => {
+    setOrders((prev) =>
+      prev
+        .map((wo) =>
+          wo.id === woId
+            ? { ...wo, stage: (wo.stage + 1) as WorkOrderStage, stageEnteredAt: new Date().toISOString() }
+            : wo
+        )
+        .filter((wo) => wo.stage <= 4)
+    );
+  }, []);
+
   // Mechanic sees their garage's work orders. Default to North.
-  const garageOrders = workOrders.filter((wo) => wo.garage === "north");
+  const garageOrders = orders.filter((wo) => wo.garage === "north");
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -45,7 +61,7 @@ export function MechanicView() {
       </div>
 
       <BayStatusStrip garage="north" />
-      <KanbanBoard workOrders={garageOrders} />
+      <KanbanBoard workOrders={garageOrders} onAdvance={handleAdvance} />
     </div>
   );
 }

@@ -22,6 +22,18 @@ export function getAvailabilityRate(buses: Bus[]): number {
   return (running / buses.length) * 100;
 }
 
+/** Tomorrow's estimated availability: assumes In Repair + QA Check WOs complete overnight */
+export function getForecastAvailability(
+  buses: Bus[],
+  workOrders: WorkOrder[]
+): number {
+  const running = buses.filter((b) => b.status === "running").length;
+  const completing = workOrders.filter(
+    (wo) => wo.stage === 3 || wo.stage === 4
+  ).length;
+  return ((running + completing) / buses.length) * 100;
+}
+
 /** Format a duration between now and an ISO timestamp as "Xh Ym" or "Xd Yh" */
 export function formatTimeInStatus(isoDate: string): string {
   const now = new Date();

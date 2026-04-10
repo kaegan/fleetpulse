@@ -2,7 +2,8 @@
 
 import { KpiCard } from "./kpi-card";
 import { buses } from "@/data/buses";
-import { getAvailabilityRate, getStatusCounts } from "@/lib/utils";
+import { workOrders } from "@/data/work-orders";
+import { getAvailabilityRate, getForecastAvailability, getStatusCounts } from "@/lib/utils";
 import { KPI_PILLS } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
@@ -15,6 +16,7 @@ import {
 export function KpiStrip() {
   const counts = getStatusCounts(buses);
   const availRate = getAvailabilityRate(buses);
+  const forecastRate = getForecastAvailability(buses, workOrders);
   const p = KPI_PILLS;
 
   return (
@@ -35,6 +37,7 @@ export function KpiStrip() {
         pillColor={p["Fleet Availability"].color}
         pillBg={p["Fleet Availability"].bg}
         pillIcon={<IconGaugeFillDuo18 />}
+        forecast={forecastRate}
       />
       <div
         style={{

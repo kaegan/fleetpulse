@@ -6,9 +6,10 @@ import type { WorkOrder, WorkOrderStage } from "@/data/types";
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[];
+  onAdvance?: (woId: string) => void;
 }
 
-export function KanbanBoard({ workOrders }: KanbanBoardProps) {
+export function KanbanBoard({ workOrders, onAdvance }: KanbanBoardProps) {
   return (
     <div
       style={{
@@ -26,6 +27,7 @@ export function KanbanBoard({ workOrders }: KanbanBoardProps) {
             key={stage}
             stageName={stage}
             orders={stageOrders}
+            onAdvance={onAdvance}
           />
         );
       })}

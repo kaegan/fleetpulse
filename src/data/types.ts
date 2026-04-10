@@ -7,6 +7,8 @@ export type Severity = "critical" | "high" | "routine";
 /** 0 = Queued, 1 = Diagnosed, 2 = Parts Ready, 3 = In Repair, 4 = QA Check */
 export type WorkOrderStage = 0 | 1 | 2 | 3 | 4;
 
+export type PartsStatus = "available" | "ordered" | "n/a";
+
 export type Role = "mechanic" | "ops";
 
 export interface Bus {
@@ -32,6 +34,7 @@ export interface WorkOrder {
   bayNumber: number | null;
   garage: Garage;
   mechanicName: string | null;
+  partsStatus: PartsStatus;
   createdAt: string; // ISO datetime
   stageEnteredAt: string; // ISO datetime — for time-in-status calc
 }

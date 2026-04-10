@@ -23,9 +23,10 @@ const STAGE_ICONS: Record<string, React.ReactNode> = {
 interface KanbanColumnProps {
   stageName: string;
   orders: WorkOrder[];
+  onAdvance?: (woId: string) => void;
 }
 
-export function KanbanColumn({ stageName, orders }: KanbanColumnProps) {
+export function KanbanColumn({ stageName, orders, onAdvance }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
 
   return (
@@ -72,7 +73,7 @@ export function KanbanColumn({ stageName, orders }: KanbanColumnProps) {
       {/* Cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {orders.map((wo) => (
-          <WorkOrderCard key={wo.id} order={wo} />
+          <WorkOrderCard key={wo.id} order={wo} onAdvance={onAdvance} />
         ))}
         {orders.length === 0 && (
           <div

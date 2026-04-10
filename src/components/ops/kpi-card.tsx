@@ -18,6 +18,7 @@ interface KpiCardProps {
   pillColor: string;
   pillBg: string;
   pillIcon?: ReactNode;
+  forecast?: number;
 }
 
 export function KpiCard({
@@ -29,6 +30,7 @@ export function KpiCard({
   pillColor,
   pillBg,
   pillIcon,
+  forecast,
 }: KpiCardProps) {
   const motionValue = useMotionValue(0);
   const rounded = useTransform(motionValue, (latest) => {
@@ -117,6 +119,40 @@ export function KpiCard({
               borderRadius: 999,
             }}
           />
+        </div>
+      )}
+      {forecast !== undefined && (
+        <div
+          style={{
+            marginTop: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: "#6a6a6a",
+            }}
+          >
+            Tomorrow (est.)
+          </span>
+          <span
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: forecast > value ? "#22c55e" : "#6a6a6a",
+            }}
+          >
+            {forecast.toFixed(1)}%
+          </span>
+          {forecast > value && (
+            <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 600 }}>
+              +{(forecast - value).toFixed(1)}
+            </span>
+          )}
         </div>
       )}
     </div>
