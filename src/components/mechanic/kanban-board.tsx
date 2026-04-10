@@ -1,36 +1,94 @@
 "use client";
 
+import { useState } from "react";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { KanbanColumn } from "./kanban-column";
+import { WorkOrderCard } from "./work-order-card";
 import { STAGES } from "@/lib/constants";
 import type { WorkOrder, WorkOrderStage } from "@/data/types";
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[];
-  onAdvance?: (woId: string) => void;
+  onStageChange: (woId: string, newStage: WorkOrderStage) => void;
+  onComplete: (woId: string) => void;
 }
 
-export function KanbanBoard({ workOrders, onAdvance }: KanbanBoardProps) {
+export function KanbanBoard({ workOrders, onStageChange, onComplete }: KanbanBoardProps) {
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  // 5px activation distance so clicks on interactive children aren't hijacked as drags.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  const activeOrder = activeId
+    ? workOrders.find((wo) => wo.id === activeId) ?? null
+    : null;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveId(null);
+    const { active, over } = event;
+    if (!over) return;
+
+    const woId = String(active.id);
+    const targetStage = Number(String(over.id).replace("stage-", "")) as WorkOrderStage;
+    const order = workOrders.find((wo) => wo.id === woId);
+    if (!order || order.stage === targetStage) return;
+
+    onStageChange(woId, targetStage);
+  };
+
+  const handleDragCancel = () => setActiveId(null);
+
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(5, 1fr)",
-        gap: 12,
-      }}
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
-      {STAGES.map((stage, idx) => {
-        const stageOrders = workOrders.filter(
-          (wo) => wo.stage === (idx as WorkOrderStage)
-        );
-        return (
-          <KanbanColumn
-            key={stage}
-            stageName={stage}
-            orders={stageOrders}
-            onAdvance={onAdvance}
-          />
-        );
-      })}
-    </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(5, 1fr)",
+          gap: 12,
+        }}
+      >
+        {STAGES.map((stage, idx) => {
+          const stageOrders = workOrders.filter(
+            (wo) => wo.stage === (idx as WorkOrderStage)
+          );
+          return (
+            <KanbanColumn
+              key={stage}
+              stageId={`stage-${idx}`}
+              stageName={stage}
+              orders={stageOrders}
+              onComplete={onComplete}
+            />
+          );
+        })}
+      </div>
+
+      <DragOverlay dropAnimation={null}>
+        {activeOrder ? (
+          <div style={{ transform: "rotate(2deg)", cursor: "grabbing" }}>
+            <WorkOrderCard order={activeOrder} isOverlay />
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }

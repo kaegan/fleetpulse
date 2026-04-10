@@ -1,5 +1,6 @@
 "use client";
 
+import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
 import { SectionPill } from "@/components/section-pill";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
@@ -21,22 +22,26 @@ const STAGE_ICONS: Record<string, React.ReactNode> = {
 };
 
 interface KanbanColumnProps {
+  stageId: string;
   stageName: string;
   orders: WorkOrder[];
-  onAdvance?: (woId: string) => void;
+  onComplete: (woId: string) => void;
 }
 
-export function KanbanColumn({ stageName, orders, onAdvance }: KanbanColumnProps) {
+export function KanbanColumn({ stageId, stageName, orders, onComplete }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
+  const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
   return (
     <div
+      ref={setNodeRef}
       style={{
-        background: "#fafaf9",
+        background: isOver ? "#f5e7e2" : "#fafaf9",
         borderRadius: 24,
         padding: 18,
         minHeight: 400,
-        border: "1px solid rgba(0,0,0,0.04)",
+        border: isOver ? "1px dashed #d4654a" : "1px solid rgba(0,0,0,0.04)",
+        transition: "background 120ms ease, border-color 120ms ease",
       }}
     >
       {/* Column header */}
@@ -73,7 +78,7 @@ export function KanbanColumn({ stageName, orders, onAdvance }: KanbanColumnProps
       {/* Cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {orders.map((wo) => (
-          <WorkOrderCard key={wo.id} order={wo} onAdvance={onAdvance} />
+          <WorkOrderCard key={wo.id} order={wo} onComplete={onComplete} />
         ))}
         {orders.length === 0 && (
           <div
@@ -85,7 +90,7 @@ export function KanbanColumn({ stageName, orders, onAdvance }: KanbanColumnProps
               color: "#b5b5b5",
             }}
           >
-            No work orders
+            {isOver ? "Drop to move here" : "No work orders"}
           </div>
         )}
       </div>

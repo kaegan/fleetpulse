@@ -38,9 +38,3 @@ export interface WorkOrder {
   createdAt: string; // ISO datetime
   stageEnteredAt: string; // ISO datetime — for time-in-status calc
 }
-
-export interface Bay {
-  number: number; // 1-8
-  garage: Garage;
-  workOrderId: string | null;
-}

@@ -73,6 +73,10 @@ export const SEVERITY_LABELS: Record<Severity, string> = {
 
 export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles
 
+// No auth in V1 — hardcoded "signed-in" mechanic for the Mine/All filter demo.
+// Torres, M. has 2 WOs in North Garage, which gives a legible Mine(2)/All(6) split.
+export const CURRENT_MECHANIC = "Torres, M.";
+
 export const BRAND_COLOR = "#d4654a";
 export const BRAND_COLOR_HOVER = "#be5840";
 

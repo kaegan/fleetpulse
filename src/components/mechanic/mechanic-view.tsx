@@ -1,35 +1,54 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { BayStatusStrip } from "./bay-status-strip";
+import { useState, useCallback, useMemo } from "react";
 import { KanbanBoard } from "./kanban-board";
+import { ScopeToggle } from "./scope-toggle";
 import { SectionPill } from "@/components/section-pill";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
+import { CURRENT_MECHANIC } from "@/lib/constants";
 import type { WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
+type Scope = "mine" | "all";
+
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  const [scope, setScope] = useState<Scope>("mine");
 
-  const handleAdvance = useCallback((woId: string) => {
+  const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
     setOrders((prev) =>
-      prev
-        .map((wo) =>
-          wo.id === woId
-            ? { ...wo, stage: (wo.stage + 1) as WorkOrderStage, stageEnteredAt: new Date().toISOString() }
-            : wo
-        )
-        .filter((wo) => wo.stage <= 4)
+      prev.map((wo) =>
+        wo.id === woId
+          ? { ...wo, stage: newStage, stageEnteredAt: new Date().toISOString() }
+          : wo
+      )
     );
   }, []);
 
+  const handleComplete = useCallback((woId: string) => {
+    setOrders((prev) => prev.filter((wo) => wo.id !== woId));
+  }, []);
+
   // Mechanic sees their garage's work orders. Default to North.
-  const garageOrders = orders.filter((wo) => wo.garage === "north");
+  const garageOrders = useMemo(
+    () => orders.filter((wo) => wo.garage === "north"),
+    [orders]
+  );
+
+  const mineCount = useMemo(
+    () => garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC).length,
+    [garageOrders]
+  );
+
+  const visibleOrders =
+    scope === "mine"
+      ? garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC)
+      : garageOrders;
 
   return (
     <div style={{ padding: "32px 40px" }}>
       {/* Section header */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 22 }}>
         <div style={{ marginBottom: 10 }}>
           <SectionPill
             label="Mechanic"
@@ -56,12 +75,25 @@ export function MechanicView() {
             color: "#929292",
           }}
         >
-          8 maintenance bays &middot; {garageOrders.length} active work orders
+          Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} active work orders in garage
         </p>
       </div>
 
-      <BayStatusStrip garage="north" />
-      <KanbanBoard workOrders={garageOrders} onAdvance={handleAdvance} />
+      {/* Scope toggle */}
+      <div style={{ marginBottom: 18 }}>
+        <ScopeToggle
+          scope={scope}
+          onChange={setScope}
+          mineCount={mineCount}
+          allCount={garageOrders.length}
+        />
+      </div>
+
+      <KanbanBoard
+        workOrders={visibleOrders}
+        onStageChange={handleStageChange}
+        onComplete={handleComplete}
+      />
     </div>
   );
 }

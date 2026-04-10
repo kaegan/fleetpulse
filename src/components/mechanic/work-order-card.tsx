@@ -1,34 +1,46 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useDraggable } from "@dnd-kit/core";
 import type { WorkOrder } from "@/data/types";
-import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES, BRAND_COLOR, BRAND_COLOR_HOVER } from "@/lib/constants";
+import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
+import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface WorkOrderCardProps {
   order: WorkOrder;
-  onAdvance?: (woId: string) => void;
+  onComplete?: (woId: string) => void;
+  /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
+  isOverlay?: boolean;
 }
 
-export function WorkOrderCard({ order, onAdvance }: WorkOrderCardProps) {
+export function WorkOrderCard({ order, onComplete, isOverlay = false }: WorkOrderCardProps) {
   const sev = SEVERITY_COLORS[order.severity];
 
+  // Hooks must be called unconditionally; pass a disabled flag for overlay renders.
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: order.id,
+    disabled: isOverlay,
+  });
+
+  const isQaCheck = order.stage === 4;
+
   return (
-    <motion.div
-      whileHover={{
-        scale: 1.015,
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.06)",
-      }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+    <div
+      ref={isOverlay ? undefined : setNodeRef}
+      {...(isOverlay ? {} : listeners)}
+      {...(isOverlay ? {} : attributes)}
       style={{
         background: "#ffffff",
         borderRadius: 16,
         padding: "14px 16px",
         border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)",
-        cursor: "default",
+        boxShadow: isOverlay
+          ? "0px 10px 30px rgba(0,0,0,0.15), 0px 4px 12px rgba(0,0,0,0.1)"
+          : "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)",
+        cursor: isOverlay ? "grabbing" : "grab",
+        opacity: isDragging && !isOverlay ? 0 : 1,
+        touchAction: "none",
+        userSelect: "none",
       }}
     >
       {/* Top row: Bus number + time */}
@@ -164,36 +176,46 @@ export function WorkOrderCard({ order, onAdvance }: WorkOrderCardProps) {
         </div>
       )}
 
-      {/* Advance button */}
-      {onAdvance && (
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onAdvance(order.id)}
+      {/* Terminal Complete action — only on stage 4 (QA Check). Subtle text link, not a CTA. */}
+      {isQaCheck && onComplete && !isOverlay && (
+        <button
+          // Stop drag listeners from hijacking the click.
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onComplete(order.id);
+          }}
           style={{
             marginTop: 10,
             width: "100%",
-            padding: "7px 0",
+            padding: "6px 0",
             fontSize: 12,
             fontWeight: 600,
-            color: "#ffffff",
-            background: BRAND_COLOR,
-            border: "none",
+            color: "#166534",
+            background: "transparent",
+            border: "1px dashed #bbf7d0",
             borderRadius: 10,
             cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = BRAND_COLOR_HOVER)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = BRAND_COLOR)
-          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f0fdf4";
+            e.currentTarget.style.borderStyle = "solid";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderStyle = "dashed";
+          }}
         >
-          {order.stage === 4
-            ? "Complete \u2713"
-            : `Move to ${STAGES[order.stage + 1]} \u2192`}
-        </motion.button>
+          <span style={{ display: "flex", width: 14, height: 14 }}>
+            <IconCheckFillDuo18 />
+          </span>
+          Mark complete
+        </button>
       )}
-    </motion.div>
+    </div>
   );
 }
