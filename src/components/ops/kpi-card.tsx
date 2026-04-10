@@ -55,10 +55,14 @@ export function KpiCard({
 
   return (
     <div
+      className={
+        isPrimary
+          ? "p-5 sm:p-6 md:p-[28px_32px]"
+          : "p-4 sm:p-5 md:p-[24px_28px]"
+      }
       style={{
         background: "#ffffff",
         borderRadius: 24,
-        padding: isPrimary ? "28px 32px" : "24px 28px",
         boxShadow:
           "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
         flex: isPrimary ? "1.4" : "1",
@@ -80,8 +84,12 @@ export function KpiCard({
         }}
       >
         <motion.span
+          className={
+            isPrimary
+              ? "text-5xl sm:text-6xl md:text-[72px]"
+              : "text-[32px] sm:text-[36px] md:text-[40px]"
+          }
           style={{
-            fontSize: isPrimary ? 72 : 40,
             fontWeight: 700,
             color,
             letterSpacing: "-0.03em",
@@ -92,8 +100,12 @@ export function KpiCard({
         </motion.span>
         {suffix && (
           <span
+            className={
+              isPrimary
+                ? "text-2xl sm:text-3xl md:text-[36px]"
+                : "text-lg sm:text-xl md:text-[24px]"
+            }
             style={{
-              fontSize: isPrimary ? 36 : 24,
               fontWeight: 600,
               color,
               opacity: 0.5,

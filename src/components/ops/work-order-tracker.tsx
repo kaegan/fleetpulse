@@ -174,10 +174,10 @@ export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
         })}
       </div>
 
-      {/* Column headers */}
+      {/* Column headers — desktop table layout only */}
       <div
+        className="hidden lg:flex"
         style={{
-          display: "flex",
           alignItems: "center",
           gap: 20,
           padding: "0 18px",

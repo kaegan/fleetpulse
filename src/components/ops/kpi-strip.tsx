@@ -26,10 +26,8 @@ export function KpiStrip() {
 
   return (
     <div
+      className="grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_1fr] md:gap-5"
       style={{
-        display: "grid",
-        gridTemplateColumns: "1.2fr 1fr",
-        gap: 20,
         marginBottom: 32,
       }}
     >
@@ -45,13 +43,7 @@ export function KpiStrip() {
         forecast={forecastRate}
         sparklineData={availabilityHistory}
       />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 14,
-        }}
-      >
+      <div className="grid grid-cols-2 gap-3.5 sm:gap-3.5">
         <KpiCard
           label="Running"
           value={counts.running}

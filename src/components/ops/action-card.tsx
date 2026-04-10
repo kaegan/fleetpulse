@@ -41,16 +41,13 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   if (actionable.length === 0) {
     return (
       <div
+        className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:gap-4 sm:p-6"
         style={{
           background: "#ffffff",
           borderRadius: 24,
-          padding: 24,
           boxShadow:
             "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
           marginBottom: 24,
-          display: "flex",
-          alignItems: "center",
-          gap: 16,
         }}
       >
         <SectionPill
@@ -74,10 +71,10 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
 
   return (
     <div
+      className="p-5 sm:p-6"
       style={{
         background: "#ffffff",
         borderRadius: 24,
-        padding: 24,
         boxShadow:
           "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
         marginBottom: 24,
@@ -152,14 +149,8 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
               onMouseEnter={() => setHoveredId(bus.id)}
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => onBusClick(bus)}
+              className="grid w-full items-center gap-3 p-[12px_14px] grid-cols-[auto_auto_1fr_16px] sm:gap-4 sm:p-[14px_18px] sm:grid-cols-[auto_auto_1fr_auto_auto_16px]"
               style={{
-                display: "grid",
-                gridTemplateColumns:
-                  "auto auto 1fr auto auto 16px",
-                alignItems: "center",
-                gap: 16,
-                width: "100%",
-                padding: "14px 18px",
                 border: "none",
                 borderBottom: isLast ? "none" : "1px solid #f0f0f0",
                 background: isHovered ? "#fafaf9" : "#ffffff",
@@ -169,8 +160,9 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
                 textAlign: "left",
               }}
             >
-              {/* Rank indicator */}
+              {/* Rank indicator — hidden on mobile to save space */}
               <span
+                className="hidden sm:inline-block"
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
@@ -185,12 +177,11 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
 
               {/* Bus number */}
               <span
+                className="text-[14px] sm:text-[15px]"
                 style={{
-                  fontSize: 15,
                   fontWeight: 700,
                   color: "#222222",
                   letterSpacing: "-0.01em",
-                  minWidth: 72,
                 }}
               >
                 Bus #{bus.busNumber}
@@ -225,8 +216,8 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
                 }}
               >
                 <span
+                  className="text-[15px] sm:text-[17px]"
                   style={{
-                    fontSize: 17,
                     fontWeight: 800,
                     color: "#b4541a",
                     letterSpacing: "-0.01em",
@@ -236,8 +227,8 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
                   {formatNumber(overdueMiles)}
                 </span>
                 <span
+                  className="text-[10px] sm:text-[11px]"
                   style={{
-                    fontSize: 11,
                     fontWeight: 600,
                     color: "#b4541a",
                     letterSpacing: "0.03em",
@@ -248,8 +239,9 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
                 </span>
               </span>
 
-              {/* Total mileage (context) */}
+              {/* Total mileage (context) — hidden on mobile */}
               <span
+                className="hidden sm:inline-block"
                 style={{
                   fontSize: 12,
                   fontWeight: 500,

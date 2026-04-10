@@ -14,7 +14,7 @@ export function OpsView() {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
 
   return (
-    <div style={{ padding: "32px 40px" }}>
+    <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
       {/* Section header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ marginBottom: 10 }}>

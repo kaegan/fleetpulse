@@ -40,11 +40,8 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         e.currentTarget.style.boxShadow = RESTING_SHADOW;
         e.currentTarget.style.transform = "translateY(0)";
       }}
+      className="flex flex-col gap-3 p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
       style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 20,
-        padding: "14px 18px",
         background: "#ffffff",
         borderRadius: 16,
         boxShadow: RESTING_SHADOW,
@@ -52,8 +49,51 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         transition: "box-shadow 150ms ease, transform 150ms ease",
       }}
     >
-      {/* Bus info */}
-      <div style={{ minWidth: 80 }}>
+      {/* Mobile-only top row: bus info + severity */}
+      <div className="flex items-center justify-between gap-3 lg:hidden">
+        <div>
+          <div
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#222222",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Bus #{order.busNumber}
+          </div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#b5b5b5",
+              fontFamily: "monospace",
+            }}
+          >
+            {order.id}
+          </div>
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: sev.text,
+            background: sev.bg,
+            padding: "3px 10px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
+          {SEVERITY_LABELS[order.severity]}
+        </span>
+      </div>
+
+      {/* Desktop-only: Bus info column */}
+      <div className="hidden lg:block" style={{ minWidth: 80 }}>
         <div
           style={{
             fontSize: 14,
@@ -78,8 +118,8 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
 
       {/* Issue */}
       <div
+        className="lg:min-w-[180px]"
         style={{
-          minWidth: 180,
           fontSize: 13,
           fontWeight: 500,
           color: "#6a6a6a",
@@ -89,7 +129,7 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
       </div>
 
       {/* Progress pipeline — Domino's Tracker */}
-      <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+      <div className="flex items-center w-full lg:flex-1">
         {STAGES.map((stage, idx) => {
           const isComplete = idx < order.stage;
           const isCurrent = idx === order.stage;
@@ -162,8 +202,21 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         })}
       </div>
 
-      {/* Time in status */}
+      {/* Mobile-only bottom: time in stage */}
       <div
+        className="lg:hidden"
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "#929292",
+        }}
+      >
+        <TimeDisplay isoDate={order.stageEnteredAt} />
+      </div>
+
+      {/* Desktop-only: Time in status */}
+      <div
+        className="hidden lg:block"
         style={{
           minWidth: 60,
           textAlign: "right",
@@ -175,8 +228,9 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         <TimeDisplay isoDate={order.stageEnteredAt} />
       </div>
 
-      {/* Severity badge */}
+      {/* Desktop-only: Severity badge */}
       <span
+        className="hidden lg:inline-flex"
         style={{
           fontSize: 11,
           fontWeight: 600,
@@ -185,7 +239,6 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
           padding: "3px 10px",
           borderRadius: 999,
           whiteSpace: "nowrap",
-          display: "inline-flex",
           alignItems: "center",
           gap: 4,
         }}

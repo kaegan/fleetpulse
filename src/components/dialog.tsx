@@ -85,6 +85,7 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
   return createPortal(
     <div
       onClick={onClose}
+      className="p-4 sm:p-6"
       style={{
         position: "fixed",
         inset: 0,
@@ -93,7 +94,6 @@ export function Dialog({ open, onClose, titleId, children }: DialogProps) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 24,
       }}
     >
       <div

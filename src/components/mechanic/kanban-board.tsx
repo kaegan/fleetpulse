@@ -58,6 +58,10 @@ export function KanbanBoard({
 
   const handleDragCancel = () => setActiveId(null);
 
+  // Disable scroll-snap while a drag is active so dnd-kit's auto-scroll can
+  // pan smoothly across columns without the browser snapping back mid-drag.
+  const snapClass = activeId ? "" : "snap-x snap-proximity";
+
   return (
     <DndContext
       sensors={sensors}
@@ -66,11 +70,7 @@ export function KanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
-          gap: 12,
-        }}
+        className={`flex gap-2 overflow-x-auto scroll-smooth -mx-4 px-4 sm:gap-2.5 sm:-mx-6 sm:px-6 lg:grid lg:grid-cols-5 lg:gap-3 lg:mx-0 lg:px-0 lg:overflow-visible ${snapClass}`}
       >
         {STAGES.map((stage, idx) => {
           const stageOrders = workOrders.filter(
@@ -82,6 +82,7 @@ export function KanbanBoard({
               stageId={`stage-${idx}`}
               stageName={stage}
               orders={stageOrders}
+              className="snap-center shrink-0 basis-[88vw] sm:basis-[46vw] md:basis-[36vw] lg:basis-auto lg:shrink lg:min-w-0"
               onComplete={onComplete}
               onSelectBus={onSelectBus}
               onAdvance={(woId) => {

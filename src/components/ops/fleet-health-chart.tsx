@@ -28,10 +28,12 @@ interface PositionedBus extends Bus {
 
 const HEIGHT = 340;
 const PAD_L = 32;
-const PAD_R = 160; // reserved for healthy-tail summary
+const PAD_R_DESKTOP = 160; // reserved for healthy-tail summary on the right
+const PAD_R_MOBILE = 16; // on narrow viewports the summary rendered inline below the chart
 const PAD_T = 24;
 const PAD_B = 56;
 const CIRCLE_R = 5.2;
+const MOBILE_BREAKPOINT = 640;
 
 // Chart only plots buses in the "needs attention" range.
 // Everything further right collapses into a single summary label.
@@ -50,12 +52,13 @@ function computeLayout(width: number) {
   const bandY = PAD_T;
   const bandH = HEIGHT - PAD_T - PAD_B;
   const cy = bandY + bandH / 2;
+  const padR = width < MOBILE_BREAKPOINT ? PAD_R_MOBILE : PAD_R_DESKTOP;
 
   const xScale = scaleLinear()
     .domain([X_DOMAIN_MIN, X_DOMAIN_MAX])
-    .range([PAD_L, width - PAD_R]);
+    .range([PAD_L, width - padR]);
 
-  return { bandY, bandH, cy, xScale };
+  return { bandY, bandH, cy, xScale, padR };
 }
 
 function runSimulation(
@@ -164,13 +167,14 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
 
   const dueX = layout?.xScale(0) ?? 0;
   const axisY = layout ? layout.bandY + layout.bandH + 6 : 0;
+  const isMobile = width !== null && width < MOBILE_BREAKPOINT;
 
   return (
     <div
+      className="p-5 sm:p-6"
       style={{
         background: "#ffffff",
         borderRadius: 24,
-        padding: 24,
         boxShadow:
           "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
         marginBottom: 24,
@@ -372,7 +376,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             <line
               x1={PAD_L}
               y1={axisY}
-              x2={width - PAD_R}
+              x2={width - layout.padR}
               y2={axisY}
               stroke="#e5e5e5"
               strokeWidth={1}
@@ -425,19 +429,20 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               );
             })}
 
-            {/* Healthy tail summary — replaces plotting ~240 interchangeable green dots */}
-            {healthyTailCount > 0 && (
+            {/* Healthy tail summary — hidden on mobile, rendered as an inline
+                callout below the chart instead. */}
+            {healthyTailCount > 0 && !isMobile && (
               <g>
                 <line
-                  x1={width - PAD_R + 10}
+                  x1={width - layout.padR + 10}
                   y1={layout.bandY + 8}
-                  x2={width - PAD_R + 10}
+                  x2={width - layout.padR + 10}
                   y2={layout.bandY + layout.bandH - 8}
                   stroke="#e5e5e5"
                   strokeWidth={1}
                 />
                 <text
-                  x={width - PAD_R + 24}
+                  x={width - layout.padR + 24}
                   y={layout.cy - 16}
                   fontSize={11}
                   fontWeight={700}
@@ -447,7 +452,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   + {healthyTailCount}
                 </text>
                 <text
-                  x={width - PAD_R + 24}
+                  x={width - layout.padR + 24}
                   y={layout.cy + 1}
                   fontSize={11}
                   fontWeight={600}
@@ -456,7 +461,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   on schedule
                 </text>
                 <text
-                  x={width - PAD_R + 24}
+                  x={width - layout.padR + 24}
                   y={layout.cy + 16}
                   fontSize={10}
                   fill="#929292"
@@ -577,6 +582,47 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Mobile-only: healthy-tail summary rendered inline below the chart.
+          On desktop this appears as SVG text inside the plot area. */}
+      {isMobile && healthyTailCount > 0 && (
+        <div
+          className="mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5"
+          style={{
+            background: "#f0fdf4",
+            border: "1px solid #dcfce7",
+          }}
+        >
+          <span
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#22c55e",
+              letterSpacing: "0.02em",
+            }}
+          >
+            + {healthyTailCount}
+          </span>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#222222",
+            }}
+          >
+            on schedule
+          </span>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#6a6a6a",
+            }}
+          >
+            (3,000+ mi until PM)
+          </span>
+        </div>
+      )}
     </div>
   );
 }
