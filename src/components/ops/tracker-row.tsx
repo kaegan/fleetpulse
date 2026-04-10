@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { WorkOrder } from "@/data/types";
-import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS } from "@/lib/constants";
+import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 
 interface TrackerRowProps {
@@ -162,8 +162,12 @@ export function TrackerRow({ order, index }: TrackerRowProps) {
           padding: "3px 10px",
           borderRadius: 999,
           whiteSpace: "nowrap",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
         }}
       >
+        <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
         {SEVERITY_LABELS[order.severity]}
       </span>
     </motion.div>

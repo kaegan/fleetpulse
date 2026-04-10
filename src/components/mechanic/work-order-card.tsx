@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { WorkOrder } from "@/data/types";
-import { SEVERITY_COLORS, SEVERITY_LABELS } from "@/lib/constants";
+import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 
 interface WorkOrderCardProps {
@@ -24,7 +24,7 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
         background: "#ffffff",
         borderRadius: 16,
         padding: "14px 16px",
-        borderLeft: `4px solid ${sev.border}`,
+        border: "1px solid rgba(0,0,0,0.06)",
         boxShadow:
           "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)",
         cursor: "default",
@@ -114,8 +114,12 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
               background: sev.bg,
               padding: "2px 8px",
               borderRadius: 999,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
             }}
           >
+            <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
             {SEVERITY_LABELS[order.severity]}
           </span>
         </div>
