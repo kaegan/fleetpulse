@@ -7,6 +7,7 @@ import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/
 import { TimeDisplay } from "@/components/time-display";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface WorkOrderCardProps {
@@ -17,11 +18,6 @@ interface WorkOrderCardProps {
   /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
   isOverlay?: boolean;
 }
-
-const RESTING_SHADOW =
-  "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)";
-const HOVER_SHADOW =
-  "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 10px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.05)";
 
 export function WorkOrderCard({
   order,
@@ -55,69 +51,28 @@ export function WorkOrderCard({
       {...(isOverlay ? {} : listeners)}
       {...(isOverlay ? {} : attributes)}
       onClick={handleClick}
-      onMouseEnter={(e) => {
-        if (isOverlay || isDragging) return;
-        e.currentTarget.style.boxShadow = HOVER_SHADOW;
-        e.currentTarget.style.transform = "translateY(-1px)";
-      }}
-      onMouseLeave={(e) => {
-        if (isOverlay) return;
-        e.currentTarget.style.boxShadow = RESTING_SHADOW;
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-      className="rounded-[16px] p-4"
+      className={cn(
+        "touch-none select-none rounded-2xl border border-black/[0.06] p-4 transition-all duration-150",
+        isOverlay
+          ? "cursor-grabbing shadow-panel"
+          : "cursor-grab shadow-card hover:-translate-y-px hover:shadow-card-hover"
+      )}
       style={{
-        border: "1px solid rgba(0,0,0,0.06)",
-        boxShadow: isOverlay
-          ? "0px 10px 30px rgba(0,0,0,0.15), 0px 4px 12px rgba(0,0,0,0.1)"
-          : RESTING_SHADOW,
-        cursor: isOverlay ? "grabbing" : "grab",
         opacity: isDragging && !isOverlay ? 0 : 1,
-        touchAction: "none",
-        userSelect: "none",
-        transition: "box-shadow 150ms ease, transform 150ms ease",
       }}
     >
-      {/* Top row: Bus number + time */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 8,
-        }}
-      >
-        <span
-          style={{
-            fontSize: 15,
-            fontWeight: 700,
-            color: "#222222",
-            letterSpacing: "-0.02em",
-          }}
-        >
+      {/* Top row: bus number + time in stage */}
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-[15px] font-bold tracking-tight text-foreground">
           Bus #{order.busNumber}
         </span>
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#929292",
-          }}
-        >
+        <span className="text-xs font-medium text-text-muted">
           <TimeDisplay isoDate={order.stageEnteredAt} />
         </span>
       </div>
 
       {/* Issue description */}
-      <div
-        style={{
-          fontSize: 13,
-          fontWeight: 500,
-          color: "#6a6a6a",
-          marginBottom: 10,
-          lineHeight: 1.4,
-        }}
-      >
+      <div className="mb-2.5 text-[13px] font-medium leading-snug text-muted-foreground">
         {order.issue}
       </div>
 
@@ -138,35 +93,23 @@ export function WorkOrderCard({
         </div>
       )}
 
-      {/* Bottom row: WO ID + severity badge + bay */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 500,
-            color: "#b5b5b5",
-            fontFamily: "monospace",
-          }}
-        >
+      {/* Bottom row: WO ID + bay + severity. flex-wrap so the badge cluster
+          drops to a second line when the column gets tight. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
+        <span className="font-mono text-[11px] font-medium text-text-faint">
           {order.id}
         </span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <div className="flex shrink-0 items-center gap-1.5">
           {order.bayNumber && (
             <Badge variant="muted" className="px-2 py-[2px]">
               Bay {order.bayNumber}
             </Badge>
           )}
           <Badge
-            className="px-2 py-[2px] gap-1"
+            className="gap-1 px-2 py-[2px]"
             style={{ color: sev.text, background: sev.bg }}
           >
-            <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>
+            <span className="flex h-3.5 w-3.5" style={{ color: sev.dot }}>
               {SEVERITY_ICONS[order.severity]}
             </span>
             {SEVERITY_LABELS[order.severity]}
@@ -176,16 +119,7 @@ export function WorkOrderCard({
 
       {/* Mechanic name if assigned */}
       {order.mechanicName && (
-        <div
-          style={{
-            marginTop: 8,
-            paddingTop: 8,
-            borderTop: "1px solid rgba(0,0,0,0.04)",
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#929292",
-          }}
-        >
+        <div className="mt-2 border-t border-black/[0.04] pt-2 text-xs font-medium text-text-muted">
           {order.mechanicName}
         </div>
       )}
@@ -215,7 +149,7 @@ export function WorkOrderCard({
           }}
           className="mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[#bbf7d0] bg-transparent py-1.5 text-xs font-semibold text-[#166534] transition-colors hover:border-solid hover:bg-[#f0fdf4] cursor-pointer"
         >
-          <span style={{ display: "flex", width: 14, height: 14 }}>
+          <span className="flex h-3.5 w-3.5">
             <IconCheckFillDuo18 />
           </span>
           Mark complete

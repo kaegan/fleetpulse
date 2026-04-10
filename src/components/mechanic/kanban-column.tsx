@@ -4,6 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
 import type { Bus, WorkOrder } from "@/data/types";
 import {
@@ -48,22 +49,16 @@ export function KanbanColumn({
   return (
     <Card
       ref={setNodeRef}
-      className={`rounded-[24px] p-3.5 min-h-[320px] sm:p-4 sm:min-h-[360px] lg:p-[18px] lg:min-h-[400px] ${className}`}
-      style={{
-        background: isOver ? "#f5e7e2" : "#fafaf9",
-        border: isOver ? "1px dashed #d4654a" : "1px solid rgba(0,0,0,0.04)",
-        transition: "background 120ms ease, border-color 120ms ease",
-      }}
+      className={cn(
+        "min-h-80 rounded-lg border p-3.5 transition-colors duration-150 sm:p-4 lg:min-h-96 lg:p-3 xl:p-4",
+        isOver
+          ? "border-dashed border-brand bg-[#f5e7e2]"
+          : "border-black/[0.04] bg-surface-hover",
+        className
+      )}
     >
       {/* Column header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 14,
-        }}
-      >
+      <div className="mb-3.5 flex items-center justify-between gap-2">
         <SectionPill
           label={stageName}
           color={pill.color}
@@ -71,15 +66,10 @@ export function KanbanColumn({
           icon={STAGE_ICONS[stageName]}
         />
         <span
+          className="min-w-5 shrink-0 rounded-full px-2.5 py-[3px] text-center text-[11px] font-bold"
           style={{
-            fontSize: 11,
-            fontWeight: 700,
             background: orders.length > 0 ? pill.bg : "transparent",
             color: orders.length > 0 ? pill.color : "transparent",
-            padding: "3px 10px",
-            borderRadius: 999,
-            minWidth: 20,
-            textAlign: "center",
           }}
         >
           {orders.length}
@@ -87,7 +77,7 @@ export function KanbanColumn({
       </div>
 
       {/* Cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="flex flex-col gap-2.5">
         {orders.map((wo) => (
           <WorkOrderCard
             key={wo.id}
@@ -98,15 +88,7 @@ export function KanbanColumn({
           />
         ))}
         {orders.length === 0 && (
-          <div
-            style={{
-              padding: 24,
-              textAlign: "center",
-              fontSize: 13,
-              fontWeight: 500,
-              color: "#b5b5b5",
-            }}
-          >
+          <div className="p-6 text-center text-[13px] font-medium text-text-faint">
             {isOver ? "Drop to move here" : "No work orders"}
           </div>
         )}
