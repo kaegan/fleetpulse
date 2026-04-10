@@ -61,5 +61,21 @@ export const SEVERITY_LABELS: Record<Severity, string> = {
 
 export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles
 
-export const BRAND_COLOR = "#c2703e";
-export const BRAND_COLOR_HOVER = "#a85d32";
+export const BRAND_COLOR = "#d4654a";
+export const BRAND_COLOR_HOVER = "#be5840";
+
+export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
+  "Fleet Availability": { color: "#7c3aed", bg: "#f5f3ff" },
+  Running: { color: "#22c55e", bg: "#f0fdf4" },
+  "PM Due": { color: "#f59e0b", bg: "#fffbeb" },
+  "In Maintenance": { color: "#ef4444", bg: "#fef2f2" },
+  "Road Calls": { color: "#64748b", bg: "#f1f5f9" },
+};
+
+export const KANBAN_STAGE_PILLS: Record<string, { color: string; bg: string }> = {
+  Queued: { color: "#64748b", bg: "#f1f5f9" },
+  Diagnosed: { color: "#3b82f6", bg: "#eff6ff" },
+  "Parts Ready": { color: "#f59e0b", bg: "#fffbeb" },
+  "In Repair": { color: "#8b5cf6", bg: "#f5f3ff" },
+  "QA Check": { color: "#22c55e", bg: "#f0fdf4" },
+};

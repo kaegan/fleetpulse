@@ -1,6 +1,5 @@
 "use client";
 
-import { RoleSwitcher } from "./role-switcher";
 import { useClock } from "@/hooks/use-clock";
 
 export function TopBar() {
@@ -14,11 +13,11 @@ export function TopBar() {
         justifyContent: "space-between",
         padding: "12px 32px",
         background: "#ffffff",
-        borderBottom: "1px solid rgba(0,0,0,0.06)",
+        borderBottom: "1px solid rgba(0,0,0,0.04)",
         position: "sticky",
         top: 0,
         zIndex: 50,
-        boxShadow: "0px 1px 3px rgba(0,0,0,0.04)",
+        boxShadow: "0px 1px 3px rgba(0,0,0,0.02)",
       }}
     >
       {/* Left: Logo + Garage */}
@@ -29,8 +28,8 @@ export function TopBar() {
               width: 10,
               height: 10,
               borderRadius: "50%",
-              background: "#c2703e",
-              boxShadow: "0 0 8px rgba(194,112,62,0.4)",
+              background: "#d4654a",
+              boxShadow: "0 0 8px rgba(212,101,74,0.4)",
             }}
           />
           <span
@@ -61,9 +60,6 @@ export function TopBar() {
           Transitland
         </span>
       </div>
-
-      {/* Center: Role Switcher */}
-      <RoleSwitcher />
 
       {/* Right: Clock */}
       <span

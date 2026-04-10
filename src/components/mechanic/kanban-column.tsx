@@ -1,7 +1,24 @@
 "use client";
 
 import { WorkOrderCard } from "./work-order-card";
+import { SectionPill } from "@/components/section-pill";
+import { KANBAN_STAGE_PILLS } from "@/lib/constants";
 import type { WorkOrder } from "@/data/types";
+import {
+  IconClipboardFillDuo18,
+  IconMagnifierCheckFillDuo18,
+  IconBox2CheckFillDuo18,
+  IconWrenchFillDuo18,
+  IconBadgeCheckFillDuo18,
+} from "nucleo-ui-fill-duo-18";
+
+const STAGE_ICONS: Record<string, React.ReactNode> = {
+  Queued: <IconClipboardFillDuo18 />,
+  Diagnosed: <IconMagnifierCheckFillDuo18 />,
+  "Parts Ready": <IconBox2CheckFillDuo18 />,
+  "In Repair": <IconWrenchFillDuo18 />,
+  "QA Check": <IconBadgeCheckFillDuo18 />,
+};
 
 interface KanbanColumnProps {
   stageName: string;
@@ -9,12 +26,14 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ stageName, orders }: KanbanColumnProps) {
+  const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
+
   return (
     <div
       style={{
         background: "#fafaf9",
-        borderRadius: 20,
-        padding: 14,
+        borderRadius: 24,
+        padding: 18,
         minHeight: 400,
         border: "1px solid rgba(0,0,0,0.04)",
       }}
@@ -26,29 +45,22 @@ export function KanbanColumn({ stageName, orders }: KanbanColumnProps) {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: 14,
-          paddingBottom: 10,
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
-        <span
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            textTransform: "uppercase" as const,
-            letterSpacing: "0.06em",
-            color: "#929292",
-          }}
-        >
-          {stageName}
-        </span>
+        <SectionPill
+          label={stageName}
+          color={pill.color}
+          bgColor={pill.bg}
+          icon={STAGE_ICONS[stageName]}
+        />
         <span
           style={{
             fontSize: 11,
             fontWeight: 700,
-            background: orders.length > 0 ? "#f2f2f2" : "transparent",
-            color: orders.length > 0 ? "#6a6a6a" : "transparent",
-            padding: "3px 8px",
-            borderRadius: 10,
+            background: orders.length > 0 ? pill.bg : "transparent",
+            color: orders.length > 0 ? pill.color : "transparent",
+            padding: "3px 10px",
+            borderRadius: 999,
             minWidth: 20,
             textAlign: "center",
           }}

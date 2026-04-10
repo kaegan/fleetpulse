@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { TopBar } from "@/components/top-bar";
+import { NavRail } from "@/components/nav-rail";
 import { MechanicView } from "@/components/mechanic/mechanic-view";
 import { OpsView } from "@/components/ops/ops-view";
 
@@ -11,29 +11,9 @@ function ViewSwitch() {
 
   return (
     <main style={{ flex: 1, overflow: "auto" }}>
-      <AnimatePresence mode="wait">
-        {role === "mechanic" ? (
-          <motion.div
-            key="mechanic"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <MechanicView />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="ops"
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <OpsView />
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div key={role}>
+        {role === "mechanic" ? <MechanicView /> : <OpsView />}
+      </div>
     </main>
   );
 }
@@ -41,8 +21,13 @@ function ViewSwitch() {
 export default function Home() {
   return (
     <RoleProvider>
-      <TopBar />
-      <ViewSwitch />
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+        <TopBar />
+        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+          <NavRail />
+          <ViewSwitch />
+        </div>
+      </div>
     </RoleProvider>
   );
 }

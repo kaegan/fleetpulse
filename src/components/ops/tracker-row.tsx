@@ -24,9 +24,9 @@ export function TrackerRow({ order, index }: TrackerRowProps) {
         gap: 20,
         padding: "14px 18px",
         background: "#ffffff",
-        borderRadius: 14,
+        borderRadius: 16,
         boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08)",
+          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
       }}
     >
       {/* Bus info */}
@@ -160,7 +160,7 @@ export function TrackerRow({ order, index }: TrackerRowProps) {
           color: sev.text,
           background: sev.bg,
           padding: "3px 10px",
-          borderRadius: 8,
+          borderRadius: 999,
           whiteSpace: "nowrap",
         }}
       >

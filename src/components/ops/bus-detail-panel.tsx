@@ -12,6 +12,12 @@ import {
   STAGES,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
+import { SectionPill } from "@/components/section-pill";
+import {
+  IconBusFillDuo18,
+  IconGaugeFillDuo18,
+  IconClipboardListFillDuo18,
+} from "nucleo-ui-fill-duo-18";
 
 interface BusDetailPanelProps {
   bus: Bus | null;
@@ -53,7 +59,7 @@ export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
               background: "#ffffff",
               zIndex: 50,
               boxShadow:
-                "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.12), 0px 16px 32px rgba(0,0,0,0.08)",
+                "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.06), 0px 16px 32px rgba(0,0,0,0.04)",
               overflow: "auto",
             }}
           >
@@ -129,7 +135,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
             fontSize: 13,
             fontWeight: 600,
             padding: "4px 12px",
-            borderRadius: 8,
+            borderRadius: 999,
             background:
               bus.status === "road-call" ? "#f5f5f5" : `${color}18`,
             color:
@@ -158,7 +164,9 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
       </div>
 
       {/* Vehicle info */}
-      <SectionLabel>Vehicle Info</SectionLabel>
+      <div style={{ marginBottom: 10 }}>
+        <SectionPill label="Vehicle Info" color="#3b82f6" bgColor="#eff6ff" icon={<IconBusFillDuo18 />} />
+      </div>
       <InfoGrid>
         <InfoRow label="Model" value={bus.model} />
         <InfoRow label="Year" value={String(bus.year)} />
@@ -166,7 +174,9 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
       </InfoGrid>
 
       {/* PM Status */}
-      <SectionLabel>Preventive Maintenance</SectionLabel>
+      <div style={{ marginBottom: 10 }}>
+        <SectionPill label="Preventive Maintenance" color="#f59e0b" bgColor="#fffbeb" icon={<IconGaugeFillDuo18 />} />
+      </div>
       <div
         style={{
           background: "#fafaf9",
@@ -204,7 +214,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
           style={{
             height: 6,
             background: "#f2f2f2",
-            borderRadius: 3,
+            borderRadius: 999,
             overflow: "hidden",
             marginBottom: 10,
           }}
@@ -219,7 +229,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
                   : pmProgress > 80
                     ? "#f59e0b"
                     : "#22c55e",
-              borderRadius: 3,
+              borderRadius: 999,
               transition: "width 0.3s ease",
             }}
           />
@@ -242,7 +252,9 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
       {/* Active Work Orders */}
       {busWorkOrders.length > 0 && (
         <>
-          <SectionLabel>Active Work Orders</SectionLabel>
+          <div style={{ marginBottom: 10 }}>
+            <SectionPill label="Active Work Orders" color="#ef4444" bgColor="#fef2f2" icon={<IconClipboardListFillDuo18 />} />
+          </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
@@ -282,7 +294,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
                         color: sev.text,
                         background: sev.bg,
                         padding: "2px 8px",
-                        borderRadius: 6,
+                        borderRadius: 999,
                       }}
                     >
                       {SEVERITY_LABELS[wo.severity]}
@@ -321,7 +333,9 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
 
       {busWorkOrders.length === 0 && (
         <>
-          <SectionLabel>Work Orders</SectionLabel>
+          <div style={{ marginBottom: 10 }}>
+            <SectionPill label="Work Orders" color="#929292" bgColor="#f5f5f5" icon={<IconClipboardListFillDuo18 />} />
+          </div>
           <p
             style={{
               fontSize: 13,
@@ -334,23 +348,6 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
           </p>
         </>
       )}
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        fontSize: 11,
-        fontWeight: 600,
-        textTransform: "uppercase" as const,
-        letterSpacing: "0.06em",
-        color: "#929292",
-        marginBottom: 10,
-      }}
-    >
-      {children}
     </div>
   );
 }

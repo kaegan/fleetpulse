@@ -5,15 +5,25 @@ import { KpiStrip } from "./kpi-strip";
 import { FleetWall } from "./fleet-wall";
 import { BusDetailPanel } from "./bus-detail-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
+import { SectionPill } from "@/components/section-pill";
 import type { Bus } from "@/data/types";
+import { IconRadarFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 export function OpsView() {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
 
   return (
-    <div style={{ padding: "24px 32px" }}>
+    <div style={{ padding: "32px 40px" }}>
       {/* Section header */}
-      <div style={{ marginBottom: 20 }}>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 10 }}>
+          <SectionPill
+            label="Operations"
+            color="#3b82f6"
+            bgColor="#eff6ff"
+            icon={<IconRadarFillDuo18 />}
+          />
+        </div>
         <h1
           style={{
             fontSize: 22,
