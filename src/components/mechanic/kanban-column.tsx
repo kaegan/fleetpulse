@@ -4,7 +4,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
 import { SectionPill } from "@/components/section-pill";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
-import type { WorkOrder } from "@/data/types";
+import type { Bus, WorkOrder } from "@/data/types";
 import {
   IconClipboardFillDuo18,
   IconMagnifierCheckFillDuo18,
@@ -26,9 +26,16 @@ interface KanbanColumnProps {
   stageName: string;
   orders: WorkOrder[];
   onComplete: (woId: string) => void;
+  onSelectBus?: (bus: Bus) => void;
 }
 
-export function KanbanColumn({ stageId, stageName, orders, onComplete }: KanbanColumnProps) {
+export function KanbanColumn({
+  stageId,
+  stageName,
+  orders,
+  onComplete,
+  onSelectBus,
+}: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
@@ -78,7 +85,12 @@ export function KanbanColumn({ stageId, stageName, orders, onComplete }: KanbanC
       {/* Cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {orders.map((wo) => (
-          <WorkOrderCard key={wo.id} order={wo} onComplete={onComplete} />
+          <WorkOrderCard
+            key={wo.id}
+            order={wo}
+            onComplete={onComplete}
+            onSelectBus={onSelectBus}
+          />
         ))}
         {orders.length === 0 && (
           <div

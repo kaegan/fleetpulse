@@ -4,9 +4,10 @@ import { useState, useCallback, useMemo } from "react";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { SectionPill } from "@/components/section-pill";
+import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
-import type { WorkOrder, WorkOrderStage } from "@/data/types";
+import type { Bus, WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 type Scope = "mine" | "all";
@@ -14,6 +15,7 @@ type Scope = "mine" | "all";
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [scope, setScope] = useState<Scope>("mine");
+  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
 
   const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
     setOrders((prev) =>
@@ -93,6 +95,12 @@ export function MechanicView() {
         workOrders={visibleOrders}
         onStageChange={handleStageChange}
         onComplete={handleComplete}
+        onSelectBus={setSelectedBus}
+      />
+
+      <BusDetailPanel
+        bus={selectedBus}
+        onClose={() => setSelectedBus(null)}
       />
     </div>
   );

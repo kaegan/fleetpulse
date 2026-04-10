@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { KpiStrip } from "./kpi-strip";
 import { FleetWall } from "./fleet-wall";
-import { BusDetailPanel } from "./bus-detail-panel";
+import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { SectionPill } from "@/components/section-pill";
 import type { Bus } from "@/data/types";
@@ -48,7 +48,7 @@ export function OpsView() {
 
       <KpiStrip />
       <FleetWall onBusClick={setSelectedBus} />
-      <WorkOrderTracker />
+      <WorkOrderTracker onSelectBus={setSelectedBus} />
 
       <BusDetailPanel
         bus={selectedBus}

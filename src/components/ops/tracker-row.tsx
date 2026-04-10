@@ -1,23 +1,45 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { WorkOrder } from "@/data/types";
+import type { Bus, WorkOrder } from "@/data/types";
+import { buses } from "@/data/buses";
 import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 
 interface TrackerRowProps {
   order: WorkOrder;
   index: number;
+  onSelectBus?: (bus: Bus) => void;
 }
 
-export function TrackerRow({ order, index }: TrackerRowProps) {
+const RESTING_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)";
+const HOVER_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.05), 0px 8px 18px rgba(0,0,0,0.05)";
+
+export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
   const sev = SEVERITY_COLORS[order.severity];
+
+  const handleClick = () => {
+    if (!onSelectBus) return;
+    const bus = buses.find((b) => b.id === order.busId);
+    if (bus) onSelectBus(bus);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.3, ease: "easeOut" }}
+      onClick={handleClick}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = HOVER_SHADOW;
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = RESTING_SHADOW;
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
       style={{
         display: "flex",
         alignItems: "center",
@@ -25,8 +47,9 @@ export function TrackerRow({ order, index }: TrackerRowProps) {
         padding: "14px 18px",
         background: "#ffffff",
         borderRadius: 16,
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
+        boxShadow: RESTING_SHADOW,
+        cursor: onSelectBus ? "pointer" : "default",
+        transition: "box-shadow 150ms ease, transform 150ms ease",
       }}
     >
       {/* Bus info */}

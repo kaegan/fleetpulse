@@ -13,15 +13,21 @@ import {
 import { KanbanColumn } from "./kanban-column";
 import { WorkOrderCard } from "./work-order-card";
 import { STAGES } from "@/lib/constants";
-import type { WorkOrder, WorkOrderStage } from "@/data/types";
+import type { Bus, WorkOrder, WorkOrderStage } from "@/data/types";
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[];
   onStageChange: (woId: string, newStage: WorkOrderStage) => void;
   onComplete: (woId: string) => void;
+  onSelectBus?: (bus: Bus) => void;
 }
 
-export function KanbanBoard({ workOrders, onStageChange, onComplete }: KanbanBoardProps) {
+export function KanbanBoard({
+  workOrders,
+  onStageChange,
+  onComplete,
+  onSelectBus,
+}: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // 5px activation distance so clicks on interactive children aren't hijacked as drags.
@@ -77,6 +83,7 @@ export function KanbanBoard({ workOrders, onStageChange, onComplete }: KanbanBoa
               stageName={stage}
               orders={stageOrders}
               onComplete={onComplete}
+              onSelectBus={onSelectBus}
             />
           );
         })}
