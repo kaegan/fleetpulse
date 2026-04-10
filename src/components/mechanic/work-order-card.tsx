@@ -5,6 +5,8 @@ import type { Bus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface WorkOrderCardProps {
@@ -48,7 +50,7 @@ export function WorkOrderCard({
   };
 
   return (
-    <div
+    <Card
       ref={isOverlay ? undefined : setNodeRef}
       {...(isOverlay ? {} : listeners)}
       {...(isOverlay ? {} : attributes)}
@@ -63,10 +65,8 @@ export function WorkOrderCard({
         e.currentTarget.style.boxShadow = RESTING_SHADOW;
         e.currentTarget.style.transform = "translateY(0)";
       }}
+      className="rounded-[16px] p-4"
       style={{
-        background: "#ffffff",
-        borderRadius: 16,
-        padding: "14px 16px",
         border: "1px solid rgba(0,0,0,0.06)",
         boxShadow: isOverlay
           ? "0px 10px 30px rgba(0,0,0,0.15), 0px 4px 12px rgba(0,0,0,0.1)"
@@ -123,23 +123,18 @@ export function WorkOrderCard({
 
       {/* Parts status */}
       {order.partsStatus !== "n/a" && (
-        <div style={{ marginBottom: 10 }}>
-          <span
+        <div className="mb-2.5">
+          <Badge
+            className="px-2 py-[2px]"
             style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color:
-                order.partsStatus === "available" ? "#166534" : "#92400e",
-              background:
-                order.partsStatus === "available" ? "#f0fdf4" : "#fffbeb",
-              padding: "2px 8px",
-              borderRadius: 999,
+              color: order.partsStatus === "available" ? "#166534" : "#92400e",
+              background: order.partsStatus === "available" ? "#f0fdf4" : "#fffbeb",
             }}
           >
             {order.partsStatus === "available"
               ? "\u2713 Parts ready"
               : "\u23F3 Parts ordered"}
-          </span>
+          </Badge>
         </div>
       )}
 
@@ -163,35 +158,19 @@ export function WorkOrderCard({
         </span>
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           {order.bayNumber && (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#6a6a6a",
-                background: "#f2f2f2",
-                padding: "2px 8px",
-                borderRadius: 999,
-              }}
-            >
+            <Badge variant="muted" className="px-2 py-[2px]">
               Bay {order.bayNumber}
-            </span>
+            </Badge>
           )}
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: sev.text,
-              background: sev.bg,
-              padding: "2px 8px",
-              borderRadius: 999,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-            }}
+          <Badge
+            className="px-2 py-[2px] gap-1"
+            style={{ color: sev.text, background: sev.bg }}
           >
-            <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
+            <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>
+              {SEVERITY_ICONS[order.severity]}
+            </span>
             {SEVERITY_LABELS[order.severity]}
-          </span>
+          </Badge>
         </div>
       </div>
 
@@ -219,29 +198,7 @@ export function WorkOrderCard({
             e.stopPropagation();
             onAdvance(order.id);
           }}
-          style={{
-            marginTop: 10,
-            width: "100%",
-            padding: "10px 0",
-            fontSize: 13,
-            fontWeight: 600,
-            color: "#444444",
-            background: "#f4f4f4",
-            border: "1px solid transparent",
-            borderRadius: 10,
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-            minHeight: 44,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#ebebeb";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#f4f4f4";
-          }}
+          className="mt-2.5 inline-flex w-full min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-transparent bg-[#f4f4f4] py-2.5 text-[13px] font-semibold text-[#444444] transition-colors hover:bg-[#ebebeb] cursor-pointer"
         >
           Move to {STAGES[order.stage + 1]} →
         </button>
@@ -256,30 +213,7 @@ export function WorkOrderCard({
             e.stopPropagation();
             onComplete(order.id);
           }}
-          style={{
-            marginTop: 10,
-            width: "100%",
-            padding: "6px 0",
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#166534",
-            background: "transparent",
-            border: "1px dashed #bbf7d0",
-            borderRadius: 10,
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#f0fdf4";
-            e.currentTarget.style.borderStyle = "solid";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-            e.currentTarget.style.borderStyle = "dashed";
-          }}
+          className="mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[#bbf7d0] bg-transparent py-1.5 text-xs font-semibold text-[#166534] transition-colors hover:border-solid hover:bg-[#f0fdf4] cursor-pointer"
         >
           <span style={{ display: "flex", width: 14, height: 14 }}>
             <IconCheckFillDuo18 />
@@ -287,6 +221,6 @@ export function WorkOrderCard({
           Mark complete
         </button>
       )}
-    </div>
+    </Card>
   );
 }

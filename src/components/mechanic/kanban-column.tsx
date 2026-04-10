@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
 import { SectionPill } from "@/components/section-pill";
+import { Card } from "@/components/ui/card";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
 import type { Bus, WorkOrder } from "@/data/types";
 import {
@@ -45,12 +46,11 @@ export function KanbanColumn({
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
   return (
-    <div
+    <Card
       ref={setNodeRef}
-      className={`p-3.5 min-h-[320px] sm:p-4 sm:min-h-[360px] lg:p-[18px] lg:min-h-[400px] ${className}`}
+      className={`rounded-[24px] p-3.5 min-h-[320px] sm:p-4 sm:min-h-[360px] lg:p-[18px] lg:min-h-[400px] ${className}`}
       style={{
         background: isOver ? "#f5e7e2" : "#fafaf9",
-        borderRadius: 24,
         border: isOver ? "1px dashed #d4654a" : "1px solid rgba(0,0,0,0.04)",
         transition: "background 120ms ease, border-color 120ms ease",
       }}
@@ -111,6 +111,6 @@ export function KanbanColumn({
           </div>
         )}
       </div>
-    </div>
+    </Card>
   );
 }

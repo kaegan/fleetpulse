@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { TrackerRow } from "./tracker-row";
 import { SectionPill } from "@/components/section-pill";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
-import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS, BRAND_COLOR } from "@/lib/constants";
+import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS } from "@/lib/constants";
 import type { Bus, Severity } from "@/data/types";
 import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
@@ -74,36 +75,24 @@ export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
         </p>
 
         {/* Severity filter pills */}
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            marginTop: 14,
-          }}
+        <ToggleGroup
+          type="single"
+          value={filter}
+          onValueChange={(v) => v && setFilter(v as Severity | "all")}
+          aria-label="Severity filter"
+          className="mt-3.5 bg-transparent gap-1.5 p-0"
         >
           {FILTER_OPTIONS.map(({ label, value }) => {
             const isActive = filter === value;
             const dotColor =
-              value !== "all"
-                ? SEVERITY_COLORS[value].dot
-                : undefined;
+              value !== "all" ? SEVERITY_COLORS[value].dot : undefined;
             return (
-              <button
+              <ToggleGroupItem
                 key={value}
-                onClick={() => setFilter(value)}
+                value={value}
+                className="rounded-full border-[1.5px] border-transparent bg-[#f7f7f7] px-3.5 py-[5px] text-xs gap-1.5 data-[state=on]:bg-[var(--primary)] data-[state=on]:text-white data-[state=on]:border-[var(--primary)] data-[state=on]:shadow-none"
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 5,
-                  padding: "5px 14px",
-                  fontSize: 12,
-                  fontWeight: isActive ? 600 : 500,
                   color: isActive ? "#ffffff" : "#6a6a6a",
-                  background: isActive ? BRAND_COLOR : "#f7f7f7",
-                  border: "1.5px solid",
-                  borderColor: isActive ? BRAND_COLOR : "transparent",
-                  borderRadius: 999,
-                  cursor: "pointer",
                 }}
               >
                 {dotColor && (
@@ -117,10 +106,10 @@ export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
                   />
                 )}
                 {label}
-              </button>
+              </ToggleGroupItem>
             );
           })}
-        </div>
+        </ToggleGroup>
       </div>
 
       {/* Stage pipeline counts */}

@@ -25,12 +25,7 @@ export function KpiStrip() {
   const p = KPI_PILLS;
 
   return (
-    <div
-      className="grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_1fr] md:gap-5"
-      style={{
-        marginBottom: 32,
-      }}
-    >
+    <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_1fr] md:gap-5">
       <KpiCard
         label="Fleet Availability"
         value={availRate}

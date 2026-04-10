@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRole } from "@/hooks/use-role";
 import type { Role } from "@/data/types";
 import { BRAND_COLOR } from "@/lib/constants";
+import { Separator } from "@/components/ui/separator";
 
 const COLLAPSED_WIDTH = 56;
 const EXPANDED_WIDTH = 200;
@@ -184,13 +185,7 @@ export function NavRail() {
       </div>
 
       {/* Divider */}
-      <div
-        style={{
-          height: 1,
-          background: "rgba(0,0,0,0.06)",
-          margin: "12px 12px",
-        }}
-      />
+      <Separator className="my-3 mx-3 w-auto" />
 
       {/* Browse section */}
       <SectionLabel expanded={expanded}>Browse</SectionLabel>

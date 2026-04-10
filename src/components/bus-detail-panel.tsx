@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import type { Bus, BusHistoryEntry, HistoryOutcome } from "@/data/types";
 import { workOrders } from "@/data/work-orders";
 import { getBusHistory } from "@/data/bus-history";
@@ -17,6 +16,12 @@ import {
 import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
 import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
   IconBusFillDuo18,
   IconGaugeFillDuo18,
   IconClipboardListFillDuo18,
@@ -29,63 +34,30 @@ interface BusDetailPanelProps {
 }
 
 export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
-  // Close on Escape for keyboard users.
+  // Snapshot the last non-null bus so the sheet keeps rendering its contents
+  // through the close animation after the parent clears `bus`.
+  const [displayBus, setDisplayBus] = useState<Bus | null>(bus);
   useEffect(() => {
-    if (!bus) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [bus, onClose]);
+    if (bus) setDisplayBus(bus);
+  }, [bus]);
 
   return (
-    <AnimatePresence>
-      {bus && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={onClose}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.2)",
-              zIndex: 40,
-            }}
-          />
-
-          {/* Panel */}
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 400, damping: 35 }}
-            className="w-full sm:w-[440px] sm:max-w-[440px]"
-            style={{
-              position: "fixed",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              background: "#ffffff",
-              zIndex: 50,
-              boxShadow:
-                "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.06), 0px 16px 32px rgba(0,0,0,0.04)",
-              overflow: "auto",
-            }}
-          >
-            <PanelContent bus={bus} onClose={onClose} />
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    <Sheet open={Boolean(bus)} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="right" className="p-0">
+        <SheetTitle className="sr-only">
+          {displayBus ? `Bus #${displayBus.busNumber} details` : "Bus details"}
+        </SheetTitle>
+        <SheetDescription className="sr-only">
+          Vehicle info, preventive maintenance status, active work orders, and
+          service history.
+        </SheetDescription>
+        {displayBus && <PanelContent bus={displayBus} />}
+      </SheetContent>
+    </Sheet>
   );
 }
 
-function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
+function PanelContent({ bus }: { bus: Bus }) {
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
   const milesLeft = milesUntilPm(bus);
@@ -97,29 +69,6 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
 
   return (
     <div className="p-5 sm:p-7">
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          width: 32,
-          height: 32,
-          borderRadius: "50%",
-          border: "none",
-          background: "#f2f2f2",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 16,
-          color: "#6a6a6a",
-        }}
-      >
-        &times;
-      </button>
-
       {/* Bus number */}
       <h2
         style={{
