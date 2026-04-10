@@ -11,13 +11,12 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 import { buses } from "@/data/buses";
-import type { Bus, BusStatus, Garage } from "@/data/types";
+import type { Bus, BusStatus } from "@/data/types";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-
-type GarageFilter = "all" | Garage;
+import { useDepot, filterByDepot } from "@/hooks/use-depot";
 
 interface FleetHealthChartProps {
   onBusClick: (bus: Bus) => void;
@@ -103,7 +102,9 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
   const [hoveredBus, setHoveredBus] = useState<PositionedBus | null>(null);
   const [activeStatus, setActiveStatus] = useState<BusStatus | null>(null);
   const [hoveredStatus, setHoveredStatus] = useState<BusStatus | null>(null);
-  const [garageFilter, setGarageFilter] = useState<GarageFilter>("all");
+  // Depot scope is global (top-bar `DepotSwitcher` → `useDepot`), so the chart
+  // follows whatever garage the user has focused without its own local pill.
+  const { scope } = useDepot();
 
   // Measure container width (responsive)
   useEffect(() => {
@@ -116,21 +117,9 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
     return () => ro.disconnect();
   }, []);
 
-  const totals = useMemo(
-    () => ({
-      all: buses.length,
-      north: buses.filter((b) => b.garage === "north").length,
-      south: buses.filter((b) => b.garage === "south").length,
-    }),
-    []
-  );
-
   const filteredBuses = useMemo(
-    () =>
-      garageFilter === "all"
-        ? buses
-        : buses.filter((b) => b.garage === garageFilter),
-    [garageFilter]
+    () => filterByDepot(buses, scope),
+    [scope]
   );
 
   // Split into buses in the "action" range and the healthy tail (which we summarize).
@@ -176,7 +165,10 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
 
   return (
     <Card className="mb-6 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:p-6">
-      {/* Header: title + caption on left, legend + depot filter on right */}
+      {/* Header: title + caption on left, status legend on right.
+          Depot filter used to live here as a local pill — it's now the
+          global switcher in the top bar (`src/components/top-bar.tsx`), so
+          the chart reads scope from `useDepot` and follows along. */}
       <div
         style={{
           display: "flex",
@@ -257,42 +249,6 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                     }}
                   />
                   {STATUS_LABELS[status]}
-                </ToggleGroupItem>
-              );
-            })}
-          </ToggleGroup>
-
-          <ToggleGroup
-            type="single"
-            value={garageFilter}
-            onValueChange={(v) => v && setGarageFilter(v as GarageFilter)}
-            aria-label="Filter by garage"
-            className="bg-transparent gap-1 p-0"
-          >
-            {(
-              [
-                ["all", "All", totals.all],
-                ["north", "North", totals.north],
-                ["south", "South", totals.south],
-              ] as const
-            ).map(([value, label, count]) => {
-              const isActive = garageFilter === value;
-              return (
-                <ToggleGroupItem
-                  key={value}
-                  value={value}
-                  className="rounded-full bg-[#f5f5f7] px-3 py-[5px] text-[11px] font-semibold tracking-[0.02em] text-[#6a6a6a] data-[state=on]:bg-[#222222] data-[state=on]:text-white data-[state=on]:shadow-none"
-                >
-                  {label}{" "}
-                  <span
-                    style={{
-                      opacity: isActive ? 0.65 : 0.55,
-                      marginLeft: 2,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {count}
-                  </span>
                 </ToggleGroupItem>
               );
             })}
@@ -451,9 +407,9 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               </g>
             )}
 
-            {/* Bus circles — staggered fade-in group (re-animates on depot filter change) */}
+            {/* Bus circles — staggered fade-in group (re-animates on depot scope change) */}
             <motion.g
-              key={garageFilter}
+              key={scope}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
