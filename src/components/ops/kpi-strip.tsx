@@ -3,7 +3,12 @@
 import { KpiCard } from "./kpi-card";
 import { buses } from "@/data/buses";
 import { workOrders } from "@/data/work-orders";
-import { getAvailabilityRate, getForecastAvailability, getStatusCounts } from "@/lib/utils";
+import { availabilityHistory } from "@/data/availability-history";
+import {
+  getAvailabilityRate,
+  getForecastAvailability,
+  getStatusCounts,
+} from "@/lib/utils";
 import { KPI_PILLS } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
@@ -38,6 +43,7 @@ export function KpiStrip() {
         pillBg={p["Fleet Availability"].bg}
         pillIcon={<IconGaugeFillDuo18 />}
         forecast={forecastRate}
+        sparklineData={availabilityHistory}
       />
       <div
         style={{

@@ -33,10 +33,9 @@ function seededRandom(seed: number): () => number {
 const WO_BUS_IDS = new Set([147, 203, 89, 56, 78, 195, 267, 41, 182, 112]);
 
 // Additional buses in maintenance (in the shop but no featured work order).
-// Combined with WO_BUS_IDS this gives us ~30 in maintenance total (20-30 per brief).
+// Combined with WO_BUS_IDS this gives us ~24 in maintenance total (20-30 per brief).
 const ADDITIONAL_MAINTENANCE_IDS = new Set([
-  10, 24, 37, 49, 62, 75, 99, 115, 131, 145,
-  185, 199, 215, 230, 245, 255, 275, 290, 295, 300,
+  10, 37, 49, 62, 99, 131, 145, 185, 215, 245, 275, 290, 295, 300,
 ]);
 
 // Manually pick which bus IDs get non-running statuses for a realistic distribution.
@@ -47,8 +46,7 @@ const PM_DUE_IDS = new Set([
 ]);
 
 const ROAD_CALL_IDS = new Set([
-  5, 19, 33, 47, 63, 77, 91, 105, 120, 134, 150, 164, 179, 193, 207, 222,
-  237, 252, 270, 288, 298,
+  5, 33, 77, 120, 164, 207, 237, 270, 298,
 ]);
 
 function generateBuses(): Bus[] {
