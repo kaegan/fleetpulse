@@ -14,11 +14,11 @@ import {
 } from "nucleo-ui-fill-duo-18";
 
 const STAGE_ICONS: Record<string, React.ReactNode> = {
-  Queued: <IconClipboardFillDuo18 />,
-  Diagnosed: <IconMagnifierCheckFillDuo18 />,
+  Intake: <IconClipboardFillDuo18 />,
+  Diagnosing: <IconMagnifierCheckFillDuo18 />,
   "Parts Ready": <IconBox2CheckFillDuo18 />,
   "In Repair": <IconWrenchFillDuo18 />,
-  "QA Check": <IconBadgeCheckFillDuo18 />,
+  "Road Ready": <IconBadgeCheckFillDuo18 />,
 };
 
 interface KanbanColumnProps {
@@ -27,6 +27,7 @@ interface KanbanColumnProps {
   orders: WorkOrder[];
   onComplete: (woId: string) => void;
   onSelectBus?: (bus: Bus) => void;
+  onAdvance: (woId: string) => void;
 }
 
 export function KanbanColumn({
@@ -35,6 +36,7 @@ export function KanbanColumn({
   orders,
   onComplete,
   onSelectBus,
+  onAdvance,
 }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
@@ -90,6 +92,7 @@ export function KanbanColumn({
             order={wo}
             onComplete={onComplete}
             onSelectBus={onSelectBus}
+            onAdvance={onAdvance}
           />
         ))}
         {orders.length === 0 && (

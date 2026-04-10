@@ -84,6 +84,11 @@ export function KanbanBoard({
               orders={stageOrders}
               onComplete={onComplete}
               onSelectBus={onSelectBus}
+              onAdvance={(woId) => {
+                if (idx < STAGES.length - 1) {
+                  onStageChange(woId, (idx + 1) as WorkOrderStage);
+                }
+              }}
             />
           );
         })}

@@ -13,11 +13,11 @@ export const SEVERITY_ICONS: Record<Severity, ReactNode> = {
 };
 
 export const STAGES = [
-  "Queued",
-  "Diagnosed",
+  "Intake",
+  "Diagnosing",
   "Parts Ready",
   "In Repair",
-  "QA Check",
+  "Road Ready",
 ] as const;
 
 export const STATUS_COLORS: Record<BusStatus, string> = {
@@ -89,9 +89,26 @@ export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
 };
 
 export const KANBAN_STAGE_PILLS: Record<string, { color: string; bg: string }> = {
-  Queued: { color: "#64748b", bg: "#f1f5f9" },
-  Diagnosed: { color: "#3b82f6", bg: "#eff6ff" },
+  Intake: { color: "#64748b", bg: "#f1f5f9" },
+  Diagnosing: { color: "#3b82f6", bg: "#eff6ff" },
   "Parts Ready": { color: "#f59e0b", bg: "#fffbeb" },
   "In Repair": { color: "#8b5cf6", bg: "#f5f3ff" },
-  "QA Check": { color: "#22c55e", bg: "#f0fdf4" },
+  "Road Ready": { color: "#22c55e", bg: "#f0fdf4" },
 };
+
+/**
+ * Quick-start chips for the Mechanic "Log new repair" flow.
+ * Tapping a chip fills the issue field with the default string, which the
+ * mechanic can then refine inline. "Other" clears the field and focuses it.
+ */
+export const ISSUE_TEMPLATES: Array<{ label: string; defaultIssue: string }> = [
+  { label: "Brakes", defaultIssue: "Brake pad replacement" },
+  { label: "HVAC", defaultIssue: "HVAC compressor failure" },
+  { label: "Transmission", defaultIssue: "Transmission fluid leak" },
+  { label: "Wheelchair ramp", defaultIssue: "Wheelchair ramp hydraulic" },
+  { label: "Electrical", defaultIssue: "Alternator replacement" },
+  { label: "Oil change", defaultIssue: "Engine oil change (PM-A)" },
+  { label: "Coolant flush", defaultIssue: "Coolant system flush (PM-B)" },
+  { label: "Tires", defaultIssue: "Tire rotation" },
+  { label: "Other", defaultIssue: "" },
+];

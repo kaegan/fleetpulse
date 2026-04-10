@@ -3,7 +3,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import type { Bus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
-import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
+import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
@@ -11,6 +11,7 @@ interface WorkOrderCardProps {
   order: WorkOrder;
   onComplete?: (woId: string) => void;
   onSelectBus?: (bus: Bus) => void;
+  onAdvance?: (woId: string) => void;
   /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
   isOverlay?: boolean;
 }
@@ -24,6 +25,7 @@ export function WorkOrderCard({
   order,
   onComplete,
   onSelectBus,
+  onAdvance,
   isOverlay = false,
 }: WorkOrderCardProps) {
   const sev = SEVERITY_COLORS[order.severity];
@@ -34,7 +36,7 @@ export function WorkOrderCard({
     disabled: isOverlay,
   });
 
-  const isQaCheck = order.stage === 4;
+  const isRoadReady = order.stage === 4;
 
   const handleClick = (e: React.MouseEvent) => {
     if (isOverlay || !onSelectBus) return;
@@ -209,8 +211,44 @@ export function WorkOrderCard({
         </div>
       )}
 
-      {/* Terminal Complete action — only on stage 4 (QA Check). Subtle text link, not a CTA. */}
-      {isQaCheck && onComplete && !isOverlay && (
+      {/* Advance action — shown on stages 0–3. Large tap target for dirty-hands tablet use. */}
+      {!isRoadReady && onAdvance && !isOverlay && (
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdvance(order.id);
+          }}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            padding: "10px 0",
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#444444",
+            background: "#f4f4f4",
+            border: "1px solid transparent",
+            borderRadius: 10,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+            minHeight: 44,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#ebebeb";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#f4f4f4";
+          }}
+        >
+          Move to {STAGES[order.stage + 1]} →
+        </button>
+      )}
+
+      {/* Terminal Complete action — only on stage 4 (Road Ready). Subtle text link, not a CTA. */}
+      {isRoadReady && onComplete && !isOverlay && (
         <button
           // Stop drag listeners from hijacking the click.
           onPointerDown={(e) => e.stopPropagation()}
