@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { KpiCard } from "./kpi-card";
+import type { DrillDownCategory } from "./bus-list-sheet";
 import { buses } from "@/data/buses";
 import { workOrders } from "@/data/work-orders";
 import { availabilityHistory } from "@/data/availability-history";
@@ -26,7 +27,16 @@ const SCOPE_LABEL: Record<"all" | "north" | "south", string> = {
   south: "South Availability",
 };
 
-export function KpiStrip() {
+interface KpiStripProps {
+  /**
+   * When provided, the PM Due, In Maintenance, and Road Calls cards become
+   * clickable drill-down triggers. Running and Fleet Availability stay
+   * non-interactive — no actionable ops verbs at those states.
+   */
+  onCategoryClick?: (category: DrillDownCategory) => void;
+}
+
+export function KpiStrip({ onCategoryClick }: KpiStripProps) {
   const { scope } = useDepot();
   const scopedBuses = useMemo(() => filterByDepot(buses, scope), [scope]);
   const scopedWorkOrders = useMemo(
@@ -71,6 +81,9 @@ export function KpiStrip() {
           pillColor={p["PM Due"].color}
           pillBg={p["PM Due"].bg}
           pillIcon={<IconWrenchFillDuo18 />}
+          onClick={
+            onCategoryClick ? () => onCategoryClick("pm-due") : undefined
+          }
         />
         <KpiCard
           label="In Maintenance"
@@ -79,6 +92,11 @@ export function KpiStrip() {
           pillColor={p["In Maintenance"].color}
           pillBg={p["In Maintenance"].bg}
           pillIcon={<IconGearsFillDuo18 />}
+          onClick={
+            onCategoryClick
+              ? () => onCategoryClick("in-maintenance")
+              : undefined
+          }
         />
         <KpiCard
           label="Road Calls"
@@ -87,6 +105,9 @@ export function KpiStrip() {
           pillColor={p["Road Calls"].color}
           pillBg={p["Road Calls"].bg}
           pillIcon={<IconSirenFillDuo18 />}
+          onClick={
+            onCategoryClick ? () => onCategoryClick("road-call") : undefined
+          }
         />
       </div>
     </div>

@@ -23,6 +23,8 @@ interface KpiCardProps {
   pillIcon?: ReactNode;
   forecast?: number;
   sparklineData?: AvailabilityDataPoint[];
+  /** When provided, the card becomes an interactive drill-down trigger. */
+  onClick?: () => void;
 }
 
 function formatSparkDate(dateStr: string): string {
@@ -41,6 +43,7 @@ export function KpiCard({
   pillIcon,
   forecast,
   sparklineData,
+  onClick,
 }: KpiCardProps) {
   const motionValue = useMotionValue(0);
   const rounded = useTransform(motionValue, (latest) => {
@@ -66,13 +69,31 @@ export function KpiCard({
     return [minVal - 1, 96];
   }, [sparklineData]);
 
+  const isInteractive = Boolean(onClick);
+
   return (
     <Card
       className={
         "rounded-[24px] shadow-card " +
         (isPrimary
           ? "p-5 sm:p-6 md:p-[28px_32px]"
-          : "p-4 sm:p-5 md:p-[24px_28px]")
+          : "p-4 sm:p-5 md:p-[24px_28px]") +
+        (isInteractive
+          ? " cursor-pointer transition-all duration-200 ease-out hover:shadow-card-hover hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4654a]/40"
+          : "")
+      }
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={
+        isInteractive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
       }
     >
       <div style={{ marginBottom: isPrimary ? 20 : 14 }}>
