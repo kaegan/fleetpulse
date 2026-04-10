@@ -5,7 +5,7 @@ import { TrackerRow } from "./tracker-row";
 import { SectionPill } from "@/components/section-pill";
 import { workOrders } from "@/data/work-orders";
 import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS, BRAND_COLOR } from "@/lib/constants";
-import type { Severity } from "@/data/types";
+import type { Bus, Severity } from "@/data/types";
 import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
@@ -15,7 +15,11 @@ const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "Routine", value: "routine" },
 ];
 
-export function WorkOrderTracker() {
+interface WorkOrderTrackerProps {
+  onSelectBus?: (bus: Bus) => void;
+}
+
+export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
   const [filter, setFilter] = useState<Severity | "all">("all");
 
   // Show all active work orders, sorted by severity then stage
@@ -250,7 +254,12 @@ export function WorkOrderTracker() {
       {/* Tracker rows */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {sorted.map((wo, i) => (
-          <TrackerRow key={wo.id} order={wo} index={i} />
+          <TrackerRow
+            key={wo.id}
+            order={wo}
+            index={i}
+            onSelectBus={onSelectBus}
+          />
         ))}
       </div>
     </div>

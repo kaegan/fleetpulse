@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Bus } from "@/data/types";
+import type { Bus, BusHistoryEntry, HistoryOutcome } from "@/data/types";
 import { workOrders } from "@/data/work-orders";
+import { getBusHistory } from "@/data/bus-history";
 import {
   STATUS_COLORS,
   STATUS_LABELS,
@@ -18,6 +20,7 @@ import {
   IconBusFillDuo18,
   IconGaugeFillDuo18,
   IconClipboardListFillDuo18,
+  IconClockRotateAnticlockwiseFillDuo18,
 } from "nucleo-ui-fill-duo-18";
 
 interface BusDetailPanelProps {
@@ -26,6 +29,16 @@ interface BusDetailPanelProps {
 }
 
 export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
+  // Close on Escape for keyboard users.
+  useEffect(() => {
+    if (!bus) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [bus, onClose]);
+
   return (
     <AnimatePresence>
       {bus && (
@@ -56,7 +69,7 @@ export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
               top: 0,
               right: 0,
               bottom: 0,
-              width: 400,
+              width: 440,
               background: "#ffffff",
               zIndex: 50,
               boxShadow:
@@ -80,6 +93,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
     ((bus.mileage - bus.lastPmMileage) / PM_INTERVAL_MILES) * 100,
     100
   );
+  const history = getBusHistory(bus.id);
 
   return (
     <div style={{ padding: 28 }}>
@@ -256,7 +270,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
           <div style={{ marginBottom: 10 }}>
             <SectionPill label="Active Work Orders" color="#ef4444" bgColor="#fef2f2" icon={<IconClipboardListFillDuo18 />} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
               return (
@@ -344,14 +358,293 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
               fontWeight: 500,
               color: "#b5b5b5",
               padding: "12px 0",
+              marginBottom: 16,
             }}
           >
             No active work orders for this bus.
           </p>
         </>
       )}
+
+      {/* Service History */}
+      <ServiceHistorySection bus={bus} history={history} />
     </div>
   );
+}
+
+// ── Service History ──────────────────────────────────────────────────────
+// Solves the cross-garage JTBD: "When a bus arrives at my garage from the
+// other location, I want to see everything that's been done to it."
+
+const CROSS_GARAGE_CALLOUT_WINDOW_DAYS = 14;
+
+function ServiceHistorySection({
+  bus,
+  history,
+}: {
+  bus: Bus;
+  history: BusHistoryEntry[];
+}) {
+  // Cross-garage callout: show when the most recent history entry is from the
+  // *other* garage and within the last 14 days. This is the JTBD hero moment.
+  const mostRecent = history[0];
+  const showCrossGarageCallout =
+    mostRecent &&
+    mostRecent.garage !== bus.garage &&
+    daysBetween(mostRecent.date, new Date()) <= CROSS_GARAGE_CALLOUT_WINDOW_DAYS;
+
+  return (
+    <>
+      {showCrossGarageCallout && mostRecent && (
+        <CrossGarageCallout entry={mostRecent} />
+      )}
+
+      <div style={{ marginBottom: 10 }}>
+        <SectionPill
+          label="Service History"
+          color="#64748b"
+          bgColor="#f1f5f9"
+          icon={<IconClockRotateAnticlockwiseFillDuo18 />}
+        />
+      </div>
+
+      {history.length === 0 ? (
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#b5b5b5",
+            padding: "12px 0",
+          }}
+        >
+          No prior service history on record for this bus.
+        </p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {history.map((entry) => (
+            <HistoryEntryRow
+              key={entry.id}
+              entry={entry}
+              currentGarage={bus.garage}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
+  const days = daysBetween(entry.date, new Date());
+  const otherGarageLabel = entry.garage === "north" ? "North Garage" : "South Garage";
+  const whenLabel =
+    days === 0 ? "earlier today" : days === 1 ? "yesterday" : `${days} days ago`;
+
+  // Lead with the fact that matters: worked on at the other garage, recently.
+  const outcomeLead =
+    entry.outcome === "deferred"
+      ? `${entry.mechanicName} deferred this job`
+      : entry.outcome === "recurring"
+        ? `${entry.mechanicName} flagged a recurring issue`
+        : `${entry.mechanicName} completed work`;
+
+  return (
+    <div
+      style={{
+        background: "#fdf0ed",
+        border: "1px solid #f5c6b8",
+        borderRadius: 14,
+        padding: "14px 16px",
+        marginBottom: 14,
+        display: "flex",
+        gap: 12,
+        alignItems: "flex-start",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 18,
+          lineHeight: 1,
+          flexShrink: 0,
+          marginTop: 1,
+        }}
+        aria-hidden
+      >
+        ⚠️
+      </div>
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: "#d4654a",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            marginBottom: 4,
+          }}
+        >
+          Arrived from {otherGarageLabel}
+        </div>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#6a3b2a",
+            lineHeight: 1.45,
+          }}
+        >
+          Last worked on {whenLabel} at {otherGarageLabel}. {outcomeLead}
+          {entry.note ? "." : ""}
+          {entry.note && (
+            <>
+              {" "}
+              <span style={{ fontStyle: "italic", color: "#8b5a44" }}>
+                &ldquo;{entry.note}&rdquo;
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryEntryRow({
+  entry,
+  currentGarage,
+}: {
+  entry: BusHistoryEntry;
+  currentGarage: Bus["garage"];
+}) {
+  const isOtherGarage = entry.garage !== currentGarage;
+  const garageLabel = entry.garage === "north" ? "North" : "South";
+  const outcome = OUTCOME_STYLES[entry.outcome];
+
+  return (
+    <div
+      style={{
+        background: "#fafaf9",
+        borderRadius: 14,
+        padding: 14,
+        border: "1px solid rgba(0,0,0,0.06)",
+      }}
+    >
+      {/* Top row: date + garage + outcome */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 6,
+          gap: 8,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#6a6a6a",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {formatHistoryDate(entry.date)}
+          </span>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: isOtherGarage ? "#fdf0ed" : "#f1f5f9",
+              color: isOtherGarage ? "#d4654a" : "#64748b",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {garageLabel} Garage
+          </span>
+        </div>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: outcome.color,
+            background: outcome.bg,
+            padding: "2px 8px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {outcome.label}
+        </span>
+      </div>
+
+      {/* Issue */}
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#222222",
+          marginBottom: 4,
+        }}
+      >
+        {entry.issue}
+      </div>
+
+      {/* Mechanic + WO id */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#929292",
+        }}
+      >
+        <span>{entry.mechanicName}</span>
+        <span style={{ fontFamily: "monospace", color: "#b5b5b5" }}>{entry.id}</span>
+      </div>
+
+      {/* Optional handoff note */}
+      {entry.note && (
+        <div
+          style={{
+            marginTop: 8,
+            paddingTop: 8,
+            borderTop: "1px solid rgba(0,0,0,0.04)",
+            fontSize: 12,
+            fontWeight: 500,
+            fontStyle: "italic",
+            color: "#6a6a6a",
+            lineHeight: 1.45,
+          }}
+        >
+          &ldquo;{entry.note}&rdquo;
+        </div>
+      )}
+    </div>
+  );
+}
+
+const OUTCOME_STYLES: Record<HistoryOutcome, { label: string; color: string; bg: string }> = {
+  completed: { label: "Completed", color: "#166534", bg: "#f0fdf4" },
+  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
+  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
+};
+
+function daysBetween(isoDate: string, now: Date): number {
+  const then = new Date(isoDate);
+  const ms = now.getTime() - then.getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
+function formatHistoryDate(isoDate: string): string {
+  const d = new Date(isoDate);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function InfoGrid({ children }: { children: React.ReactNode }) {

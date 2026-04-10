@@ -1,7 +1,8 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import type { WorkOrder } from "@/data/types";
+import type { Bus, WorkOrder } from "@/data/types";
+import { buses } from "@/data/buses";
 import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
@@ -9,12 +10,24 @@ import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 interface WorkOrderCardProps {
   order: WorkOrder;
   onComplete?: (woId: string) => void;
+  onSelectBus?: (bus: Bus) => void;
   onAdvance?: (woId: string) => void;
   /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
   isOverlay?: boolean;
 }
 
-export function WorkOrderCard({ order, onComplete, onAdvance, isOverlay = false }: WorkOrderCardProps) {
+const RESTING_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)";
+const HOVER_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 10px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.05)";
+
+export function WorkOrderCard({
+  order,
+  onComplete,
+  onSelectBus,
+  onAdvance,
+  isOverlay = false,
+}: WorkOrderCardProps) {
   const sev = SEVERITY_COLORS[order.severity];
 
   // Hooks must be called unconditionally; pass a disabled flag for overlay renders.
@@ -25,11 +38,31 @@ export function WorkOrderCard({ order, onComplete, onAdvance, isOverlay = false 
 
   const isRoadReady = order.stage === 4;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (isOverlay || !onSelectBus) return;
+    // @dnd-kit's 5px activation distance means short clicks don't fire a drag.
+    // This onClick only runs on an actual click, not a drag release.
+    e.stopPropagation();
+    const bus = buses.find((b) => b.id === order.busId);
+    if (bus) onSelectBus(bus);
+  };
+
   return (
     <div
       ref={isOverlay ? undefined : setNodeRef}
       {...(isOverlay ? {} : listeners)}
       {...(isOverlay ? {} : attributes)}
+      onClick={handleClick}
+      onMouseEnter={(e) => {
+        if (isOverlay || isDragging) return;
+        e.currentTarget.style.boxShadow = HOVER_SHADOW;
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        if (isOverlay) return;
+        e.currentTarget.style.boxShadow = RESTING_SHADOW;
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
       style={{
         background: "#ffffff",
         borderRadius: 16,
@@ -37,11 +70,12 @@ export function WorkOrderCard({ order, onComplete, onAdvance, isOverlay = false 
         border: "1px solid rgba(0,0,0,0.06)",
         boxShadow: isOverlay
           ? "0px 10px 30px rgba(0,0,0,0.15), 0px 4px 12px rgba(0,0,0,0.1)"
-          : "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)",
+          : RESTING_SHADOW,
         cursor: isOverlay ? "grabbing" : "grab",
         opacity: isDragging && !isOverlay ? 0 : 1,
         touchAction: "none",
         userSelect: "none",
+        transition: "box-shadow 150ms ease, transform 150ms ease",
       }}
     >
       {/* Top row: Bus number + time */}

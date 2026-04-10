@@ -38,3 +38,21 @@ export interface WorkOrder {
   createdAt: string; // ISO datetime
   stageEnteredAt: string; // ISO datetime — for time-in-status calc
 }
+
+/**
+ * A completed or historical entry in a bus's service log.
+ * Used by the BusDetailPanel to show "everything that's been done to this bus"
+ * — especially work performed at the *other* garage.
+ */
+export type HistoryOutcome = "completed" | "deferred" | "recurring";
+
+export interface BusHistoryEntry {
+  id: string; // "WO-1198" format — historical WO number
+  date: string; // ISO datetime — completion date
+  garage: Garage; // where the work was done (may differ from bus's current garage)
+  issue: string;
+  severity: Severity;
+  mechanicName: string;
+  outcome: HistoryOutcome;
+  note?: string; // short 1-line handoff note
+}

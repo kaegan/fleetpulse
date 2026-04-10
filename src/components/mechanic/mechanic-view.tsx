@@ -5,11 +5,12 @@ import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
 import { SectionPill } from "@/components/section-pill";
+import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { Dialog } from "@/components/dialog";
 import { Toast } from "@/components/toast";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { BRAND_COLOR, BRAND_COLOR_HOVER, CURRENT_MECHANIC } from "@/lib/constants";
-import type { Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
+import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 type Scope = "mine" | "all";
@@ -20,6 +21,7 @@ const CURRENT_GARAGE: Garage = "north";
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [scope, setScope] = useState<Scope>("mine");
+  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [toastOrderId, setToastOrderId] = useState<string | null>(null);
 
@@ -192,6 +194,12 @@ export function MechanicView() {
         workOrders={visibleOrders}
         onStageChange={handleStageChange}
         onComplete={handleComplete}
+        onSelectBus={setSelectedBus}
+      />
+
+      <BusDetailPanel
+        bus={selectedBus}
+        onClose={() => setSelectedBus(null)}
       />
 
       <Dialog
