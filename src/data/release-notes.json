@@ -1,36 +1,84 @@
 {
   "entries": [
     {
-      "id": "2026-04-09-responsive-pass",
-      "date": "2026-04-09",
+      "id": "2026-04-10-whats-new-profile-stub",
+      "date": "2026-04-10",
+      "title": "See what just shipped from your profile menu",
+      "body": "Click your avatar in the bottom-left of the nav rail to open a profile menu with a What's New entry that lists every recent change to FleetPulse.",
+      "category": "feature",
+      "prNumber": 13
+    },
+    {
+      "id": "2026-04-10-assign-mechanic-at-intake",
+      "date": "2026-04-10",
+      "title": "Assign a mechanic when you log a new repair",
+      "body": "The intake form now lets you pick the mechanic who'll own the work order, and the layout fits a phone so you can do it from the bay.",
+      "category": "improvement",
+      "prNumber": 11
+    },
+    {
+      "id": "2026-04-10-responsive-pass",
+      "date": "2026-04-10",
       "title": "Triage from a tablet or phone",
       "body": "Mechanic and Ops views now reflow at tablet and phone widths so you can keep working when you're away from the desk.",
       "category": "improvement",
       "prNumber": 10
     },
     {
-      "id": "2026-04-08-cross-garage-history",
-      "date": "2026-04-08",
+      "id": "2026-04-10-cross-garage-history",
+      "date": "2026-04-10",
       "title": "See any bus's full service history across garages",
       "body": "Click any bus to open its detail panel and inspect cross-garage repairs, so North and South stop duplicating work.",
       "category": "feature",
       "prNumber": 9
     },
     {
-      "id": "2026-04-07-mechanic-intake",
-      "date": "2026-04-07",
-      "title": "Log new repairs and advance stages in one tap",
+      "id": "2026-04-10-mechanic-intake",
+      "date": "2026-04-10",
+      "title": "Log new repairs and advance work orders in one tap",
       "body": "Mechanics can now log a fresh work order from intake and push cards through the swim lanes without leaving the board.",
       "category": "feature",
       "prNumber": 8
     },
     {
-      "id": "2026-04-06-overdue-buses-first",
-      "date": "2026-04-06",
-      "title": "Overdue buses lead the Ops view",
-      "body": "Ops now opens with the buses that need attention by name, instead of burying them under the fleet grid.",
+      "id": "2026-04-10-overdue-buses-first",
+      "date": "2026-04-10",
+      "title": "Ops opens with the buses that need you, not a fleet grid",
+      "body": "The Ops view now leads with overdue buses by name and demotes the fleet grid, so what needs attention is the first thing you see.",
       "category": "improvement",
       "prNumber": 7
+    },
+    {
+      "id": "2026-04-09-mechanic-mine-and-drag",
+      "date": "2026-04-09",
+      "title": "Focus the mechanic board on your work, drag cards to advance them",
+      "body": "Filter the swim lanes to just the work orders assigned to you, and drag a card from one stage to the next instead of opening a menu.",
+      "category": "feature",
+      "prNumber": 5
+    },
+    {
+      "id": "2026-04-09-availability-trend",
+      "date": "2026-04-09",
+      "title": "Watch fleet availability trend toward your 95% target",
+      "body": "The Ops dashboard now shows a 30-day availability sparkline against the 95% service target so you can spot drift before it bites.",
+      "category": "feature",
+      "prNumber": 4
+    },
+    {
+      "id": "2026-04-09-jtbd-coverage",
+      "date": "2026-04-09",
+      "title": "Move work forward as a mechanic, plan tomorrow as ops",
+      "body": "Mechanic cards now show parts status and one-click stage advance. Ops gets a stage-bottleneck bar and a severity filter to decide where to send help.",
+      "category": "feature",
+      "prNumber": 3
+    },
+    {
+      "id": "2026-04-09-tracker-readability",
+      "date": "2026-04-09",
+      "title": "Read the work order tracker at a glance",
+      "body": "Stages now use full names instead of abbreviations, and severity icons make Critical, High, and Routine work orders easier to scan.",
+      "category": "improvement",
+      "prNumber": 2
     }
   ]
 }
