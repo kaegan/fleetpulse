@@ -19,12 +19,12 @@ export function BayCard({ bayNumber, occupant }: BayCardProps) {
         flex: "1 1 0",
         minWidth: 110,
         padding: "12px 14px",
-        borderRadius: 14,
+        borderRadius: 16,
         background: isOpen ? "#f0fdf4" : "#ffffff",
         border: isOpen ? "1px solid #dcfce7" : "1px solid rgba(0,0,0,0.06)",
         boxShadow: isOpen
           ? "none"
-          : "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08)",
+          : "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
         textAlign: "center",
         cursor: "default",
       }}

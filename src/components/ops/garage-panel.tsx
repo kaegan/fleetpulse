@@ -1,9 +1,11 @@
 "use client";
 
 import { BusDot } from "./bus-dot";
+import { SectionPill } from "@/components/section-pill";
 import type { Bus } from "@/data/types";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { getStatusCounts } from "@/lib/utils";
+import { IconGarageFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface GaragePanelProps {
   garageName: string;
@@ -31,10 +33,10 @@ export function GaragePanel({ garageName, buses, onBusClick }: GaragePanelProps)
     <div
       style={{
         background: "#ffffff",
-        borderRadius: 20,
-        padding: 20,
+        borderRadius: 24,
+        padding: 24,
         boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08)",
+          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
       }}
     >
       {/* Header */}
@@ -46,16 +48,12 @@ export function GaragePanel({ garageName, buses, onBusClick }: GaragePanelProps)
           marginBottom: 16,
         }}
       >
-        <span
-          style={{
-            fontSize: 16,
-            fontWeight: 700,
-            color: "#222222",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          {garageName}
-        </span>
+        <SectionPill
+          label={garageName}
+          color="#3b82f6"
+          bgColor="#eff6ff"
+          icon={<IconGarageFillDuo18 />}
+        />
         <span
           style={{
             fontSize: 13,

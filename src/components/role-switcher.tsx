@@ -49,7 +49,7 @@ export function RoleSwitcher() {
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "#c2703e",
+                  background: "#d4654a",
                   borderRadius: 8,
                   boxShadow:
                     "0px 1px 3px rgba(0,0,0,0.12), 0px 2px 6px rgba(0,0,0,0.08)",

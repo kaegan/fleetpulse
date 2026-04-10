@@ -17,16 +17,16 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
       whileHover={{
         scale: 1.015,
         boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.08), 0px 8px 16px rgba(0,0,0,0.06)",
+          "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.06)",
       }}
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       style={{
         background: "#ffffff",
-        borderRadius: 14,
+        borderRadius: 16,
         padding: "14px 16px",
         borderLeft: `4px solid ${sev.border}`,
         boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08)",
+          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 4px rgba(0,0,0,0.03), 0px 3px 6px rgba(0,0,0,0.04)",
         cursor: "default",
       }}
     >
@@ -100,7 +100,7 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
                 color: "#6a6a6a",
                 background: "#f2f2f2",
                 padding: "2px 8px",
-                borderRadius: 6,
+                borderRadius: 999,
               }}
             >
               Bay {order.bayNumber}
@@ -113,7 +113,7 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
               color: sev.text,
               background: sev.bg,
               padding: "2px 8px",
-              borderRadius: 6,
+              borderRadius: 999,
             }}
           >
             {SEVERITY_LABELS[order.severity]}

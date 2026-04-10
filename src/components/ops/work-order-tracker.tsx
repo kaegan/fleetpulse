@@ -1,7 +1,9 @@
 "use client";
 
 import { TrackerRow } from "./tracker-row";
+import { SectionPill } from "@/components/section-pill";
 import { workOrders } from "@/data/work-orders";
+import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 export function WorkOrderTracker() {
   // Show all active work orders, sorted by severity then stage
@@ -15,7 +17,15 @@ export function WorkOrderTracker() {
   return (
     <div>
       {/* Section header */}
-      <div style={{ marginBottom: 14 }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 10 }}>
+          <SectionPill
+            label="Work Orders"
+            color="#d4654a"
+            bgColor="#fdf0ed"
+            icon={<IconClipboardListFillDuo18 />}
+          />
+        </div>
         <h2
           style={{
             fontSize: 18,
@@ -92,7 +102,7 @@ export function WorkOrderTracker() {
       </div>
 
       {/* Tracker rows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {sorted.map((wo, i) => (
           <TrackerRow key={wo.id} order={wo} index={i} />
         ))}

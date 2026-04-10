@@ -2,13 +2,13 @@
 
 @theme inline {
   /* Brand */
-  --color-brand: #c2703e;
-  --color-brand-hover: #a85d32;
-  --color-brand-light: #fdf2eb;
+  --color-brand: #d4654a;
+  --color-brand-hover: #be5840;
+  --color-brand-light: #fdf0ed;
 
   /* Surfaces */
   --color-surface: #ffffff;
-  --color-surface-warm: #f7f5f3;
+  --color-surface-warm: #f5f5f7;
   --color-surface-hover: #fafaf9;
 
   /* Text */
@@ -39,16 +39,17 @@
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-strong: rgba(0, 0, 0, 0.12);
 
-  /* Shadows — Airbnb three-layer system */
-  --shadow-card: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.04), 0px 4px 8px rgba(0,0,0,0.08);
-  --shadow-card-hover: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.08), 0px 8px 16px rgba(0,0,0,0.12);
-  --shadow-panel: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.12), 0px 16px 32px rgba(0,0,0,0.08);
+  /* Shadows — ultra-soft */
+  --shadow-card: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04);
+  --shadow-card-hover: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.06);
+  --shadow-panel: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.06), 0px 16px 32px rgba(0,0,0,0.04);
 
   /* Radius */
   --radius-sm: 8px;
   --radius-md: 14px;
-  --radius-lg: 20px;
+  --radius-lg: 24px;
   --radius-xl: 32px;
+  --radius-pill: 999px;
 
   /* Font */
   --font-sans: var(--font-inter);
