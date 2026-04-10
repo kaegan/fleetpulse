@@ -40,7 +40,13 @@ export function MechanicView() {
   }, []);
 
   const handleCreate = useCallback(
-    (draft: { busId: number; busNumber: string; issue: string; severity: Severity }) => {
+    (draft: {
+      busId: number;
+      busNumber: string;
+      issue: string;
+      severity: Severity;
+      assignedTo: string | null;
+    }) => {
       const now = new Date().toISOString();
       // Compute next WO id from current state so concurrent opens can't collide.
       const maxNum = orders.reduce((max, wo) => {
@@ -58,7 +64,7 @@ export function MechanicView() {
         stage: 0,
         bayNumber: null,
         garage: CURRENT_GARAGE,
-        mechanicName: null,
+        mechanicName: draft.assignedTo,
         partsStatus: "n/a",
         createdAt: now,
         stageEnteredAt: now,

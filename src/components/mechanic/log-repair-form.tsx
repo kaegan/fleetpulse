@@ -2,9 +2,11 @@
 
 import { useMemo, useRef, useState } from "react";
 import { buses } from "@/data/buses";
+import { MECHANICS } from "@/data/mechanics";
 import type { Garage, Severity } from "@/data/types";
 import {
   BRAND_COLOR,
+  CURRENT_MECHANIC,
   ISSUE_TEMPLATES,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
@@ -18,6 +20,7 @@ interface LogRepairDraft {
   busNumber: string;
   issue: string;
   severity: Severity;
+  assignedTo: string | null;
 }
 
 interface LogRepairFormProps {
@@ -39,6 +42,7 @@ export function LogRepairForm({
   const [busQuery, setBusQuery] = useState("");
   const [issue, setIssue] = useState("");
   const [severity, setSeverity] = useState<Severity | null>(null);
+  const [assignedTo, setAssignedTo] = useState<string | null>(CURRENT_MECHANIC);
 
   const issueInputRef = useRef<HTMLInputElement>(null);
 
@@ -108,6 +112,7 @@ export function LogRepairForm({
       busNumber: selectedBus.busNumber,
       issue: issue.trim(),
       severity,
+      assignedTo,
     });
   };
 
@@ -116,26 +121,27 @@ export function LogRepairForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-[22px] p-7 pb-6"
+      className="flex flex-col gap-2.5 p-5 sm:gap-[22px] sm:p-7 sm:pb-6"
     >
       {/* Header */}
       <div>
         <h2
           id="log-repair-title"
+          className="text-[19px] sm:text-[22px]"
           style={{
-            fontSize: 22,
             fontWeight: 700,
             color: "#222222",
             letterSpacing: "-0.03em",
             margin: 0,
-            marginBottom: 4,
+            marginBottom: 2,
+            lineHeight: 1.2,
           }}
         >
           Log new repair
         </h2>
         <p
+          className="hidden sm:block text-[13px] sm:text-[14px]"
           style={{
-            fontSize: 14,
             fontWeight: 500,
             color: "#929292",
             margin: 0,
@@ -150,7 +156,7 @@ export function LogRepairForm({
         <FieldLabel htmlFor="bus-number-input">Which bus?</FieldLabel>
 
         {recentBuses.length > 0 && !selectedBus && (
-          <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+          <div className="mb-2.5 hidden flex-wrap items-center gap-1.5 sm:flex">
             <span className="mr-0.5 self-center text-[11px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
               Recent
             </span>
@@ -166,7 +172,7 @@ export function LogRepairForm({
 
         {selectedBus ? (
           <div
-            className="flex items-center justify-between rounded-[12px] border-[1.5px] px-4 py-3.5"
+            className="flex items-center justify-between rounded-[12px] border-[1.5px] px-3.5 py-2.5 sm:px-4 sm:py-3.5"
             style={{
               background: "#fdf0ed",
               borderColor: BRAND_COLOR,
@@ -208,7 +214,7 @@ export function LogRepairForm({
               value={busQuery}
               onChange={(e) => handleBusQueryChange(e.target.value)}
               autoComplete="off"
-              className="h-12 text-[15px]"
+              className="h-11 text-[15px] sm:h-12"
             />
             {matchingBuses.length > 0 && (
               <div className="mt-2.5 grid grid-cols-4 gap-1.5">
@@ -231,7 +237,7 @@ export function LogRepairForm({
       {/* Field 2: Issue */}
       <div>
         <FieldLabel htmlFor="issue-input">What&rsquo;s wrong?</FieldLabel>
-        <div className="mb-2.5 grid grid-cols-3 gap-1.5">
+        <div className="mb-2 grid grid-cols-3 gap-1.5 sm:mb-2.5">
           {ISSUE_TEMPLATES.map((t) => {
             const isActive = issue === t.defaultIssue && t.label !== "Other";
             return (
@@ -240,7 +246,7 @@ export function LogRepairForm({
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => handlePickIssue(t)}
-                className="rounded-[10px] border-[1.5px] px-2.5 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer"
+                className="overflow-hidden rounded-[10px] border-[1.5px] px-2 py-2 text-ellipsis whitespace-nowrap text-[13px] font-semibold transition-colors cursor-pointer sm:px-2.5 sm:py-2.5"
                 style={{
                   color: isActive ? BRAND_COLOR : "#6a6a6a",
                   background: isActive ? "#fdf0ed" : "#f7f7f7",
@@ -281,7 +287,7 @@ export function LogRepairForm({
                 role="radio"
                 aria-checked={isActive}
                 onClick={() => setSeverity(sev)}
-                className="inline-flex min-h-14 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-3.5 text-sm font-bold transition-colors cursor-pointer"
+                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-2.5 text-sm font-bold transition-colors cursor-pointer sm:min-h-14 sm:py-3.5"
                 style={{
                   color: isActive ? sc.text : "#6a6a6a",
                   background: isActive ? sc.bg : "#f7f7f7",
@@ -303,6 +309,50 @@ export function LogRepairForm({
             );
           })}
         </div>
+      </div>
+
+      {/* Field 4: Assigned to */}
+      <div>
+        <FieldLabel htmlFor="assigned-to-select">Assigned to</FieldLabel>
+        <select
+          id="assigned-to-select"
+          value={assignedTo ?? ""}
+          onChange={(e) => setAssignedTo(e.target.value === "" ? null : e.target.value)}
+          className="px-3.5 py-2.5 sm:py-3"
+          style={{
+            width: "100%",
+            fontSize: 14,
+            fontWeight: 500,
+            color: "#222222",
+            background: "#ffffff",
+            border: "1.5px solid #e5e5e5",
+            borderRadius: 12,
+            outline: "none",
+            boxSizing: "border-box",
+            fontFamily: "inherit",
+            appearance: "none",
+            WebkitAppearance: "none",
+            MozAppearance: "none",
+            backgroundImage:
+              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M3 4.5 6 7.5 9 4.5' stroke='%236a6a6a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 14px center",
+            paddingRight: 36,
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.borderColor = BRAND_COLOR;
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.borderColor = "#e5e5e5";
+          }}
+        >
+          <option value="">Unassigned</option>
+          {MECHANICS.map((m) => (
+            <option key={m} value={m}>
+              {m === CURRENT_MECHANIC ? `${m} (you)` : m}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Footer */}
@@ -329,7 +379,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-2.5 block text-[13px] font-semibold text-[#222222]"
+      className="mb-0.5 block text-[13px] font-semibold text-[#222222] sm:mb-2.5"
     >
       {children}
     </label>
