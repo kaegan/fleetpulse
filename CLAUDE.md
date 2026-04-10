@@ -32,7 +32,7 @@ Fleet management tool for Transitland, a fictional paratransit agency. Built as 
 - Center: Role switcher toggle
 - Right: Current date/time
 
-For the detailed view-by-view feature breakdown (bay strip, kanban, fleet wall, KPI strip, Domino's tracker), see `PRODUCT_SPEC.md` § Feature Scope.
+For the detailed view-by-view feature breakdown (kanban with drag-and-drop, fleet wall, KPI strip with availability sparkline, Domino's tracker with severity filter + bottleneck bar), see `PRODUCT_SPEC.md` § Feature Scope.
 
 ## Mock Data Requirements
 

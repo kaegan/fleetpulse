@@ -61,11 +61,12 @@ The role switcher swaps which set of actions and views is in front of you. Same 
 - Each role has its own accent treatment
 
 ### 2. Mechanic KDS Board
-- Bay status strip (8 bays, occupied/open)
 - 5-column kanban: Queued → Diagnosed → Parts Ready → In Repair → QA Check
-- Work order cards with severity indicator, bus ID, issue, time tracking
-- **Parts-status badge** on each card (available / ordered)
-- **Stage-progression button** to advance or complete a work order from the card itself
+- **Mine / All scope toggle** with live counts — defaults to "Mine" so mechanics see only their own work orders without losing awareness of the garage backlog
+- **Drag-and-drop stage transitions** between columns via `@dnd-kit` — backwards drag allowed, so mechanics can correct mistakes without admin help
+- Work order cards: bus ID, issue, time in stage, WO ID, severity badge, bay label, assigned mechanic
+- **Parts-status pill** on each card (Parts ready / Parts ordered)
+- **"Mark complete" affordance on QA Check cards only** — terminal action sits on the card instead of requiring a 6th column
 
 ### 3. Fleet Wall (Ops Manager)
 - 300 dots split by garage, color = status
@@ -73,16 +74,15 @@ The role switcher swaps which set of actions and views is in front of you. Same 
 - Side-by-side North/South comparison
 
 ### 4. KPI Strip (Ops Manager)
-- Fleet Availability Rate (primary, hero number)
-- **Tomorrow's availability forecast** sitting on the availability card
-- Running / PM Due / In Maintenance / Road Calls counts
-- **Bottleneck bar** showing work-order counts per stage with the peak stage highlighted
+- **Fleet Availability Rate** (hero number, primary)
+- **30-day availability sparkline** on the Fleet Availability card, showing trajectory toward a 95% target with an 84% industry-average reference line
+- **Tomorrow's availability forecast** displayed alongside the sparkline, computed from expected repair completions
+- Running / PM Due / In Maintenance / Road Calls counts as secondary KPI cards
 
 ### 5. Domino's Work Order Tracker (Ops Manager)
-- Active work orders with horizontal progress pipeline
-- 5-stage visual: circles + connectors
-- Severity indicator, time in status
 - **Severity filter pills** (All / Critical / High / Routine) to focus the tracker without losing context
+- **Bottleneck bar** showing work-order counts per stage, with the peak stage highlighted
+- Active work orders listed with a horizontal 5-stage progress pipeline (circles + connectors), severity indicator, and time in status
 
 ## V2 Roadmap (discussed, not built)
 - Parts inventory with predictive replenishment (Amazon Subscribe & Save pattern)
