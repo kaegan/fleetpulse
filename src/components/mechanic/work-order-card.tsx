@@ -2,14 +2,15 @@
 
 import { motion } from "framer-motion";
 import type { WorkOrder } from "@/data/types";
-import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
+import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES, BRAND_COLOR, BRAND_COLOR_HOVER } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 
 interface WorkOrderCardProps {
   order: WorkOrder;
+  onAdvance?: (woId: string) => void;
 }
 
-export function WorkOrderCard({ order }: WorkOrderCardProps) {
+export function WorkOrderCard({ order, onAdvance }: WorkOrderCardProps) {
   const sev = SEVERITY_COLORS[order.severity];
 
   return (
@@ -72,6 +73,28 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
       >
         {order.issue}
       </div>
+
+      {/* Parts status */}
+      {order.partsStatus !== "n/a" && (
+        <div style={{ marginBottom: 10 }}>
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color:
+                order.partsStatus === "available" ? "#166534" : "#92400e",
+              background:
+                order.partsStatus === "available" ? "#f0fdf4" : "#fffbeb",
+              padding: "2px 8px",
+              borderRadius: 999,
+            }}
+          >
+            {order.partsStatus === "available"
+              ? "\u2713 Parts ready"
+              : "\u23F3 Parts ordered"}
+          </span>
+        </div>
+      )}
 
       {/* Bottom row: WO ID + severity badge + bay */}
       <div
@@ -139,6 +162,37 @@ export function WorkOrderCard({ order }: WorkOrderCardProps) {
         >
           {order.mechanicName}
         </div>
+      )}
+
+      {/* Advance button */}
+      {onAdvance && (
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => onAdvance(order.id)}
+          style={{
+            marginTop: 10,
+            width: "100%",
+            padding: "7px 0",
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#ffffff",
+            background: BRAND_COLOR,
+            border: "none",
+            borderRadius: 10,
+            cursor: "pointer",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = BRAND_COLOR_HOVER)
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = BRAND_COLOR)
+          }
+        >
+          {order.stage === 4
+            ? "Complete \u2713"
+            : `Move to ${STAGES[order.stage + 1]} \u2192`}
+        </motion.button>
       )}
     </motion.div>
   );
