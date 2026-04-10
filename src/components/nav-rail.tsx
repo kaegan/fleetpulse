@@ -6,6 +6,8 @@ import { useRole } from "@/hooks/use-role";
 import type { Role } from "@/data/types";
 import { BRAND_COLOR } from "@/lib/constants";
 import { Separator } from "@/components/ui/separator";
+import { ProfileMenu } from "@/components/profile-menu";
+import { WhatsNewDialog } from "@/components/whats-new-dialog";
 
 const COLLAPSED_WIDTH = 56;
 const EXPANDED_WIDTH = 200;
@@ -85,6 +87,7 @@ const ChevronLeft = () => (
 export function NavRail() {
   const { role, setRole } = useRole();
   const [expanded, setExpanded] = useState(false);
+  const [whatsNewOpen, setWhatsNewOpen] = useState(false);
 
   const width = expanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH;
 
@@ -261,8 +264,22 @@ export function NavRail() {
         onClick={() => { if (!expanded) setExpanded(true); }}
       />
 
+      {/* Profile menu — bottom-left account stub */}
+      <div
+        style={{
+          padding: "8px 8px 4px 8px",
+          borderTop: "1px solid rgba(0,0,0,0.06)",
+          marginTop: 4,
+        }}
+      >
+        <ProfileMenu
+          expanded={expanded}
+          onOpenWhatsNew={() => setWhatsNewOpen(true)}
+        />
+      </div>
+
       {/* Expand/collapse toggle at bottom */}
-      <div style={{ padding: "12px 8px" }}>
+      <div style={{ padding: "4px 8px 12px 8px" }}>
         <button
           onClick={() => setExpanded(!expanded)}
           aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
@@ -290,6 +307,8 @@ export function NavRail() {
           {expanded ? <ChevronLeft /> : <ChevronRight />}
         </button>
       </div>
+
+      <WhatsNewDialog open={whatsNewOpen} onOpenChange={setWhatsNewOpen} />
     </motion.nav>
   );
 }

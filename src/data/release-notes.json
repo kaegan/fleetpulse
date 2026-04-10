@@ -1,0 +1,36 @@
+{
+  "entries": [
+    {
+      "id": "2026-04-09-responsive-pass",
+      "date": "2026-04-09",
+      "title": "Triage from a tablet or phone",
+      "body": "Mechanic and Ops views now reflow at tablet and phone widths so you can keep working when you're away from the desk.",
+      "category": "improvement",
+      "prNumber": 10
+    },
+    {
+      "id": "2026-04-08-cross-garage-history",
+      "date": "2026-04-08",
+      "title": "See any bus's full service history across garages",
+      "body": "Click any bus to open its detail panel and inspect cross-garage repairs, so North and South stop duplicating work.",
+      "category": "feature",
+      "prNumber": 9
+    },
+    {
+      "id": "2026-04-07-mechanic-intake",
+      "date": "2026-04-07",
+      "title": "Log new repairs and advance stages in one tap",
+      "body": "Mechanics can now log a fresh work order from intake and push cards through the swim lanes without leaving the board.",
+      "category": "feature",
+      "prNumber": 8
+    },
+    {
+      "id": "2026-04-06-overdue-buses-first",
+      "date": "2026-04-06",
+      "title": "Overdue buses lead the Ops view",
+      "body": "Ops now opens with the buses that need attention by name, instead of burying them under the fleet grid.",
+      "category": "improvement",
+      "prNumber": 7
+    }
+  ]
+}
