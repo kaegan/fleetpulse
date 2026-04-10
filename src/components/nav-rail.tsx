@@ -91,8 +91,8 @@ export function NavRail() {
     <motion.nav
       animate={{ width }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
+      className="hidden md:flex"
       style={{
-        display: "flex",
         flexDirection: "column",
         minWidth: COLLAPSED_WIDTH,
         background: "#fafafa",

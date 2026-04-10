@@ -28,6 +28,8 @@ interface KanbanColumnProps {
   onComplete: (woId: string) => void;
   onSelectBus?: (bus: Bus) => void;
   onAdvance: (woId: string) => void;
+  /** Responsive layout classes applied by the parent board. */
+  className?: string;
 }
 
 export function KanbanColumn({
@@ -37,6 +39,7 @@ export function KanbanColumn({
   onComplete,
   onSelectBus,
   onAdvance,
+  className = "",
 }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
@@ -44,11 +47,10 @@ export function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
+      className={`p-3.5 min-h-[320px] sm:p-4 sm:min-h-[360px] lg:p-[18px] lg:min-h-[400px] ${className}`}
       style={{
         background: isOver ? "#f5e7e2" : "#fafaf9",
         borderRadius: 24,
-        padding: 18,
-        minHeight: 400,
         border: isOver ? "1px dashed #d4654a" : "1px solid rgba(0,0,0,0.04)",
         transition: "background 120ms ease, border-color 120ms ease",
       }}

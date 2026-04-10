@@ -64,12 +64,12 @@ export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 400, damping: 35 }}
+            className="w-full sm:w-[440px] sm:max-w-[440px]"
             style={{
               position: "fixed",
               top: 0,
               right: 0,
               bottom: 0,
-              width: 440,
               background: "#ffffff",
               zIndex: 50,
               boxShadow:
@@ -96,7 +96,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
   const history = getBusHistory(bus.id);
 
   return (
-    <div style={{ padding: 28 }}>
+    <div className="p-5 sm:p-7">
       {/* Close button */}
       <button
         onClick={onClose}
@@ -650,10 +650,8 @@ function formatHistoryDate(isoDate: string): string {
 function InfoGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
+      className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
       style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
-        gap: 10,
         marginBottom: 24,
       }}
     >
