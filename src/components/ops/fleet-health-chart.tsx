@@ -27,16 +27,17 @@ interface PositionedBus extends Bus {
 }
 
 const HEIGHT = 340;
-const PAD_L = 32;
-const PAD_R_DESKTOP = 160; // reserved for healthy-tail summary on the right
-const PAD_R_MOBILE = 16; // on narrow viewports the summary rendered inline below the chart
+const PAD_R = 32; // axis tick label clearance on the right
+const PAD_L_DESKTOP = 160; // reserved for healthy-tail summary on the left
+const PAD_L_MOBILE = 16; // on narrow viewports the summary renders inline below the chart
 const PAD_T = 24;
 const PAD_B = 56;
 const CIRCLE_R = 5.2;
 const MOBILE_BREAKPOINT = 640;
 
 // Chart only plots buses in the "needs attention" range.
-// Everything further right collapses into a single summary label.
+// Everything further left (more miles remaining) collapses into a single summary label.
+// Time/wear flows left→right: fresh buses on the left, overdue buses on the right.
 const X_DOMAIN_MIN = -2000;
 const X_DOMAIN_MAX = 3000;
 const HEALTHY_THRESHOLD = 3000;
@@ -52,13 +53,15 @@ function computeLayout(width: number) {
   const bandY = PAD_T;
   const bandH = HEIGHT - PAD_T - PAD_B;
   const cy = bandY + bandH / 2;
-  const padR = width < MOBILE_BREAKPOINT ? PAD_R_MOBILE : PAD_R_DESKTOP;
+  const padL = width < MOBILE_BREAKPOINT ? PAD_L_MOBILE : PAD_L_DESKTOP;
 
+  // Domain is flipped so the scale produces mirrored positions:
+  // higher milesUntilPm (healthy) → left edge, lower (overdue) → right edge.
   const xScale = scaleLinear()
-    .domain([X_DOMAIN_MIN, X_DOMAIN_MAX])
-    .range([PAD_L, width - padR]);
+    .domain([X_DOMAIN_MAX, X_DOMAIN_MIN])
+    .range([padL, width - PAD_R]);
 
-  return { bandY, bandH, cy, xScale, padR };
+  return { bandY, bandH, cy, xScale, padL };
 }
 
 function runSimulation(
@@ -340,11 +343,11 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             viewBox={`0 0 ${width} ${HEIGHT}`}
             style={{ display: "block", overflow: "visible" }}
           >
-            {/* Overdue region shade */}
+            {/* Overdue region shade — right of the PM Due line */}
             <rect
-              x={PAD_L}
+              x={dueX}
               y={layout.bandY - 10}
-              width={dueX - PAD_L}
+              width={width - PAD_R - dueX}
               height={layout.bandH + 18}
               fill="#f59e0b"
               fillOpacity={0.06}
@@ -374,9 +377,9 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
 
             {/* Axis line */}
             <line
-              x1={PAD_L}
+              x1={layout.padL}
               y1={axisY}
-              x2={width - layout.padR}
+              x2={width - PAD_R}
               y2={axisY}
               stroke="#e5e5e5"
               strokeWidth={1}
@@ -430,41 +433,45 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             })}
 
             {/* Healthy tail summary — hidden on mobile, rendered as an inline
-                callout below the chart instead. */}
+                callout below the chart instead. Sits off the LEFT edge: these
+                buses have the most miles remaining before their next PM. */}
             {healthyTailCount > 0 && !isMobile && (
               <g>
                 <line
-                  x1={width - layout.padR + 10}
+                  x1={layout.padL - 10}
                   y1={layout.bandY + 8}
-                  x2={width - layout.padR + 10}
+                  x2={layout.padL - 10}
                   y2={layout.bandY + layout.bandH - 8}
                   stroke="#e5e5e5"
                   strokeWidth={1}
                 />
                 <text
-                  x={width - layout.padR + 24}
+                  x={layout.padL - 24}
                   y={layout.cy - 16}
                   fontSize={11}
                   fontWeight={700}
                   fill="#22c55e"
+                  textAnchor="end"
                   letterSpacing="0.04em"
                 >
                   + {healthyTailCount}
                 </text>
                 <text
-                  x={width - layout.padR + 24}
+                  x={layout.padL - 24}
                   y={layout.cy + 1}
                   fontSize={11}
                   fontWeight={600}
                   fill="#222222"
+                  textAnchor="end"
                 >
                   on schedule
                 </text>
                 <text
-                  x={width - layout.padR + 24}
+                  x={layout.padL - 24}
                   y={layout.cy + 16}
                   fontSize={10}
                   fill="#929292"
+                  textAnchor="end"
                 >
                   3,000+ mi until PM
                 </text>
@@ -509,19 +516,31 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
           </svg>
         )}
 
-        {/* Tooltip (absolute-positioned React, not SVG) */}
+        {/* Tooltip (absolute-positioned React, not SVG).
+            The outer div owns the static `translate(-50%, -100%)` that
+            anchors the tooltip's bottom-center to the bus dot. The inner
+            motion.div handles the enter/exit animation — we keep these on
+            separate elements because framer-motion overwrites inline
+            `transform` strings, which would otherwise clobber the anchor. */}
         <AnimatePresence>
           {hoveredBus && (
+            <div
+              style={{
+                position: "absolute",
+                left: hoveredBus.x,
+                top: hoveredBus.y - 16,
+                transform: "translate(-50%, -100%)",
+                zIndex: 100,
+                pointerEvents: "none",
+              }}
+            >
             <motion.div
               initial={{ opacity: 0, y: 4, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 4, scale: 0.96 }}
               transition={{ duration: 0.12 }}
               style={{
-                position: "absolute",
-                left: hoveredBus.x,
-                top: hoveredBus.y - 16,
-                transform: "translate(-50%, -100%)",
+                position: "relative",
                 background: "#222222",
                 color: "#ffffff",
                 padding: "8px 12px",
@@ -529,9 +548,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                 fontSize: 12,
                 fontWeight: 600,
                 whiteSpace: "nowrap",
-                zIndex: 100,
                 boxShadow: "0px 4px 14px rgba(0,0,0,0.22)",
-                pointerEvents: "none",
               }}
             >
               <div>Bus #{hoveredBus.busNumber}</div>
@@ -579,6 +596,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                 }}
               />
             </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
