@@ -4,7 +4,7 @@ export type Garage = "north" | "south";
 
 export type Severity = "critical" | "high" | "routine";
 
-/** 0 = Queued, 1 = Diagnosed, 2 = Parts Ready, 3 = In Repair, 4 = QA Check */
+/** 0 = Intake, 1 = Diagnosing, 2 = Parts Ready, 3 = In Repair, 4 = Road Ready */
 export type WorkOrderStage = 0 | 1 | 2 | 3 | 4;
 
 export type PartsStatus = "available" | "ordered" | "n/a";

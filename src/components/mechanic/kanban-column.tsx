@@ -14,11 +14,11 @@ import {
 } from "nucleo-ui-fill-duo-18";
 
 const STAGE_ICONS: Record<string, React.ReactNode> = {
-  Queued: <IconClipboardFillDuo18 />,
-  Diagnosed: <IconMagnifierCheckFillDuo18 />,
+  Intake: <IconClipboardFillDuo18 />,
+  Diagnosing: <IconMagnifierCheckFillDuo18 />,
   "Parts Ready": <IconBox2CheckFillDuo18 />,
   "In Repair": <IconWrenchFillDuo18 />,
-  "QA Check": <IconBadgeCheckFillDuo18 />,
+  "Road Ready": <IconBadgeCheckFillDuo18 />,
 };
 
 interface KanbanColumnProps {
@@ -26,9 +26,10 @@ interface KanbanColumnProps {
   stageName: string;
   orders: WorkOrder[];
   onComplete: (woId: string) => void;
+  onAdvance: (woId: string) => void;
 }
 
-export function KanbanColumn({ stageId, stageName, orders, onComplete }: KanbanColumnProps) {
+export function KanbanColumn({ stageId, stageName, orders, onComplete, onAdvance }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
@@ -78,7 +79,7 @@ export function KanbanColumn({ stageId, stageName, orders, onComplete }: KanbanC
       {/* Cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {orders.map((wo) => (
-          <WorkOrderCard key={wo.id} order={wo} onComplete={onComplete} />
+          <WorkOrderCard key={wo.id} order={wo} onComplete={onComplete} onAdvance={onAdvance} />
         ))}
         {orders.length === 0 && (
           <div
