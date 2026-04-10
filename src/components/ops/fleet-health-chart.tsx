@@ -14,6 +14,8 @@ import { buses } from "@/data/buses";
 import type { Bus, BusStatus, Garage } from "@/data/types";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 type GarageFilter = "all" | Garage;
 
@@ -173,16 +175,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
   const isMobile = width !== null && width < MOBILE_BREAKPOINT;
 
   return (
-    <div
-      className="p-5 sm:p-6"
-      style={{
-        background: "#ffffff",
-        borderRadius: 24,
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
-        marginBottom: 24,
-      }}
-    >
+    <Card className="mb-6 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:p-6">
       {/* Header: title + caption on left, legend + depot filter on right */}
       <div
         style={{
@@ -227,34 +220,30 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             flexWrap: "wrap",
           }}
         >
-          <div style={{ display: "flex", gap: 4 }}>
+          <ToggleGroup
+            type="single"
+            value={activeStatus ?? ""}
+            onValueChange={(v) => setActiveStatus((v || null) as BusStatus | null)}
+            aria-label="Filter by status"
+            className="bg-transparent gap-1 p-0"
+          >
             {BUS_STATUSES.map((status) => {
               const isActive = activeStatus === status;
               const isDimmed = activeStatus !== null && activeStatus !== status;
               return (
-                <button
+                <ToggleGroupItem
                   key={status}
-                  type="button"
+                  value={status}
                   onMouseEnter={() => setHoveredStatus(status)}
                   onMouseLeave={() => setHoveredStatus(null)}
-                  onClick={() => setActiveStatus(isActive ? null : status)}
+                  aria-label={`Filter to ${STATUS_LABELS[status]}`}
+                  className="rounded-full px-2.5 py-[5px] gap-1.5 text-[11px] font-medium text-[#6a6a6a] data-[state=on]:bg-[#f5f5f7] data-[state=on]:text-[#6a6a6a] data-[state=on]:shadow-none"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "5px 10px",
-                    borderRadius: 999,
-                    border: "none",
-                    background: isActive ? "#f5f5f7" : "transparent",
-                    cursor: "pointer",
                     opacity: isDimmed ? 0.45 : 1,
                     transition: "opacity 0.15s, background 0.15s",
-                    fontFamily: "inherit",
                   }}
-                  aria-pressed={isActive}
-                  aria-label={`Filter to ${STATUS_LABELS[status]}`}
                 >
-                  <div
+                  <span
                     style={{
                       width: 10,
                       height: 10,
@@ -267,21 +256,19 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                       boxSizing: "border-box",
                     }}
                   />
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      color: "#6a6a6a",
-                    }}
-                  >
-                    {STATUS_LABELS[status]}
-                  </span>
-                </button>
+                  {STATUS_LABELS[status]}
+                </ToggleGroupItem>
               );
             })}
-          </div>
+          </ToggleGroup>
 
-          <div style={{ display: "flex", gap: 4 }}>
+          <ToggleGroup
+            type="single"
+            value={garageFilter}
+            onValueChange={(v) => v && setGarageFilter(v as GarageFilter)}
+            aria-label="Filter by garage"
+            className="bg-transparent gap-1 p-0"
+          >
             {(
               [
                 ["all", "All", totals.all],
@@ -291,24 +278,10 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             ).map(([value, label, count]) => {
               const isActive = garageFilter === value;
               return (
-                <button
+                <ToggleGroupItem
                   key={value}
-                  type="button"
-                  onClick={() => setGarageFilter(value)}
-                  style={{
-                    padding: "5px 12px",
-                    borderRadius: 999,
-                    border: "none",
-                    background: isActive ? "#222222" : "#f5f5f7",
-                    color: isActive ? "#ffffff" : "#6a6a6a",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    letterSpacing: "0.02em",
-                    transition: "background 0.15s, color 0.15s",
-                  }}
-                  aria-pressed={isActive}
+                  value={value}
+                  className="rounded-full bg-[#f5f5f7] px-3 py-[5px] text-[11px] font-semibold tracking-[0.02em] text-[#6a6a6a] data-[state=on]:bg-[#222222] data-[state=on]:text-white data-[state=on]:shadow-none"
                 >
                   {label}{" "}
                   <span
@@ -320,10 +293,10 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   >
                     {count}
                   </span>
-                </button>
+                </ToggleGroupItem>
               );
             })}
-          </div>
+          </ToggleGroup>
         </div>
       </div>
 
@@ -641,6 +614,6 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
           </span>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
