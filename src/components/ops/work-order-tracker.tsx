@@ -201,30 +201,28 @@ export function WorkOrderTracker() {
           Issue
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          {["Queued", "Diagnosed", "Parts Ready", "In Repair", "QA Check"].map(
-            (stage, idx) => (
-              <div
-                key={stage}
+          {STAGES.map((stage, idx) => (
+            <div
+              key={stage}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span
                 style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#b5b5b5",
+                  whiteSpace: "nowrap",
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#b5b5b5",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {stage}
-                </span>
-                {idx < 4 && <div style={{ flex: 1 }} />}
-              </div>
-            )
-          )}
+                {stage}
+              </span>
+              {idx < STAGES.length - 1 && <div style={{ flex: 1 }} />}
+            </div>
+          ))}
         </div>
         <div
           style={{

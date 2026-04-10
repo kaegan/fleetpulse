@@ -5,7 +5,7 @@ import type { WorkOrder } from "./types";
  * Distribution: stages 0-4 spread across, 3 critical / 4 high / 3 routine.
  * Cross-garage: 6 North, 4 South.
  *
- * Stage map: 0=Queued, 1=Diagnosed, 2=Parts Ready, 3=In Repair, 4=QA Check
+ * Stage map: 0=Intake, 1=Diagnosing, 2=Parts Ready, 3=In Repair, 4=Road Ready
  *
  * Timestamps are fixed offsets from "today at 8am" to avoid SSR hydration mismatches.
  */
