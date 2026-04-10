@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import {
   motion,
   useMotionValue,
@@ -8,7 +8,8 @@ import {
   animate,
 } from "framer-motion";
 import { SectionPill } from "@/components/section-pill";
-import { AvailabilitySparkline } from "./availability-sparkline";
+import { Card } from "@/components/ui/card";
+import { AreaChart } from "@/components/ui/area-chart";
 import type { AvailabilityDataPoint } from "@/data/availability-history";
 
 interface KpiCardProps {
@@ -22,6 +23,11 @@ interface KpiCardProps {
   pillIcon?: ReactNode;
   forecast?: number;
   sparklineData?: AvailabilityDataPoint[];
+}
+
+function formatSparkDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 export function KpiCard({
@@ -53,20 +59,21 @@ export function KpiCard({
     }
   }, [motionValue, value]);
 
+  // Tight Y domain for sparkline: just under the lowest point, just above 95% target.
+  const sparkDomain = useMemo<[number, number] | undefined>(() => {
+    if (!sparklineData || sparklineData.length === 0) return undefined;
+    const minVal = Math.min(...sparklineData.map((d) => d.value));
+    return [minVal - 1, 96];
+  }, [sparklineData]);
+
   return (
-    <div
+    <Card
       className={
-        isPrimary
+        "rounded-[24px] shadow-card " +
+        (isPrimary
           ? "p-5 sm:p-6 md:p-[28px_32px]"
-          : "p-4 sm:p-5 md:p-[24px_28px]"
+          : "p-4 sm:p-5 md:p-[24px_28px]")
       }
-      style={{
-        background: "#ffffff",
-        borderRadius: 24,
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
-        flex: isPrimary ? "1.4" : "1",
-      }}
     >
       <div style={{ marginBottom: isPrimary ? 20 : 14 }}>
         <SectionPill
@@ -117,7 +124,18 @@ export function KpiCard({
       </div>
       {sparklineData ? (
         <div style={{ marginTop: 20, paddingTop: 24 }}>
-          <AvailabilitySparkline data={sparklineData} color={color} />
+          <AreaChart
+            data={sparklineData}
+            index="date"
+            category="value"
+            color={color}
+            height={120}
+            yDomain={sparkDomain}
+            targetValue={95}
+            targetLabel="95% target"
+            formatValue={(v) => `${v.toFixed(1)}%`}
+            formatIndex={formatSparkDate}
+          />
         </div>
       ) : suffix === "%" ? (
         <div
@@ -175,6 +193,6 @@ export function KpiCard({
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

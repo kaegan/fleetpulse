@@ -1,4 +1,11 @@
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
+
+/** shadcn class-name helper: merge clsx + tailwind-merge */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 /** Count buses by status, optionally filtered to a garage */
 export function getStatusCounts(

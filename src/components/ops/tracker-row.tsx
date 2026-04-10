@@ -5,6 +5,13 @@ import type { Bus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TrackerRowProps {
   order: WorkOrder;
@@ -27,6 +34,7 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
   };
 
   return (
+    <TooltipProvider delayDuration={150}>
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -40,10 +48,9 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         e.currentTarget.style.boxShadow = RESTING_SHADOW;
         e.currentTarget.style.transform = "translateY(0)";
       }}
-      className="flex flex-col gap-3 p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
+      data-slot="card"
+      className="flex flex-col gap-3 rounded-[16px] bg-card p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
       style={{
-        background: "#ffffff",
-        borderRadius: 16,
         boxShadow: RESTING_SHADOW,
         cursor: onSelectBus ? "pointer" : "default",
         transition: "box-shadow 150ms ease, transform 150ms ease",
@@ -73,23 +80,13 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
             {order.id}
           </div>
         </div>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: sev.text,
-            background: sev.bg,
-            padding: "3px 10px",
-            borderRadius: 999,
-            whiteSpace: "nowrap",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-          }}
+        <Badge
+          className="px-2.5 py-[3px] gap-1"
+          style={{ color: sev.text, background: sev.bg }}
         >
           <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
           {SEVERITY_LABELS[order.severity]}
-        </span>
+        </Badge>
       </div>
 
       {/* Desktop-only: Bus info column */}
@@ -144,45 +141,49 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
               }}
             >
               {/* Circle */}
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  delay: index * 0.06 + idx * 0.08,
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 25,
-                }}
-                style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 10,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                  background: isComplete
-                    ? sev.dot
-                    : isCurrent
-                      ? sev.bg
-                      : "#f2f2f2",
-                  border: isCurrent
-                    ? `2px solid ${sev.border}`
-                    : isComplete
-                      ? "none"
-                      : "1px solid rgba(0,0,0,0.08)",
-                  color: isComplete
-                    ? "#ffffff"
-                    : isCurrent
-                      ? sev.dot
-                      : "#b5b5b5",
-                }}
-                title={stage}
-              >
-                {isComplete ? "✓" : idx + 1}
-              </motion.div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      delay: index * 0.06 + idx * 0.08,
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 25,
+                    }}
+                    style={{
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 10,
+                      fontWeight: 700,
+                      flexShrink: 0,
+                      background: isComplete
+                        ? sev.dot
+                        : isCurrent
+                          ? sev.bg
+                          : "#f2f2f2",
+                      border: isCurrent
+                        ? `2px solid ${sev.border}`
+                        : isComplete
+                          ? "none"
+                          : "1px solid rgba(0,0,0,0.08)",
+                      color: isComplete
+                        ? "#ffffff"
+                        : isCurrent
+                          ? sev.dot
+                          : "#b5b5b5",
+                    }}
+                  >
+                    {isComplete ? "✓" : idx + 1}
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent>{stage}</TooltipContent>
+              </Tooltip>
 
               {/* Connector line */}
               {idx < STAGES.length - 1 && (
@@ -229,23 +230,14 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
       </div>
 
       {/* Desktop-only: Severity badge */}
-      <span
-        className="hidden lg:inline-flex"
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: sev.text,
-          background: sev.bg,
-          padding: "3px 10px",
-          borderRadius: 999,
-          whiteSpace: "nowrap",
-          alignItems: "center",
-          gap: 4,
-        }}
+      <Badge
+        className="hidden lg:inline-flex px-2.5 py-[3px] gap-1"
+        style={{ color: sev.text, background: sev.bg }}
       >
         <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
         {SEVERITY_LABELS[order.severity]}
-      </span>
+      </Badge>
     </motion.div>
+    </TooltipProvider>
   );
 }

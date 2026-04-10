@@ -6,6 +6,7 @@ import { workOrders } from "@/data/work-orders";
 import type { Bus } from "@/data/types";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
+import { Card } from "@/components/ui/card";
 import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface ActionCardProps {
@@ -40,16 +41,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   // Positive empty state — still worth rendering the card so the layout stays stable.
   if (actionable.length === 0) {
     return (
-      <div
-        className="flex flex-col items-start gap-3 p-5 sm:flex-row sm:items-center sm:gap-4 sm:p-6"
-        style={{
-          background: "#ffffff",
-          borderRadius: 24,
-          boxShadow:
-            "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
-          marginBottom: 24,
-        }}
-      >
+      <Card className="mb-6 flex flex-col items-start gap-3 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <SectionPill
           label="Fleet On Schedule"
           color="#22c55e"
@@ -65,21 +57,12 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
         >
           Nothing overdue right now. Every bus has runway before its next PM service.
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div
-      className="p-5 sm:p-6"
-      style={{
-        background: "#ffffff",
-        borderRadius: 24,
-        boxShadow:
-          "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)",
-        marginBottom: 24,
-      }}
-    >
+    <Card className="mb-6 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:p-6">
       {/* Header */}
       <div
         style={{
@@ -291,6 +274,6 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
           {remainingCount === 1 ? "" : "es"} further down the queue
         </div>
       )}
-    </div>
+    </Card>
   );
 }

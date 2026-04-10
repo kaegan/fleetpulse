@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
 import { SectionPill } from "@/components/section-pill";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
-import { Dialog } from "@/components/dialog";
-import { Toast } from "@/components/toast";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
-import { BRAND_COLOR, BRAND_COLOR_HOVER, CURRENT_MECHANIC } from "@/lib/constants";
+import { CURRENT_MECHANIC } from "@/lib/constants";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
@@ -23,7 +24,6 @@ export function MechanicView() {
   const [scope, setScope] = useState<Scope>("mine");
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
-  const [toastOrderId, setToastOrderId] = useState<string | null>(null);
 
   const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
     setOrders((prev) =>
@@ -66,9 +66,21 @@ export function MechanicView() {
 
       setOrders((prev) => [...prev, newOrder]);
       setIsLogOpen(false);
-      setToastOrderId(newId);
+      toast(
+        <span>
+          Logged as <strong style={{ fontFamily: "monospace" }}>{newId}</strong>
+        </span>,
+        scope === "mine"
+          ? {
+              action: {
+                label: "View in All →",
+                onClick: () => setScope("all"),
+              },
+            }
+          : undefined
+      );
     },
-    [orders]
+    [orders, scope]
   );
 
   // Mechanic sees their garage's work orders.
@@ -139,55 +151,19 @@ export function MechanicView() {
       </div>
 
       {/* Action row: scope toggle + log-new-repair CTA */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 18,
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
+      <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
         <ScopeToggle
           scope={scope}
           onChange={setScope}
           mineCount={mineCount}
           allCount={garageOrders.length}
         />
-        <button
-          type="button"
-          onClick={() => setIsLogOpen(true)}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            background: BRAND_COLOR,
-            color: "#ffffff",
-            border: "none",
-            borderRadius: 12,
-            padding: "12px 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-            fontFamily: "inherit",
-            minHeight: 44,
-            boxShadow:
-              "0px 1px 2px rgba(212, 101, 74, 0.2), 0px 4px 10px rgba(212, 101, 74, 0.15)",
-            transition: "background 120ms ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = BRAND_COLOR_HOVER;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = BRAND_COLOR;
-          }}
-        >
+        <Button onClick={() => setIsLogOpen(true)} className="px-5">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
           Log new repair
-        </button>
+        </Button>
       </div>
 
       <KanbanBoard
@@ -202,40 +178,21 @@ export function MechanicView() {
         onClose={() => setSelectedBus(null)}
       />
 
-      <Dialog
-        open={isLogOpen}
-        onClose={() => setIsLogOpen(false)}
-        titleId="log-repair-title"
-      >
-        <LogRepairForm
-          garage={CURRENT_GARAGE}
-          recentBusNumbers={recentBusNumbers}
-          onCancel={() => setIsLogOpen(false)}
-          onSubmit={handleCreate}
-        />
+      <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
+        <DialogContent
+          showCloseButton={false}
+          aria-describedby={undefined}
+          className="p-0"
+        >
+          <DialogTitle className="sr-only">Log new repair</DialogTitle>
+          <LogRepairForm
+            garage={CURRENT_GARAGE}
+            recentBusNumbers={recentBusNumbers}
+            onCancel={() => setIsLogOpen(false)}
+            onSubmit={handleCreate}
+          />
+        </DialogContent>
       </Dialog>
-
-      {toastOrderId && (
-        <Toast
-          message={
-            <>
-              Logged as <strong style={{ fontFamily: "monospace" }}>{toastOrderId}</strong>
-            </>
-          }
-          action={
-            scope === "mine"
-              ? {
-                  label: "View in All",
-                  onClick: () => {
-                    setScope("all");
-                    setToastOrderId(null);
-                  },
-                }
-              : undefined
-          }
-          onDismiss={() => setToastOrderId(null)}
-        />
-      )}
     </div>
   );
 }

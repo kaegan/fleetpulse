@@ -2,7 +2,8 @@
 
 import { useClock } from "@/hooks/use-clock";
 import { useRole } from "@/hooks/use-role";
-import { BRAND_COLOR } from "@/lib/constants";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { Role } from "@/data/types";
 
 export function TopBar() {
   const clock = useClock();
@@ -65,46 +66,26 @@ export function TopBar() {
 
       {/* Mobile-only role toggle — the nav-rail is hidden on <md, so users need
           another way to switch between Mechanic and Ops. */}
-      <div
-        className="flex md:hidden"
-        role="group"
+      <ToggleGroup
+        type="single"
+        value={role}
+        onValueChange={(v) => v && setRole(v as Role)}
         aria-label="Switch role"
-        style={{
-          background: "#f5f5f7",
-          borderRadius: 999,
-          padding: 3,
-          gap: 2,
-        }}
+        className="md:hidden bg-[#f5f5f7] data-[state=on]:text-[#d4654a]"
       >
-        {(["mechanic", "ops"] as const).map((r) => {
-          const isActive = role === r;
-          return (
-            <button
-              key={r}
-              type="button"
-              onClick={() => setRole(r)}
-              aria-pressed={isActive}
-              style={{
-                padding: "5px 12px",
-                borderRadius: 999,
-                border: "none",
-                background: isActive ? "#ffffff" : "transparent",
-                color: isActive ? BRAND_COLOR : "#6a6a6a",
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: "pointer",
-                fontFamily: "inherit",
-                letterSpacing: "0.01em",
-                boxShadow: isActive
-                  ? "0px 1px 2px rgba(0,0,0,0.06), 0px 1px 3px rgba(0,0,0,0.04)"
-                  : "none",
-              }}
-            >
-              {r === "mechanic" ? "Mech" : "Ops"}
-            </button>
-          );
-        })}
-      </div>
+        <ToggleGroupItem
+          value="mechanic"
+          className="px-3 py-[5px] text-[11px] data-[state=on]:text-[#d4654a]"
+        >
+          Mech
+        </ToggleGroupItem>
+        <ToggleGroupItem
+          value="ops"
+          className="px-3 py-[5px] text-[11px] data-[state=on]:text-[#d4654a]"
+        >
+          Ops
+        </ToggleGroupItem>
+      </ToggleGroup>
 
       {/* Right: Clock */}
       <span

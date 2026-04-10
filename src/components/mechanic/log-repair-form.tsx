@@ -5,12 +5,13 @@ import { buses } from "@/data/buses";
 import type { Garage, Severity } from "@/data/types";
 import {
   BRAND_COLOR,
-  BRAND_COLOR_HOVER,
   ISSUE_TEMPLATES,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
 } from "@/lib/constants";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface LogRepairDraft {
   busId: number;
@@ -115,12 +116,7 @@ export function LogRepairForm({
   return (
     <form
       onSubmit={handleSubmit}
-      style={{
-        padding: "28px 28px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 22,
-      }}
+      className="flex flex-col gap-[22px] p-7 pb-6"
     >
       {/* Header */}
       <div>
@@ -154,25 +150,8 @@ export function LogRepairForm({
         <FieldLabel htmlFor="bus-number-input">Which bus?</FieldLabel>
 
         {recentBuses.length > 0 && !selectedBus && (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 6,
-              marginBottom: 10,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#b5b5b5",
-                alignSelf: "center",
-                marginRight: 2,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-              }}
-            >
+          <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+            <span className="mr-0.5 self-center text-[11px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
               Recent
             </span>
             {recentBuses.map((b) => (
@@ -187,17 +166,13 @@ export function LogRepairForm({
 
         {selectedBus ? (
           <div
+            className="flex items-center justify-between rounded-[12px] border-[1.5px] px-4 py-3.5"
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 16px",
               background: "#fdf0ed",
-              border: `1.5px solid ${BRAND_COLOR}`,
-              borderRadius: 12,
+              borderColor: BRAND_COLOR,
             }}
           >
-            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <div className="flex flex-col gap-0.5">
               <span
                 style={{
                   fontSize: 16,
@@ -212,26 +187,19 @@ export function LogRepairForm({
                 {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi
               </span>
             </div>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={handleClearBus}
-              style={{
-                background: "transparent",
-                border: "none",
-                fontSize: 13,
-                fontWeight: 600,
-                color: BRAND_COLOR,
-                cursor: "pointer",
-                padding: "6px 8px",
-                fontFamily: "inherit",
-              }}
+              className="text-[13px] text-[var(--primary)] no-underline hover:underline-offset-4 px-2"
             >
               Change
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            <input
+            <Input
               id="bus-number-input"
               type="text"
               inputMode="numeric"
@@ -240,60 +208,16 @@ export function LogRepairForm({
               value={busQuery}
               onChange={(e) => handleBusQueryChange(e.target.value)}
               autoComplete="off"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                fontSize: 15,
-                fontWeight: 500,
-                color: "#222222",
-                background: "#ffffff",
-                border: "1.5px solid #e5e5e5",
-                borderRadius: 12,
-                outline: "none",
-                boxSizing: "border-box",
-                fontFamily: "inherit",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = BRAND_COLOR;
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "#e5e5e5";
-              }}
+              className="h-12 text-[15px]"
             />
             {matchingBuses.length > 0 && (
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 6,
-                  marginTop: 10,
-                }}
-              >
+              <div className="mt-2.5 grid grid-cols-4 gap-1.5">
                 {matchingBuses.map((b) => (
                   <button
                     key={b.id}
                     type="button"
                     onClick={() => handlePickBus(b.id)}
-                    style={{
-                      padding: "10px 8px",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#222222",
-                      background: "#f7f7f7",
-                      border: "1.5px solid transparent",
-                      borderRadius: 10,
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      transition: "background 120ms ease, border-color 120ms ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#fdf0ed";
-                      e.currentTarget.style.borderColor = BRAND_COLOR;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#f7f7f7";
-                      e.currentTarget.style.borderColor = "transparent";
-                    }}
+                    className="rounded-[10px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2.5 text-sm font-bold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
                   >
                     #{b.busNumber}
                   </button>
@@ -307,14 +231,7 @@ export function LogRepairForm({
       {/* Field 2: Issue */}
       <div>
         <FieldLabel htmlFor="issue-input">What&rsquo;s wrong?</FieldLabel>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 6,
-            marginBottom: 10,
-          }}
-        >
+        <div className="mb-2.5 grid grid-cols-3 gap-1.5">
           {ISSUE_TEMPLATES.map((t) => {
             const isActive = issue === t.defaultIssue && t.label !== "Other";
             return (
@@ -323,17 +240,11 @@ export function LogRepairForm({
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => handlePickIssue(t)}
+                className="rounded-[10px] border-[1.5px] px-2.5 py-2.5 text-[13px] font-semibold transition-colors cursor-pointer"
                 style={{
-                  padding: "10px 10px",
-                  fontSize: 13,
-                  fontWeight: 600,
                   color: isActive ? BRAND_COLOR : "#6a6a6a",
                   background: isActive ? "#fdf0ed" : "#f7f7f7",
-                  border: `1.5px solid ${isActive ? BRAND_COLOR : "transparent"}`,
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  transition: "background 120ms ease, border-color 120ms ease, color 120ms ease",
+                  borderColor: isActive ? BRAND_COLOR : "transparent",
                 }}
               >
                 {t.label}
@@ -341,7 +252,7 @@ export function LogRepairForm({
             );
           })}
         </div>
-        <input
+        <Input
           id="issue-input"
           ref={issueInputRef}
           type="text"
@@ -349,25 +260,6 @@ export function LogRepairForm({
           value={issue}
           onChange={(e) => setIssue(e.target.value)}
           maxLength={120}
-          style={{
-            width: "100%",
-            padding: "12px 14px",
-            fontSize: 14,
-            fontWeight: 500,
-            color: "#222222",
-            background: "#ffffff",
-            border: "1.5px solid #e5e5e5",
-            borderRadius: 12,
-            outline: "none",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = BRAND_COLOR;
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
         />
       </div>
 
@@ -377,11 +269,7 @@ export function LogRepairForm({
         <div
           role="radiogroup"
           aria-label="Severity"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 8,
-          }}
+          className="grid grid-cols-3 gap-2"
         >
           {SEVERITY_ORDER.map((sev) => {
             const sc = SEVERITY_COLORS[sev];
@@ -393,22 +281,11 @@ export function LogRepairForm({
                 role="radio"
                 aria-checked={isActive}
                 onClick={() => setSeverity(sev)}
+                className="inline-flex min-h-14 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-3.5 text-sm font-bold transition-colors cursor-pointer"
                 style={{
-                  padding: "14px 12px",
-                  fontSize: 14,
-                  fontWeight: 700,
                   color: isActive ? sc.text : "#6a6a6a",
                   background: isActive ? sc.bg : "#f7f7f7",
-                  border: `2px solid ${isActive ? sc.border : "transparent"}`,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  minHeight: 56,
-                  transition: "background 120ms ease, border-color 120ms ease, color 120ms ease",
+                  borderColor: isActive ? sc.border : "transparent",
                 }}
               >
                 <span
@@ -429,61 +306,14 @@ export function LogRepairForm({
       </div>
 
       {/* Footer */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          gap: 10,
-          marginTop: 6,
-        }}
-      >
-        <button
-          type="button"
-          onClick={onCancel}
-          style={{
-            background: "transparent",
-            border: "none",
-            color: "#6a6a6a",
-            fontSize: 14,
-            fontWeight: 600,
-            padding: "12px 18px",
-            cursor: "pointer",
-            borderRadius: 10,
-            fontFamily: "inherit",
-          }}
-        >
+      <div className="mt-1.5 flex items-center justify-end gap-2.5">
+        <Button type="button" variant="ghost" onClick={onCancel}>
           Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          style={{
-            background: canSubmit ? BRAND_COLOR : "#e5e5e5",
-            color: "#ffffff",
-            border: "none",
-            fontSize: 15,
-            fontWeight: 600,
-            padding: "14px 22px",
-            borderRadius: 12,
-            cursor: canSubmit ? "pointer" : "not-allowed",
-            fontFamily: "inherit",
-            minHeight: 48,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            transition: "background 120ms ease",
-          }}
-          onMouseEnter={(e) => {
-            if (canSubmit) e.currentTarget.style.background = BRAND_COLOR_HOVER;
-          }}
-          onMouseLeave={(e) => {
-            if (canSubmit) e.currentTarget.style.background = BRAND_COLOR;
-          }}
-        >
+        </Button>
+        <Button type="submit" disabled={!canSubmit} size="lg">
           Add to Intake
           <span aria-hidden="true">&rarr;</span>
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -499,13 +329,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      style={{
-        display: "block",
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#222222",
-        marginBottom: 10,
-      }}
+      className="mb-2.5 block text-[13px] font-semibold text-[#222222]"
     >
       {children}
     </label>
@@ -523,26 +347,7 @@ function RecentChip({
     <button
       type="button"
       onClick={onClick}
-      style={{
-        padding: "6px 12px",
-        fontSize: 13,
-        fontWeight: 600,
-        color: "#222222",
-        background: "#f2f2f2",
-        border: "1.5px solid transparent",
-        borderRadius: 999,
-        cursor: "pointer",
-        fontFamily: "inherit",
-        transition: "background 120ms ease, border-color 120ms ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#fdf0ed";
-        e.currentTarget.style.borderColor = BRAND_COLOR;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#f2f2f2";
-        e.currentTarget.style.borderColor = "transparent";
-      }}
+      className="rounded-full border-[1.5px] border-transparent bg-[#f2f2f2] px-3 py-1.5 text-[13px] font-semibold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
     >
       {label}
     </button>
