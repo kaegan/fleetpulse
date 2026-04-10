@@ -11,19 +11,30 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
+import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
-type Scope = "mine" | "all";
+type MineScope = "mine" | "all";
 
-// Mechanic is hardcoded to North Garage for the V1 demo.
-const CURRENT_GARAGE: Garage = "north";
+// Visible header strings keyed by global depot scope.
+const HEADER: Record<"all" | "north" | "south", { title: string; subtitle: string }> = {
+  all: { title: "All Garages", subtitle: "active work orders in fleet" },
+  north: { title: "North Garage", subtitle: "active work orders in garage" },
+  south: { title: "South Garage", subtitle: "active work orders in garage" },
+};
 
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
-  const [scope, setScope] = useState<Scope>("mine");
+  const [scope, setScope] = useState<MineScope>("mine");
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const { scope: depotScope } = useDepot();
+
+  // When the user clicks "Log new repair", we need a concrete garage to
+  // assign the new WO to. If scope is "all", default to north (the demo
+  // mechanic's home garage). If scope is north/south, use that.
+  const newRepairGarage: Garage = depotScope === "all" ? "north" : depotScope;
 
   const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
     setOrders((prev) =>
@@ -63,7 +74,7 @@ export function MechanicView() {
         severity: draft.severity,
         stage: 0,
         bayNumber: null,
-        garage: CURRENT_GARAGE,
+        garage: newRepairGarage,
         mechanicName: draft.assignedTo,
         partsStatus: "n/a",
         createdAt: now,
@@ -86,13 +97,14 @@ export function MechanicView() {
           : undefined
       );
     },
-    [orders, scope]
+    [orders, scope, newRepairGarage]
   );
 
-  // Mechanic sees their garage's work orders.
+  // Mechanic sees the work orders in their current depot scope. Defaults to
+  // "all" globally; the user can scope down via the top-bar pill.
   const garageOrders = useMemo(
-    () => orders.filter((wo) => wo.garage === CURRENT_GARAGE),
-    [orders]
+    () => filterByDepot(orders, depotScope),
+    [orders, depotScope]
   );
 
   const mineCount = useMemo(
@@ -143,7 +155,7 @@ export function MechanicView() {
             marginBottom: 4,
           }}
         >
-          North Garage
+          {HEADER[depotScope].title}
         </h1>
         <p
           style={{
@@ -152,7 +164,7 @@ export function MechanicView() {
             color: "#929292",
           }}
         >
-          Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} active work orders in garage
+          Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} {HEADER[depotScope].subtitle}
         </p>
       </div>
 
@@ -192,7 +204,7 @@ export function MechanicView() {
         >
           <DialogTitle className="sr-only">Log new repair</DialogTitle>
           <LogRepairForm
-            garage={CURRENT_GARAGE}
+            garage={newRepairGarage}
             recentBusNumbers={recentBusNumbers}
             onCancel={() => setIsLogOpen(false)}
             onSubmit={handleCreate}

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TrackerRow } from "./tracker-row";
 import { SectionPill } from "@/components/section-pill";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
+import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS } from "@/lib/constants";
 import type { Bus, Severity } from "@/data/types";
 import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
@@ -16,28 +17,41 @@ const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "Routine", value: "routine" },
 ];
 
+const SCOPE_SUFFIX: Record<"all" | "north" | "south", string> = {
+  all: "across both garages",
+  north: "in North Garage",
+  south: "in South Garage",
+};
+
 interface WorkOrderTrackerProps {
   onSelectBus?: (bus: Bus) => void;
 }
 
 export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
   const [filter, setFilter] = useState<Severity | "all">("all");
+  const { scope } = useDepot();
 
-  // Show all active work orders, sorted by severity then stage
+  // Scope first (depot), then severity, then sort.
+  const scopedOrders = useMemo(
+    () => filterByDepot(workOrders, scope),
+    [scope]
+  );
+
   const severityOrder = { critical: 0, high: 1, routine: 2 };
   const filtered =
     filter === "all"
-      ? workOrders
-      : workOrders.filter((wo) => wo.severity === filter);
+      ? scopedOrders
+      : scopedOrders.filter((wo) => wo.severity === filter);
   const sorted = [...filtered].sort((a, b) => {
     const sevDiff = severityOrder[a.severity] - severityOrder[b.severity];
     if (sevDiff !== 0) return sevDiff;
     return b.stage - a.stage; // further along first
   });
 
-  // Stage counts for bottleneck bar
+  // Stage counts for bottleneck bar — also scoped, so the bottleneck reflects
+  // the same depot the user is looking at.
   const stageCounts = STAGES.map(
-    (_, i) => workOrders.filter((wo) => wo.stage === i).length
+    (_, i) => scopedOrders.filter((wo) => wo.stage === i).length
   );
   const maxCount = Math.max(...stageCounts);
 
@@ -71,7 +85,7 @@ export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
             color: "#929292",
           }}
         >
-          {sorted.length} orders across both garages
+          {sorted.length} orders {SCOPE_SUFFIX[scope]}
         </p>
 
         {/* Severity filter pills */}

@@ -3,6 +3,7 @@
 import { useClock } from "@/hooks/use-clock";
 import { useRole } from "@/hooks/use-role";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { DepotSwitcher } from "@/components/depot-switcher";
 import type { Role } from "@/data/types";
 
 export function TopBar() {
@@ -62,6 +63,21 @@ export function TopBar() {
         >
           Transitland
         </span>
+
+        {/* Garage scope switcher — global "working scope" that applies to every
+            dashboard, report, and (future) Browse view. Lives in the top bar
+            so it survives navigation. Dropdown form so the control scales to
+            any number of garages and reads clearly as a location filter. */}
+        <span
+          className="hidden md:block"
+          style={{
+            width: 1,
+            height: 20,
+            background: "rgba(0,0,0,0.08)",
+            marginLeft: 2,
+          }}
+        />
+        <DepotSwitcher />
       </div>
 
       {/* Mobile-only role toggle — the nav-rail is hidden on <md, so users need

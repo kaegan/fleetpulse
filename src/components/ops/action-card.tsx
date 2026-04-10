@@ -5,6 +5,7 @@ import { buses } from "@/data/buses";
 import { workOrders } from "@/data/work-orders";
 import type { Bus } from "@/data/types";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
+import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
 import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
@@ -22,18 +23,19 @@ interface OverdueEntry {
 
 export function ActionCard({ onBusClick }: ActionCardProps) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const { scope } = useDepot();
 
   const actionable = useMemo<OverdueEntry[]>(() => {
     // Exclude buses already in an active work order — those are already scheduled.
     const busesWithActiveWO = new Set(workOrders.map((wo) => wo.busId));
-    return buses
+    return filterByDepot(buses, scope)
       .map((bus) => ({ bus, overdueMiles: -milesUntilPm(bus) }))
       .filter(
         ({ bus, overdueMiles }) =>
           overdueMiles > 0 && !busesWithActiveWO.has(bus.id)
       )
       .sort((a, b) => b.overdueMiles - a.overdueMiles);
-  }, []);
+  }, [scope]);
 
   const topRows = actionable.slice(0, MAX_ROWS);
   const remainingCount = actionable.length - topRows.length;
