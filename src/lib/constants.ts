@@ -1,4 +1,16 @@
 import type { BusStatus, Severity } from "@/data/types";
+import { createElement, type ReactNode } from "react";
+import {
+  IconTriangleWarningFillDuo18,
+  IconAlertWarningFillDuo18,
+  IconCheckFillDuo18,
+} from "nucleo-ui-fill-duo-18";
+
+export const SEVERITY_ICONS: Record<Severity, ReactNode> = {
+  critical: createElement(IconTriangleWarningFillDuo18),
+  high: createElement(IconAlertWarningFillDuo18),
+  routine: createElement(IconCheckFillDuo18),
+};
 
 export const STAGES = [
   "Queued",

@@ -9,6 +9,7 @@ import {
   PM_INTERVAL_MILES,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
+  SEVERITY_ICONS,
   STAGES,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
@@ -265,10 +266,7 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
                     background: "#fafaf9",
                     borderRadius: 14,
                     padding: 14,
-                    borderLeft: `4px solid ${sev.border}`,
-                    border: "1px solid rgba(0,0,0,0.04)",
-                    borderLeftWidth: 4,
-                    borderLeftColor: sev.border,
+                    border: "1px solid rgba(0,0,0,0.06)",
                   }}
                 >
                   <div
@@ -295,8 +293,12 @@ function PanelContent({ bus, onClose }: { bus: Bus; onClose: () => void }) {
                         background: sev.bg,
                         padding: "2px 8px",
                         borderRadius: 999,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
                       }}
                     >
+                      <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[wo.severity]}</span>
                       {SEVERITY_LABELS[wo.severity]}
                     </span>
                   </div>

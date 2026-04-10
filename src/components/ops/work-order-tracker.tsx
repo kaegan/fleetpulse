@@ -48,7 +48,7 @@ export function WorkOrderTracker() {
         </p>
       </div>
 
-      {/* Stage labels header */}
+      {/* Column headers */}
       <div
         style={{
           display: "flex",
@@ -58,8 +58,26 @@ export function WorkOrderTracker() {
           marginBottom: 8,
         }}
       >
-        <div style={{ minWidth: 80 }} />
-        <div style={{ minWidth: 180 }} />
+        <div
+          style={{
+            minWidth: 80,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Bus
+        </div>
+        <div
+          style={{
+            minWidth: 180,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Issue
+        </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
           {["Queued", "Diagnosed", "Parts Ready", "In Repair", "QA Check"].map(
             (stage, idx) => (
@@ -73,32 +91,40 @@ export function WorkOrderTracker() {
               >
                 <span
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: 600,
-                    textTransform: "uppercase" as const,
-                    letterSpacing: "0.04em",
                     color: "#b5b5b5",
-                    width: 26,
-                    textAlign: "center",
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  {idx === 0
-                    ? "Q"
-                    : idx === 1
-                      ? "D"
-                      : idx === 2
-                        ? "PR"
-                        : idx === 3
-                          ? "IR"
-                          : "QA"}
+                  {stage}
                 </span>
                 {idx < 4 && <div style={{ flex: 1 }} />}
               </div>
             )
           )}
         </div>
-        <div style={{ minWidth: 60 }} />
-        <div style={{ minWidth: 70 }} />
+        <div
+          style={{
+            minWidth: 60,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+            textAlign: "right",
+          }}
+        >
+          Time
+        </div>
+        <div
+          style={{
+            minWidth: 70,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Severity
+        </div>
       </div>
 
       {/* Tracker rows */}
