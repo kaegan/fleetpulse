@@ -16,22 +16,29 @@ export function getStatusCounts(
   };
 }
 
-/** Fleet availability rate as a percentage */
+/** Fleet availability rate as a percentage.
+ *  Available = running + pm-due (still operational, just overdue for service).
+ *  Unavailable = in-maintenance + road-call. */
 export function getAvailabilityRate(buses: Bus[]): number {
-  const running = buses.filter((b) => b.status === "running").length;
-  return (running / buses.length) * 100;
+  const available = buses.filter(
+    (b) => b.status === "running" || b.status === "pm-due"
+  ).length;
+  return (available / buses.length) * 100;
 }
 
-/** Tomorrow's estimated availability: assumes In Repair + QA Check WOs complete overnight */
+/** Tomorrow's estimated availability: today's available fleet plus
+ *  buses with In Repair + QA Check work orders that complete overnight. */
 export function getForecastAvailability(
   buses: Bus[],
   workOrders: WorkOrder[]
 ): number {
-  const running = buses.filter((b) => b.status === "running").length;
+  const available = buses.filter(
+    (b) => b.status === "running" || b.status === "pm-due"
+  ).length;
   const completing = workOrders.filter(
     (wo) => wo.stage === 3 || wo.stage === 4
   ).length;
-  return ((running + completing) / buses.length) * 100;
+  return ((available + completing) / buses.length) * 100;
 }
 
 /** Format a duration between now and an ISO timestamp as "Xh Ym" or "Xd Yh" */

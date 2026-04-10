@@ -8,6 +8,8 @@ import {
   animate,
 } from "framer-motion";
 import { SectionPill } from "@/components/section-pill";
+import { AvailabilitySparkline } from "./availability-sparkline";
+import type { AvailabilityDataPoint } from "@/data/availability-history";
 
 interface KpiCardProps {
   label: string;
@@ -19,6 +21,7 @@ interface KpiCardProps {
   pillBg: string;
   pillIcon?: ReactNode;
   forecast?: number;
+  sparklineData?: AvailabilityDataPoint[];
 }
 
 export function KpiCard({
@@ -31,6 +34,7 @@ export function KpiCard({
   pillBg,
   pillIcon,
   forecast,
+  sparklineData,
 }: KpiCardProps) {
   const motionValue = useMotionValue(0);
   const rounded = useTransform(motionValue, (latest) => {
@@ -99,7 +103,11 @@ export function KpiCard({
           </span>
         )}
       </div>
-      {suffix === "%" && (
+      {sparklineData ? (
+        <div style={{ marginTop: 20, paddingTop: 24 }}>
+          <AvailabilitySparkline data={sparklineData} color={color} />
+        </div>
+      ) : suffix === "%" ? (
         <div
           style={{
             marginTop: 20,
@@ -120,7 +128,7 @@ export function KpiCard({
             }}
           />
         </div>
-      )}
+      ) : null}
       {forecast !== undefined && (
         <div
           style={{
