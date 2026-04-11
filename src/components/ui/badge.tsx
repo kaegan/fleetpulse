@@ -12,6 +12,9 @@ const badgeVariants = cva(
         secondary: "bg-secondary text-secondary-foreground",
         outline: "border border-[rgba(0,0,0,0.08)] text-foreground bg-card",
         muted: "bg-[#f5f5f7] text-[#6a6a6a]",
+        destructive: "bg-severity-critical-bg text-severity-critical",
+        warning: "bg-severity-high-bg text-severity-high",
+        success: "bg-severity-routine-bg text-severity-routine",
       },
       size: {
         default: "px-2.5 py-[3px] text-[11px]",
