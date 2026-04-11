@@ -10,7 +10,7 @@ export function TopBar() {
       <SidebarTrigger className="-ml-1" />
       <Separator
         orientation="vertical"
-        className="data-[orientation=vertical]:h-5 bg-black/10"
+        className="data-[orientation=vertical]:h-5 bg-border"
       />
       <DepotSwitcher />
     </header>

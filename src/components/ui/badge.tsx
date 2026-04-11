@@ -10,8 +10,8 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground",
         secondary: "bg-secondary text-secondary-foreground",
-        outline: "border border-[rgba(0,0,0,0.08)] text-foreground bg-card",
-        muted: "bg-[#f5f5f7] text-[#6a6a6a]",
+        outline: "border border-border text-foreground bg-card",
+        muted: "bg-muted text-text-secondary",
         destructive: "bg-severity-critical-bg text-severity-critical",
         warning: "bg-severity-high-bg text-severity-high",
         success: "bg-severity-routine-bg text-severity-routine",

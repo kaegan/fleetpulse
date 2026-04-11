@@ -123,8 +123,8 @@ export function WorkOrderCard({
       onClick={handleClick}
       className={
         isOverlay
-          ? "touch-none select-none cursor-grabbing border border-black/[0.06] shadow-panel"
-          : "touch-none select-none cursor-grab border border-black/[0.06] shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
+          ? "touch-none select-none cursor-grabbing border border-border shadow-panel"
+          : "touch-none select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
       }
       style={{ opacity: isDragging && !isOverlay ? 0 : 1 }}
     >

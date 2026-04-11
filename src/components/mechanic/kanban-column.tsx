@@ -58,8 +58,8 @@ export function KanbanColumn({
       className={cn(
         "min-h-80 rounded-lg border p-3.5 transition-colors duration-150 sm:p-4 xl:min-h-96 xl:p-3 2xl:p-4",
         isOver
-          ? "border-dashed border-brand bg-[#f5e7e2]"
-          : "border-black/[0.04] bg-surface-hover",
+          ? "border-dashed border-brand bg-brand-light"
+          : "border-border bg-secondary",
         className
       )}
     >
