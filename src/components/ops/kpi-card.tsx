@@ -22,6 +22,9 @@ interface KpiCardProps {
   pillBg: string;
   pillIcon?: ReactNode;
   forecast?: number;
+  /** Absolute number of buses available tomorrow — shown alongside the
+   *  forecast percent so ops see both the rate and the decision unit. */
+  forecastCount?: number;
   sparklineData?: AvailabilityDataPoint[];
 }
 
@@ -40,6 +43,7 @@ export function KpiCard({
   pillBg,
   pillIcon,
   forecast,
+  forecastCount,
   sparklineData,
 }: KpiCardProps) {
   const motionValue = useMotionValue(0);
@@ -165,6 +169,7 @@ export function KpiCard({
             marginTop: 14,
             display: "flex",
             alignItems: "center",
+            flexWrap: "wrap",
             gap: 8,
           }}
         >
@@ -186,6 +191,17 @@ export function KpiCard({
           >
             {forecast.toFixed(1)}%
           </span>
+          {forecastCount !== undefined && (
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 500,
+                color: "#929292",
+              }}
+            >
+              · {forecastCount} buses
+            </span>
+          )}
           {forecast > value && (
             <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 600 }}>
               +{(forecast - value).toFixed(1)}

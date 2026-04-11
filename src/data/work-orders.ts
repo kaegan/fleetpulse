@@ -57,7 +57,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Chen, R.",
     partsStatus: "available",
     createdAt: daysAgoAt(2, 7, 0),
-    stageEnteredAt: todayAt(4, 30),
+    // Stuck in Parts Ready for 2+ days — trips the aging tag in the tracker
+    // so Ops can see the bottleneck at a glance.
+    stageEnteredAt: daysAgoAt(2, 10, 0),
   },
   {
     id: "WO-1249",
@@ -154,8 +156,9 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: "Vasquez, D.",
     partsStatus: "ordered",
-    createdAt: todayAt(2, 0),
-    stageEnteredAt: todayAt(6, 0),
+    createdAt: daysAgoAt(3, 2, 0),
+    // Stuck in Diagnosing 1.5 days — trips aging tag.
+    stageEnteredAt: daysAgoAt(1, 14, 0),
   },
   {
     id: "WO-1256",
