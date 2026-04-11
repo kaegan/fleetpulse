@@ -41,19 +41,11 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
         <div className="p-5 sm:p-7">
           {/* Header */}
           <div style={{ marginBottom: 22 }}>
-            <div style={{ marginBottom: 10 }}>
-              <SectionPill
-                label="Pull In Next"
-                color="var(--color-brand)"
-                bgColor="var(--color-brand-light)"
-                icon={<IconWrenchFillDuo18 />}
-              />
-            </div>
             <h2
               style={{
                 fontSize: 22,
                 fontWeight: 700,
-                color: "var(--color-text-primary)",
+                color: "#222222",
                 letterSpacing: "-0.03em",
                 marginBottom: 4,
               }}
@@ -64,7 +56,7 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
               style={{
                 fontSize: 13,
                 fontWeight: 500,
-                color: "var(--color-text-muted)",
+                color: "#929292",
                 margin: 0,
               }}
             >
@@ -79,9 +71,6 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
           {overdue.length > 0 && (
             <Section
               label="Overdue for PM"
-              color="var(--color-brand)"
-              bgColor="var(--color-brand-light)"
-              icon={<IconWrenchFillDuo18 />}
               helperText="Not yet in the queue. Grab these before they break down on route."
             >
               {overdue.map(({ bus, milesOverdue }, idx) => (
@@ -90,7 +79,7 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
                   bus={bus}
                   urgencyNumber={milesOverdue}
                   urgencyLabel="mi overdue"
-                  urgencyColor="var(--color-brand)"
+                  urgencyColor="#b4541a"
                   isLast={idx === overdue.length - 1}
                   onClick={() => onBusClick(bus)}
                 />
@@ -101,9 +90,6 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
           {comingDue.length > 0 && (
             <Section
               label="Coming Due Soon"
-              color="var(--color-severity-high-text)"
-              bgColor="var(--color-severity-high-bg)"
-              icon={<IconClockFillDuo18 />}
               helperText="Approaching PM interval. Plan these into the next shift."
             >
               {comingDue.map(({ bus, milesRemaining }, idx) => (
@@ -112,7 +98,7 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
                   bus={bus}
                   urgencyNumber={milesRemaining}
                   urgencyLabel="mi left"
-                  urgencyColor="var(--color-severity-high-text)"
+                  urgencyColor="#92400e"
                   isLast={idx === comingDue.length - 1}
                   onClick={() => onBusClick(bus)}
                 />
@@ -154,7 +140,7 @@ function Section({
         style={{
           fontSize: 12,
           fontWeight: 500,
-          color: "var(--color-text-muted)",
+          color: "#929292",
           margin: "0 0 12px 0",
         }}
       >
@@ -162,7 +148,7 @@ function Section({
       </p>
       <div
         style={{
-          border: "1px solid var(--color-border)",
+          border: "1px solid #f0f0f0",
           borderRadius: 14,
           overflow: "hidden",
         }}
@@ -189,8 +175,8 @@ function PmRow({
   onClick: () => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const garageColor = bus.garage === "north" ? "var(--color-stage-diagnosing)" : "var(--color-kpi-availability)";
-  const garageBg = bus.garage === "north" ? "var(--color-stage-diagnosing-bg)" : "var(--color-kpi-availability-bg)";
+  const garageColor = bus.garage === "north" ? "#3b82f6" : "#7c3aed";
+  const garageBg = bus.garage === "north" ? "#eff6ff" : "#f5f3ff";
 
   return (
     <button
@@ -201,8 +187,8 @@ function PmRow({
       className="grid w-full grid-cols-[auto_auto_1fr_16px] items-center gap-3 p-[12px_16px]"
       style={{
         border: "none",
-        borderBottom: isLast ? "none" : "1px solid var(--color-border)",
-        background: isHovered ? "var(--color-card-hover)" : "var(--color-surface)",
+        borderBottom: isLast ? "none" : "1px solid #f0f0f0",
+        background: isHovered ? "#fafaf9" : "#ffffff",
         cursor: "pointer",
         transition: "background 0.12s ease-out",
         fontFamily: "inherit",
@@ -214,7 +200,7 @@ function PmRow({
         style={{
           fontSize: 14,
           fontWeight: 700,
-          color: "var(--color-text-primary)",
+          color: "#222222",
           letterSpacing: "-0.01em",
         }}
       >
@@ -278,7 +264,7 @@ function PmRow({
           justifyContent: "center",
           width: 16,
           height: 16,
-          color: isHovered ? urgencyColor : "var(--color-text-faint)",
+          color: isHovered ? urgencyColor : "#cccccc",
           fontSize: 16,
           fontWeight: 500,
           transition: "color 0.12s, transform 0.12s",
@@ -296,15 +282,15 @@ function EmptyState() {
     <Card className="flex flex-col items-start gap-3 rounded-[20px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)]">
       <SectionPill
         label="Queue Clear"
-        color="var(--color-status-running)"
-        bgColor="var(--color-status-running-bg)"
+        color="#22c55e"
+        bgColor="#f0fdf4"
         icon={<IconWrenchFillDuo18 />}
       />
       <p
         style={{
           fontSize: 13,
           fontWeight: 500,
-          color: "var(--color-text-secondary)",
+          color: "#6a6a6a",
           margin: 0,
         }}
       >

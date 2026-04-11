@@ -28,22 +28,24 @@ function getAgingTag(
     const days = Math.floor(hours / 24);
     return {
       label: `Stuck ${days}d`,
-      color: "var(--color-brand)",
-      bg: "var(--color-brand-light)",
+      color: "#b4541a",
+      bg: "#fff4ed",
     };
   }
   if (hours >= AGING_SOFT_HOURS) {
     return {
       label: "Aging 1d+",
-      color: "var(--color-severity-high-text)",
-      bg: "var(--color-severity-high-bg)",
+      color: "#92400e",
+      bg: "#fffbeb",
     };
   }
   return null;
 }
 
-const RESTING_SHADOW = "var(--shadow-card)";
-const HOVER_SHADOW = "var(--shadow-card-hover)";
+const RESTING_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)";
+const HOVER_SHADOW =
+  "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.05), 0px 8px 18px rgba(0,0,0,0.05)";
 
 export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps) {
   const sev = SEVERITY_COLORS[order.severity];
@@ -82,7 +84,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
             style={{
               fontSize: 14,
               fontWeight: 700,
-              color: "var(--color-text-primary)",
+              color: "#222222",
               letterSpacing: "-0.02em",
             }}
           >
@@ -92,7 +94,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
             style={{
               fontSize: 11,
               fontWeight: 500,
-              color: "var(--color-text-faint)",
+              color: "#b5b5b5",
               fontFamily: "monospace",
             }}
           >
@@ -114,7 +116,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           style={{
             fontSize: 14,
             fontWeight: 700,
-            color: "var(--color-text-primary)",
+            color: "#222222",
             letterSpacing: "-0.02em",
           }}
         >
@@ -124,7 +126,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           style={{
             fontSize: 11,
             fontWeight: 500,
-            color: "var(--color-text-faint)",
+            color: "#b5b5b5",
             fontFamily: "monospace",
           }}
         >
@@ -138,7 +140,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         style={{
           fontSize: 13,
           fontWeight: 500,
-          color: "var(--color-text-secondary)",
+          color: "#6a6a6a",
         }}
       >
         {order.issue}
@@ -160,7 +162,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         style={{
           fontSize: 11,
           fontWeight: 500,
-          color: "var(--color-text-muted)",
+          color: "#929292",
         }}
       >
         <TimeDisplay isoDate={order.stageEnteredAt} />
@@ -175,7 +177,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           textAlign: "right",
           fontSize: 12,
           fontWeight: 500,
-          color: "var(--color-text-muted)",
+          color: "#929292",
         }}
       >
         {agingTag && <AgingTag tag={agingTag} />}

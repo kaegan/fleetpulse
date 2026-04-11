@@ -80,7 +80,7 @@ export function OpsView() {
           style={{
             fontSize: 22,
             fontWeight: 700,
-            color: "var(--color-text-primary)",
+            color: "#222222",
             letterSpacing: "-0.03em",
             marginBottom: 4,
           }}
@@ -91,7 +91,7 @@ export function OpsView() {
           style={{
             fontSize: 14,
             fontWeight: 500,
-            color: "var(--color-text-muted)",
+            color: "#929292",
           }}
         >
           300 buses across 2 garages &middot; Real-time status

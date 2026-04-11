@@ -94,18 +94,17 @@ export function StagePipeline({
                 border: currentIsHeld
                   ? `2px dashed ${heldBorder}`
                   : isCurrent
-                    ? sev.bg
-                    : "var(--color-surface-warm)",
-                border: isCurrent
-                  ? `2px solid ${sev.border}`
-                  : isComplete
-                    ? "none"
-                    : "1px solid var(--color-border)",
+                    ? `2px solid ${sev.border}`
+                    : isComplete
+                      ? "none"
+                      : "1px solid rgba(0,0,0,0.08)",
                 color: isComplete
                   ? "#ffffff"
-                  : isCurrent
-                    ? sev.dot
-                    : "var(--color-text-faint)",
+                  : currentIsHeld
+                    ? heldDot
+                    : isCurrent
+                      ? sev.dot
+                      : "#b5b5b5",
               }}
             >
               {isComplete ? "\u2713" : currentIsHeld ? "\u23F8" : idx + 1}
@@ -143,11 +142,13 @@ export function StagePipeline({
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: isCurrent
-                        ? sev.text
-                        : isComplete
-                          ? "var(--color-text-secondary)"
-                          : "var(--color-text-faint)",
+                      color: currentIsHeld
+                        ? heldText
+                        : isCurrent
+                          ? sev.text
+                          : isComplete
+                            ? "#6a6a6a"
+                            : "#b5b5b5",
                       whiteSpace: "nowrap",
                       textAlign: "center",
                     }}
@@ -163,7 +164,7 @@ export function StagePipeline({
                   style={{
                     flex: 1,
                     height: connectorHeight,
-                    background: isComplete ? sev.dot : "var(--color-border)",
+                    background: isComplete ? sev.dot : "rgba(0,0,0,0.06)",
                     marginLeft: 2,
                     marginRight: 2,
                     marginTop: circleSize / 2 - connectorHeight / 2,

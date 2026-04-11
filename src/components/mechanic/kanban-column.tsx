@@ -49,7 +49,7 @@ export function KanbanColumn({
   onUpdateParts,
   className = "",
 }: KanbanColumnProps) {
-  const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "var(--color-text-muted)", bg: "var(--color-surface-warm)" };
+  const pill = KANBAN_STAGE_PILLS[stage];
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
   return (

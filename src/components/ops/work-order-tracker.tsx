@@ -68,19 +68,25 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   return (
     <div>
       {/* Section header */}
-      <div className="mb-5">
-        <div className="mb-2.5">
-          <SectionPill
-            label="Work Orders"
-            color="var(--color-brand)"
-            bgColor="var(--color-brand-light)"
-            icon={<IconClipboardListFillDuo18 />}
-          />
-        </div>
-        <h2 className="mb-1 text-[18px] font-bold tracking-[-0.02em] text-foreground">
+      <div style={{ marginBottom: 20 }}>
+        <h2
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#222222",
+            letterSpacing: "-0.02em",
+            marginBottom: 4,
+          }}
+        >
           Active Work Orders
         </h2>
-        <p className="text-[13px] font-medium text-text-muted">
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#929292",
+          }}
+        >
           {sorted.length} orders {SCOPE_SUFFIX[scope]}
         </p>
 
@@ -100,13 +106,18 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               <ToggleGroupItem
                 key={value}
                 value={value}
-                className="rounded-full border-[1.5px] border-transparent bg-muted px-3.5 py-[5px] text-xs gap-1.5 text-text-secondary data-[state=on]:bg-[var(--primary)] data-[state=on]:text-white data-[state=on]:border-[var(--primary)] data-[state=on]:shadow-none"
+                className="rounded-full border-[1.5px] border-transparent bg-[#f7f7f7] px-3.5 py-[5px] text-xs gap-1.5 data-[state=on]:bg-[var(--primary)] data-[state=on]:text-white data-[state=on]:border-[var(--primary)] data-[state=on]:shadow-none"
+                style={{
+                  color: isActive ? "#ffffff" : "#6a6a6a",
+                }}
               >
                 {dotColor && (
                   <span
-                    className="h-[7px] w-[7px] rounded-full"
                     style={{
-                      background: isActive ? "var(--color-surface)" : dotColor,
+                      width: 7,
+                      height: 7,
+                      borderRadius: "50%",
+                      background: isActive ? "#ffffff" : dotColor,
                     }}
                   />
                 )}
@@ -120,36 +131,53 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
       {/* Queue-by-stage bar — informational, not a filter. Only the peak
           stage (if there is one) lights up in brand coral. In evenly
           distributed states, the whole row stays quiet. */}
-      <div className="mb-5">
-        <div className="mb-2 text-[11px] font-semibold uppercase tracking-[0.04em] text-text-faint">
+      <div style={{ marginBottom: 20 }}>
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#929292",
+            marginBottom: 8,
+          }}
+        >
           Queue by stage
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {STAGES.map((stage, i) => {
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap",
+          }}
+        >
+          {STAGE_ORDER.map((stage, i) => {
             const count = stageCounts[i];
             const isPeak = hasPeak && count === maxCount;
             return (
               <div
                 key={stage}
-                className="flex items-center gap-1.5 rounded-pill px-2.5 py-[3px]"
                 style={{
-                  background: isPeak
-                    ? "var(--color-brand-light)"
-                    : "var(--color-surface-warm)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "3px 10px",
+                  borderRadius: 999,
+                  background: isPeak ? "#fdf0ed" : "#f7f7f7",
                 }}
               >
                 <span
-                  className="text-xs font-medium"
                   style={{
-                    color: isPeak ? BRAND_COLOR : "var(--color-text-muted)",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: isPeak ? BRAND_COLOR : "#929292",
                   }}
                 >
                   {STAGE_LABELS[stage]}
                 </span>
                 <span
-                  className="text-xs font-bold"
                   style={{
-                    color: isPeak ? BRAND_COLOR : "var(--color-text-secondary)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isPeak ? BRAND_COLOR : "#6a6a6a",
                   }}
                 >
                   {count}
@@ -161,25 +189,84 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
       </div>
 
       {/* Column headers — desktop table layout only */}
-      <div className="mb-2 hidden items-center gap-5 px-[18px] lg:flex">
-        <div className="min-w-20 text-[11px] font-semibold text-text-faint">Bus</div>
-        <div className="min-w-[180px] text-[11px] font-semibold text-text-faint">Issue</div>
-        <div className="flex flex-1 items-center">
-          {STAGES.map((stage, idx) => (
-            <div key={stage} className="flex flex-1 items-center">
-              <span className="whitespace-nowrap text-[11px] font-semibold text-text-faint">
-                {stage}
+      <div
+        className="hidden lg:flex"
+        style={{
+          alignItems: "center",
+          gap: 20,
+          padding: "0 18px",
+          marginBottom: 8,
+        }}
+      >
+        <div
+          style={{
+            minWidth: 80,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Bus
+        </div>
+        <div
+          style={{
+            minWidth: 180,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Issue
+        </div>
+        <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
+          {PIPELINE_STAGES.map((stage, idx) => (
+            <div
+              key={stage}
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#b5b5b5",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {STAGE_LABELS[stage]}
               </span>
-              {idx < STAGES.length - 1 && <div className="flex-1" />}
+              {idx < PIPELINE_STAGES.length - 1 && <div style={{ flex: 1 }} />}
             </div>
           ))}
         </div>
-        <div className="min-w-[60px] text-right text-[11px] font-semibold text-text-faint">Time</div>
-        <div className="min-w-[70px] text-[11px] font-semibold text-text-faint">Severity</div>
+        <div
+          style={{
+            minWidth: 60,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+            textAlign: "right",
+          }}
+        >
+          Time
+        </div>
+        <div
+          style={{
+            minWidth: 70,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+          }}
+        >
+          Severity
+        </div>
       </div>
 
       {/* Tracker rows */}
-      <div className="flex flex-col gap-2.5">
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {sorted.map((wo, i) => (
           <TrackerRow
             key={wo.id}

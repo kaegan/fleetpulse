@@ -77,11 +77,6 @@ const META: Record<BusListKind, StatusMeta> = {
   },
   overdue: {
     pillLabel: "Action Needed",
-    // Borrow the ActionCard's coral treatment — this list is the "todo"
-    // view, not the "PM Due" health view.
-    pillColor: "var(--color-brand)",
-    pillBg: "var(--color-brand-light)",
-    icon: <IconTriangleWarningFillDuo18 />,
     heading: "Overdue for service",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} past due and not yet in the shop. Schedule before they break down on route.`,
@@ -142,9 +137,6 @@ function PanelContent({
 }) {
   const { scope } = useDepot();
   const meta = META[kind];
-  // Resolve pill colors: either from a KPI slot or an inline override.
-  const pillColor = meta.pillColor ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].color : "var(--color-text-muted)");
-  const pillBg = meta.pillBg ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].bg : "var(--color-muted)");
 
   // WOs indexed by busId for fast lookup in row renderers.
   const worksByBus = useMemo(() => {
@@ -197,28 +189,50 @@ function PanelContent({
     <div className="flex h-full flex-col p-5 pb-6 sm:p-7">
       {/* Header */}
       <div className="mb-5">
-        <div className="mb-2">
-          <SectionPill
-            label={meta.pillLabel}
-            color={pillColor}
-            bgColor={pillBg}
-            icon={meta.icon}
-          />
-        </div>
-        <h2 className="mb-1 mt-1.5 text-[24px] font-bold tracking-[-0.03em] text-foreground">
+        <h2
+          style={{
+            fontSize: 24,
+            fontWeight: 700,
+            color: "#222222",
+            letterSpacing: "-0.03em",
+            marginBottom: 4,
+          }}
+        >
           {meta.heading}
-          <span className="ml-2.5 text-[18px] font-semibold tracking-[-0.02em] text-text-muted">
+          <span
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: "#929292",
+              marginLeft: 10,
+              letterSpacing: "-0.02em",
+            }}
+          >
             {rows.length}
           </span>
         </h2>
-        <p className="text-[13px] font-medium text-text-muted">
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#929292",
+            margin: 0,
+          }}
+        >
           {rows.length === 0 ? meta.emptyMessage : meta.subtitle(rows.length)}
         </p>
       </div>
 
       {/* List */}
       {rows.length > 0 && (
-        <div className="flex flex-1 flex-col gap-2">
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            flex: 1,
+          }}
+        >
           {rows.map((bus) => (
             <BusRow
               key={bus.id}
@@ -247,29 +261,46 @@ function BusRow({
   workOrder: WorkOrder | null;
   onClick: () => void;
 }) {
+  const garageColor = bus.garage === "north" ? "#3b82f6" : "#7c3aed";
+  const garageBg = bus.garage === "north" ? "#eff6ff" : "#f5f3ff";
+
   return (
     <button
       type="button"
       onClick={onClick}
-      className="cursor-pointer rounded-md border border-border bg-card-hover p-[12px_14px] text-left transition-colors hover:border-border-strong hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      className="text-left rounded-md border border-black/[0.06] bg-[#fafaf9] p-[12px_14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
     >
       {/* Top row: bus # + garage + kind-specific right value */}
-      <div className="mb-1 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-[14px] font-bold tracking-[-0.01em] text-foreground">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 4,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#222222",
+              letterSpacing: "-0.01em",
+            }}
+          >
             Bus #{bus.busNumber}
           </span>
           <span
-            className="rounded-pill px-2 py-[2px] text-[10px] font-bold uppercase tracking-[0.03em]"
             style={{
-              background:
-                bus.garage === "north"
-                  ? "var(--color-stage-diagnosing-bg)"
-                  : "var(--color-stage-in-repair-bg)",
-              color:
-                bus.garage === "north"
-                  ? "var(--color-stage-diagnosing)"
-                  : "var(--color-stage-in-repair)",
+              display: "inline-flex",
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: garageBg,
+              color: garageColor,
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "capitalize",
             }}
           >
             {bus.garage}
@@ -296,20 +327,31 @@ function RightValue({
   if (isPmStyled(kind)) {
     const overdueMiles = -milesUntilPm(bus);
     const isOverdue = overdueMiles > 0;
-    const valueColor = isOverdue
-      ? "var(--color-brand)"
-      : "var(--color-status-running)";
     return (
-      <span className="flex items-baseline gap-1">
+      <span
+        style={{
+          display: "flex",
+          alignItems: "baseline",
+          gap: 4,
+        }}
+      >
         <span
-          className="text-[15px] font-extrabold tabular-nums tracking-[-0.01em]"
-          style={{ color: valueColor }}
+          style={{
+            fontSize: 15,
+            fontWeight: 800,
+            color: isOverdue ? "#b4541a" : "#22c55e",
+            fontVariantNumeric: "tabular-nums",
+            letterSpacing: "-0.01em",
+          }}
         >
           {formatNumber(Math.abs(overdueMiles))}
         </span>
         <span
-          className="text-[10px] font-bold uppercase tracking-[0.03em]"
-          style={{ color: valueColor }}
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: isOverdue ? "#b4541a" : "#22c55e",
+          }}
         >
           {isOverdue ? "mi overdue" : "mi left"}
         </span>
@@ -319,7 +361,14 @@ function RightValue({
 
   if (kind === "in-maintenance" && workOrder) {
     return (
-      <span className="text-xs font-bold tabular-nums text-text-secondary">
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: "#6a6a6a",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
         {formatTimeInStatus(workOrder.stageEnteredAt)} in{" "}
         {STAGE_LABELS[workOrder.stage]}
       </span>
@@ -328,7 +377,14 @@ function RightValue({
 
   // Running + road-call + in-maintenance without WO: show mileage as context
   return (
-    <span className="text-xs font-medium tabular-nums text-text-muted">
+    <span
+      style={{
+        fontSize: 12,
+        fontWeight: 500,
+        color: "#929292",
+        fontVariantNumeric: "tabular-nums",
+      }}
+    >
       {formatNumber(bus.mileage)} mi
     </span>
   );
@@ -346,24 +402,54 @@ function SecondaryLine({
   if (kind === "in-maintenance") {
     if (!workOrder) {
       return (
-        <div className="text-xs font-medium text-text-faint">
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#b5b5b5",
+          }}
+        >
           In shop · no active work order logged
         </div>
       );
     }
     const sev = SEVERITY_COLORS[workOrder.severity];
     return (
-      <div className="flex items-center gap-2 text-xs">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          fontSize: 12,
+        }}
+      >
         <span
-          className="inline-flex items-center gap-[3px] rounded-pill px-[7px] py-[1px] text-[10px] font-bold uppercase tracking-[0.02em]"
-          style={{ background: sev.bg, color: sev.text }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 3,
+            padding: "1px 7px",
+            borderRadius: 999,
+            background: sev.bg,
+            color: sev.text,
+            fontSize: 11,
+            fontWeight: 600,
+          }}
         >
-          <span className="flex h-[11px] w-[11px]" style={{ color: sev.dot }}>
+          <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>
             {SEVERITY_ICONS[workOrder.severity]}
           </span>
           {SEVERITY_LABELS[workOrder.severity]}
         </span>
-        <span className="min-w-0 flex-1 truncate font-medium text-text-secondary">
+        <span
+          style={{
+            color: "#6a6a6a",
+            fontWeight: 500,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
           {workOrder.issue}
         </span>
       </div>
@@ -372,7 +458,14 @@ function SecondaryLine({
 
   if (isPmStyled(kind)) {
     return (
-      <div className="text-xs font-medium tabular-nums text-text-muted">
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#929292",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
         {formatNumber(bus.mileage)} mi total · {bus.model}
       </div>
     );
@@ -380,7 +473,13 @@ function SecondaryLine({
 
   if (kind === "road-call") {
     return (
-      <div className="text-xs font-medium text-text-faint">
+      <div
+        style={{
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#b5b5b5",
+        }}
+      >
         Pulled from service · awaiting intake
       </div>
     );
@@ -388,7 +487,13 @@ function SecondaryLine({
 
   // Running
   return (
-    <div className="text-xs font-medium text-text-faint">
+    <div
+      style={{
+        fontSize: 12,
+        fontWeight: 500,
+        color: "#b5b5b5",
+      }}
+    >
       {bus.model} · {bus.year}
     </div>
   );

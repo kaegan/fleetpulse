@@ -97,17 +97,17 @@ export function pipelineStageFor(stage: WorkOrderStage): WorkOrderStage {
 }
 
 export const STATUS_COLORS: Record<BusStatus, string> = {
-  running: "var(--color-status-running)",
-  "pm-due": "var(--color-status-pm-due)",
-  "in-maintenance": "var(--color-status-maintenance)",
-  "road-call": "var(--color-status-roadcall)",
+  running: "#22c55e",
+  "pm-due": "#f59e0b",
+  "in-maintenance": "#ef4444",
+  "road-call": "#222222",
 };
 
 export const STATUS_BG: Record<BusStatus, string> = {
-  running: "var(--color-status-running-bg)",
-  "pm-due": "var(--color-status-pm-due-bg)",
-  "in-maintenance": "var(--color-status-maintenance-bg)",
-  "road-call": "var(--color-status-roadcall-bg)",
+  running: "#f0fdf4",
+  "pm-due": "#fffbeb",
+  "in-maintenance": "#fef2f2",
+  "road-call": "#f5f5f5",
 };
 
 export const STATUS_LABELS: Record<BusStatus, string> = {
@@ -122,22 +122,22 @@ export const SEVERITY_COLORS: Record<
   { border: string; bg: string; dot: string; text: string }
 > = {
   critical: {
-    border: "var(--color-severity-critical)",
-    bg: "var(--color-severity-critical-bg)",
-    dot: "var(--color-severity-critical)",
-    text: "var(--color-severity-critical-text)",
+    border: "#ef4444",
+    bg: "#fef2f2",
+    dot: "#ef4444",
+    text: "#991b1b",
   },
   high: {
-    border: "var(--color-severity-high)",
-    bg: "var(--color-severity-high-bg)",
-    dot: "var(--color-severity-high)",
-    text: "var(--color-severity-high-text)",
+    border: "#f59e0b",
+    bg: "#fffbeb",
+    dot: "#f59e0b",
+    text: "#92400e",
   },
   routine: {
-    border: "var(--color-severity-routine)",
-    bg: "var(--color-severity-routine-bg)",
-    dot: "var(--color-severity-routine)",
-    text: "var(--color-severity-routine-text)",
+    border: "#22c55e",
+    bg: "#f0fdf4",
+    dot: "#22c55e",
+    text: "#166534",
   },
 };
 
@@ -167,53 +167,47 @@ export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles
 // Torres, M. has 2 WOs in North Garage, which gives a legible Mine(2)/All(6) split.
 export const CURRENT_MECHANIC = "Torres, M.";
 
-export const BRAND_COLOR = "var(--color-brand)";
-export const BRAND_COLOR_HOVER = "var(--color-brand-hover)";
+export const BRAND_COLOR = "#d4654a";
+export const BRAND_COLOR_HOVER = "#be5840";
 
 export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
-  "Fleet Availability": {
-    color: "var(--color-kpi-availability)",
-    bg: "var(--color-kpi-availability-bg)",
-  },
-  Running: {
-    color: "var(--color-status-running)",
-    bg: "var(--color-status-running-bg)",
-  },
-  "PM Due": {
-    color: "var(--color-status-pm-due)",
-    bg: "var(--color-status-pm-due-bg)",
-  },
-  "In Maintenance": {
-    color: "var(--color-status-maintenance)",
-    bg: "var(--color-status-maintenance-bg)",
-  },
-  "Road Calls": {
-    color: "var(--color-kpi-roadcall)",
-    bg: "var(--color-kpi-roadcall-bg)",
-  },
+  "Fleet Availability": { color: "#7c3aed", bg: "#f5f3ff" },
+  Running: { color: "#22c55e", bg: "#f0fdf4" },
+  "PM Due": { color: "#f59e0b", bg: "#fffbeb" },
+  "In Maintenance": { color: "#ef4444", bg: "#fef2f2" },
+  "Road Calls": { color: "#64748b", bg: "#f1f5f9" },
 };
 
-export const KANBAN_STAGE_PILLS: Record<string, { color: string; bg: string }> = {
-  Intake: {
-    color: "var(--color-stage-intake)",
-    bg: "var(--color-stage-intake-bg)",
-  },
-  Diagnosing: {
-    color: "var(--color-stage-diagnosing)",
-    bg: "var(--color-stage-diagnosing-bg)",
-  },
-  "Parts Ready": {
-    color: "var(--color-stage-parts-ready)",
-    bg: "var(--color-stage-parts-ready-bg)",
-  },
-  "In Repair": {
-    color: "var(--color-stage-in-repair)",
-    bg: "var(--color-stage-in-repair-bg)",
-  },
-  "Road Ready": {
-    color: "var(--color-stage-road-ready)",
-    bg: "var(--color-stage-road-ready-bg)",
-  },
+/**
+ * Pill color per kanban stage. Gradient: cool upstream → amber held →
+ * purple active → green terminal, preserving the existing visual rhythm.
+ */
+export const KANBAN_STAGE_PILLS: Record<
+  WorkOrderStage,
+  { color: string; bg: string }
+> = {
+  inbound: { color: "#64748b", bg: "#f1f5f9" },
+  triage: { color: "#0ea5e9", bg: "#f0f9ff" },
+  diagnosing: { color: "#3b82f6", bg: "#eff6ff" },
+  held: { color: "#b4541a", bg: "#fff4ed" },
+  repairing: { color: "#8b5cf6", bg: "#f5f3ff" },
+  "road-test": { color: "#22c55e", bg: "#f0fdf4" },
+};
+
+export const PARTS_STATUS_LABELS: Record<PartsStatus, string> = {
+  "not-needed": "Not needed",
+  "in-stock": "In stock",
+  needed: "Needed",
+  ordered: "Ordered",
+};
+
+export const BLOCK_REASON_LABELS: Record<BlockReason, string> = {
+  "parts-ordered": "Parts ordered",
+  "parts-needed": "Parts needed",
+  "awaiting-bay": "Awaiting bay",
+  "awaiting-approval": "Awaiting approval",
+  "awaiting-customer": "Awaiting customer",
+  other: "Held",
 };
 
 /**

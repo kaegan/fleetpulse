@@ -21,7 +21,6 @@ import {
   getCrossGarageCallout,
 } from "@/lib/utils";
 import { BackButton } from "@/components/back-button";
-import { InfoRow, InfoGrid } from "@/components/ui/info-row";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
@@ -109,7 +108,7 @@ function PanelContent({
       {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* Bus number */}
-      <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-foreground">
+      <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-[#222222]">
         Bus #{bus.busNumber}
       </h2>
 
@@ -119,21 +118,15 @@ function PanelContent({
           className="inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-[13px] font-semibold"
           style={{
             background:
-              bus.status === "road-call"
-                ? "var(--color-status-roadcall-bg)"
-                : bus.status === "running"
-                  ? "var(--color-status-running-bg)"
-                  : bus.status === "pm-due"
-                    ? "var(--color-status-pm-due-bg)"
-                    : "var(--color-status-maintenance-bg)",
+              bus.status === "road-call" ? "#f5f5f5" : `${color}18`,
             color:
               bus.status === "running"
-                ? "var(--color-severity-routine-text)"
+                ? "#166534"
                 : bus.status === "pm-due"
-                  ? "var(--color-severity-high-text)"
+                  ? "#92400e"
                   : bus.status === "in-maintenance"
-                    ? "var(--color-severity-critical-text)"
-                    : "var(--color-text-primary)",
+                    ? "#991b1b"
+                    : "#222222",
           }}
         >
           <span
@@ -142,15 +135,13 @@ function PanelContent({
           />
           {STATUS_LABELS[bus.status]}
         </span>
-        <span className="text-[13px] font-medium text-text-muted">
+        <span className="text-[13px] font-medium text-[#929292]">
           {bus.garage === "north" ? "North Garage" : "South Garage"}
         </span>
       </div>
 
       {/* Vehicle info */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Vehicle Info" color="var(--color-stage-diagnosing)" bgColor="var(--color-stage-diagnosing-bg)" icon={<IconBusFillDuo18 />} />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Vehicle Info</h3>
       <InfoGrid>
         <InfoRow label="Model" value={bus.model} />
         <InfoRow label="Year" value={String(bus.year)} />
@@ -158,23 +149,16 @@ function PanelContent({
       </InfoGrid>
 
       {/* PM Status */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Preventive Maintenance" color="var(--color-status-pm-due)" bgColor="var(--color-status-pm-due-bg)" icon={<IconGaugeFillDuo18 />} />
-      </div>
-      <div className="mb-6 rounded-md border border-border bg-card-hover p-4">
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Preventive Maintenance</h3>
+      <div className="mb-6 rounded-md border border-black/[0.04] bg-[#fafaf9] p-4">
         <div className="mb-2.5 flex justify-between">
-          <span className="text-[13px] font-medium text-text-secondary">
+          <span className="text-[13px] font-medium text-[#6a6a6a]">
             A-Service (every {formatNumber(PM_INTERVAL_MILES)} mi)
           </span>
           <span
             className="text-[13px] font-semibold"
             style={{
-              color:
-                milesLeft <= 0
-                  ? "var(--color-status-maintenance)"
-                  : milesLeft < 1000
-                    ? "var(--color-status-pm-due)"
-                    : "var(--color-status-running)",
+              color: milesLeft <= 0 ? "#ef4444" : milesLeft < 1000 ? "#f59e0b" : "#22c55e",
             }}
           >
             {milesLeft <= 0
@@ -184,22 +168,22 @@ function PanelContent({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-2.5 h-1.5 overflow-hidden rounded-pill bg-muted">
+        <div className="mb-2.5 h-1.5 overflow-hidden rounded-pill bg-[#f2f2f2]">
           <div
             className="h-full rounded-pill transition-[width] duration-300 ease-out"
             style={{
               width: `${pmProgress}%`,
               background:
                 pmProgress >= 100
-                  ? "var(--color-status-maintenance)"
+                  ? "#ef4444"
                   : pmProgress > 80
-                    ? "var(--color-status-pm-due)"
-                    : "var(--color-status-running)",
+                    ? "#f59e0b"
+                    : "#22c55e",
             }}
           />
         </div>
 
-        <div className="flex justify-between text-[11px] font-medium text-text-faint">
+        <div className="flex justify-between text-[11px] font-medium text-[#b5b5b5]">
           <span>Last PM: {formatNumber(bus.lastPmMileage)} mi</span>
           <span>Due: {formatNumber(bus.nextPmDueMileage)} mi</span>
         </div>
@@ -208,9 +192,7 @@ function PanelContent({
       {/* Active Work Orders */}
       {busWorkOrders.length > 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Active Work Orders" color="var(--color-status-maintenance)" bgColor="var(--color-status-maintenance-bg)" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Active Work Orders</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
@@ -227,8 +209,8 @@ function PanelContent({
                   disabled={!isInteractive}
                   className={
                     isInteractive
-                      ? "text-left w-full rounded-md border border-border bg-card-hover p-[14px] transition-colors hover:bg-muted hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
-                      : "text-left w-full rounded-md border border-border bg-card-hover p-[14px]"
+                      ? "text-left w-full rounded-md border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+                      : "text-left w-full rounded-md border border-black/[0.06] bg-[#fafaf9] p-[14px]"
                   }
                 >
                   <div
@@ -242,7 +224,7 @@ function PanelContent({
                       style={{
                         fontSize: 13,
                         fontWeight: 600,
-                        color: "var(--color-text-primary)",
+                        color: "#222222",
                       }}
                     >
                       {wo.issue}
@@ -270,7 +252,7 @@ function PanelContent({
                       justifyContent: "space-between",
                       fontSize: 12,
                       fontWeight: 500,
-                      color: "var(--color-text-muted)",
+                      color: "#929292",
                     }}
                   >
                     <span style={{ fontFamily: "monospace" }}>{wo.id}</span>
@@ -282,7 +264,7 @@ function PanelContent({
                         marginTop: 6,
                         fontSize: 12,
                         fontWeight: 500,
-                        color: "var(--color-text-faint)",
+                        color: "#b5b5b5",
                       }}
                     >
                       Assigned: {wo.mechanicName}
@@ -297,14 +279,12 @@ function PanelContent({
 
       {busWorkOrders.length === 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Work Orders" color="var(--color-text-muted)" bgColor="var(--color-surface-warm)" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Work Orders</h3>
           <p
             style={{
               fontSize: 13,
               fontWeight: 500,
-              color: "var(--color-text-faint)",
+              color: "#b5b5b5",
               padding: "12px 0",
               marginBottom: 16,
             }}
@@ -345,21 +325,21 @@ function ServiceHistorySection({
     <>
       {callout && <CrossGarageCallout entry={callout.entry} />}
 
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill
-          label="Service History"
-          color="var(--color-stage-intake)"
-          bgColor="var(--color-stage-intake-bg)"
-          icon={<IconClockRotateAnticlockwiseFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Service History</h3>
 
       {history.length === 0 ? (
-        <p className="py-3 text-[13px] font-medium text-text-faint">
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#b5b5b5",
+            padding: "12px 0",
+          }}
+        >
           No prior service history on record for this bus.
         </p>
       ) : (
-        <div className="flex flex-col gap-2.5">
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {history.map((entry) => (
             <HistoryEntryRow
               key={entry.id}
@@ -380,6 +360,7 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
   const whenLabel =
     days === 0 ? "earlier today" : days === 1 ? "yesterday" : `${days} days ago`;
 
+  // Lead with the fact that matters: worked on at the other garage, recently.
   const outcomeLead =
     entry.outcome === "deferred"
       ? `${entry.mechanicName} deferred this job`
@@ -388,21 +369,55 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
         : `${entry.mechanicName} completed work`;
 
   return (
-    <div className="mb-3.5 flex items-start gap-3 rounded-[14px] border border-brand/25 bg-brand-light px-4 py-3.5">
-      <span className="mt-0.5 shrink-0 text-lg leading-none" aria-hidden>
+    <div
+      style={{
+        background: "#fdf0ed",
+        border: "1px solid #f5c6b8",
+        borderRadius: 14,
+        padding: "14px 16px",
+        marginBottom: 14,
+        display: "flex",
+        gap: 12,
+        alignItems: "flex-start",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 18,
+          lineHeight: 1,
+          flexShrink: 0,
+          marginTop: 1,
+        }}
+        aria-hidden
+      >
         ⚠️
-      </span>
-      <div className="flex-1">
-        <div className="mb-1 text-[12px] font-bold uppercase tracking-[0.04em] text-brand">
+      </div>
+      <div style={{ flex: 1 }}>
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#d4654a",
+            letterSpacing: "-0.01em",
+            marginBottom: 4,
+          }}
+        >
           Arrived from {otherGarageLabel}
         </div>
-        <div className="text-[13px] font-medium leading-[1.45] text-text-secondary">
+        <div
+          style={{
+            fontSize: 13,
+            fontWeight: 500,
+            color: "#6a3b2a",
+            lineHeight: 1.45,
+          }}
+        >
           Last worked on {whenLabel} at {otherGarageLabel}. {outcomeLead}
           {entry.note ? "." : ""}
           {entry.note && (
             <>
               {" "}
-              <span className="italic text-text-muted">
+              <span style={{ fontStyle: "italic", color: "#8b5a44" }}>
                 &ldquo;{entry.note}&rdquo;
               </span>
             </>
@@ -428,73 +443,112 @@ function HistoryEntryRow({
   const isInteractive = Boolean(onClick);
 
   return (
-    <div className="rounded-[14px] border border-border bg-card-hover p-3.5">
+    <button
+      type="button"
+      onClick={onClick ? () => onClick(entry) : undefined}
+      disabled={!isInteractive}
+      className={
+        isInteractive
+          ? "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+          : "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px]"
+      }
+    >
       {/* Top row: date + garage + outcome */}
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="text-xs font-semibold whitespace-nowrap text-text-secondary">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 6,
+          gap: 8,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#6a6a6a",
+              whiteSpace: "nowrap",
+            }}
+          >
             {formatHistoryDate(entry.date)}
           </span>
           <span
-            className="rounded-pill px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
             style={{
-              background: isOtherGarage
-                ? "var(--color-brand-light)"
-                : "var(--color-stage-intake-bg)",
-              color: isOtherGarage
-                ? "var(--color-brand)"
-                : "var(--color-stage-intake)",
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: 999,
+              background: isOtherGarage ? "#fdf0ed" : "#f1f5f9",
+              color: isOtherGarage ? "#d4654a" : "#64748b",
+              whiteSpace: "nowrap",
             }}
           >
             {garageLabel} Garage
           </span>
         </div>
         <span
-          className="rounded-pill px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap"
-          style={{ color: outcome.color, background: outcome.bg }}
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: outcome.color,
+            background: outcome.bg,
+            padding: "2px 8px",
+            borderRadius: 999,
+            whiteSpace: "nowrap",
+          }}
         >
           {outcome.label}
         </span>
       </div>
 
       {/* Issue */}
-      <div className="mb-1 text-[13px] font-semibold text-foreground">
+      <div
+        style={{
+          fontSize: 13,
+          fontWeight: 600,
+          color: "#222222",
+          marginBottom: 4,
+        }}
+      >
         {entry.issue}
       </div>
 
       {/* Mechanic + WO id */}
-      <div className="flex justify-between text-xs font-medium text-text-muted">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          fontSize: 12,
+          fontWeight: 500,
+          color: "#929292",
+        }}
+      >
         <span>{entry.mechanicName}</span>
-        <span className="font-mono text-text-faint">{entry.id}</span>
+        <span style={{ fontFamily: "monospace", color: "#b5b5b5" }}>{entry.id}</span>
       </div>
 
       {/* Optional handoff note */}
       {entry.note && (
-        <div className="mt-2 border-t border-border pt-2 text-xs font-medium italic leading-[1.45] text-text-secondary">
+        <div
+          style={{
+            marginTop: 8,
+            paddingTop: 8,
+            borderTop: "1px solid rgba(0,0,0,0.04)",
+            fontSize: 12,
+            fontWeight: 500,
+            fontStyle: "italic",
+            color: "#6a6a6a",
+            lineHeight: 1.45,
+          }}
+        >
           &ldquo;{entry.note}&rdquo;
         </div>
       )}
     </button>
   );
 }
-
-const OUTCOME_STYLES: Record<HistoryOutcome, { label: string; color: string; bg: string }> = {
-  completed: {
-    label: "Completed",
-    color: "var(--color-severity-routine-text)",
-    bg: "var(--color-severity-routine-bg)",
-  },
-  deferred: {
-    label: "Deferred",
-    color: "var(--color-severity-high-text)",
-    bg: "var(--color-severity-high-bg)",
-  },
-  recurring: {
-    label: "Recurring",
-    color: "var(--color-brand)",
-    bg: "var(--color-brand-light)",
-  },
-};
 
 function formatHistoryDate(isoDate: string): string {
   const d = new Date(isoDate);
@@ -505,3 +559,49 @@ function formatHistoryDate(isoDate: string): string {
   });
 }
 
+function InfoGrid({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+      style={{
+        marginBottom: 24,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        background: "#fafaf9",
+        borderRadius: 10,
+        padding: "10px 14px",
+        border: "1px solid rgba(0,0,0,0.04)",
+      }}
+    >
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 500,
+          color: "#b5b5b5",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </div>
+      <div
+        style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#222222",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}

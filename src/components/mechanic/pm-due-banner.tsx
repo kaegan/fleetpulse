@@ -43,7 +43,7 @@ export function PmDueBanner({
       aria-label={`Review ${overdueCount + comingDueCount} buses needing preventive maintenance`}
       className="group mb-[18px] flex w-full cursor-pointer flex-col items-start gap-2 rounded-2xl px-5 py-[14px] text-left transition-all hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 sm:flex-row sm:items-center sm:gap-3"
       style={{
-        background: "var(--color-brand-light)",
+        background: "#fff4ed",
       }}
     >
       <span className="flex items-center gap-3 sm:contents">
@@ -53,7 +53,7 @@ export function PmDueBanner({
             display: "flex",
             width: 20,
             height: 20,
-            color: "var(--color-brand)",
+            color: "#b4541a",
             flexShrink: 0,
           }}
         >
@@ -62,7 +62,7 @@ export function PmDueBanner({
 
         <span
           className="min-w-0 flex-1 text-[14px] leading-tight"
-          style={{ color: "var(--color-brand)" }}
+          style={{ color: "#b4541a" }}
         >
           <span style={{ fontWeight: 700 }}>{primaryCopy}</span>
           {secondaryCopy && (
@@ -72,8 +72,8 @@ export function PmDueBanner({
       </span>
 
       <span
-        className="text-[11px] font-bold uppercase tracking-[0.06em] transition-transform group-hover:translate-x-0.5"
-        style={{ color: "var(--color-brand)", flexShrink: 0 }}
+        className="text-[13px] font-semibold transition-transform group-hover:translate-x-0.5"
+        style={{ color: "#b4541a", flexShrink: 0 }}
       >
         Review →
       </span>

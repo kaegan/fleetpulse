@@ -169,17 +169,49 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
           Depot filter used to live here as a local pill — it's now the
           global switcher in the top bar (`src/components/top-bar.tsx`), so
           the chart reads scope from `useDepot` and follows along. */}
-      <div className="mb-3.5 flex flex-wrap items-start justify-between gap-4">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 14,
+          flexWrap: "wrap",
+          gap: 16,
+        }}
+      >
         <div>
-          <h2 className="mb-[3px] text-[15px] font-bold tracking-[-0.01em] text-foreground">
+          <h2
+            style={{
+              fontSize: 15,
+              fontWeight: 700,
+              color: "#222222",
+              letterSpacing: "-0.01em",
+              margin: 0,
+              marginBottom: 3,
+            }}
+          >
             Fleet Health Distribution
           </h2>
-          <p className="text-xs font-medium text-text-muted">
+          <p
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#929292",
+              margin: 0,
+            }}
+          >
             Each dot is one bus, positioned by miles until its next PM service.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-5">
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 20,
+            flexWrap: "wrap",
+          }}
+        >
           <ToggleGroup
             type="single"
             value={activeStatus ?? ""}
@@ -188,6 +220,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             className="bg-transparent gap-1 p-0"
           >
             {BUS_STATUSES.map((status) => {
+              const isActive = activeStatus === status;
               const isDimmed = activeStatus !== null && activeStatus !== status;
               return (
                 <ToggleGroupItem
@@ -196,24 +229,23 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   onMouseEnter={() => setHoveredStatus(status)}
                   onMouseLeave={() => setHoveredStatus(null)}
                   aria-label={`Filter to ${STATUS_LABELS[status]}`}
-                  className="rounded-full px-2.5 py-[5px] gap-1.5 text-[11px] font-medium text-text-secondary data-[state=on]:bg-muted data-[state=on]:text-text-secondary data-[state=on]:shadow-none"
+                  className="rounded-full px-2.5 py-[5px] gap-1.5 text-[11px] font-medium text-[#6a6a6a] data-[state=on]:bg-[#f5f5f7] data-[state=on]:text-[#6a6a6a] data-[state=on]:shadow-none"
                   style={{
                     opacity: isDimmed ? 0.45 : 1,
                     transition: "opacity 0.15s, background 0.15s",
                   }}
                 >
                   <span
-                    className="rounded-[3px]"
                     style={{
                       width: 10,
                       height: 10,
+                      borderRadius: 3,
                       background: STATUS_COLORS[status],
                       border:
                         status === "road-call"
-                          ? `1.5px solid var(--color-status-maintenance)`
+                          ? "1.5px solid #ef4444"
                           : "none",
-                      boxSizing: "border-box" as const,
-                      display: "inline-block",
+                      boxSizing: "border-box",
                     }}
                   />
                   {STATUS_LABELS[status]}
@@ -246,7 +278,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y={layout.bandY - 10}
               width={width - PAD_R - dueX}
               height={layout.bandH + 18}
-              style={{ fill: "var(--color-status-pm-due)" }}
+              fill="#f59e0b"
               fillOpacity={0.06}
             />
 
@@ -256,16 +288,16 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y1={layout.bandY - 14}
               x2={dueX}
               y2={axisY}
-              style={{ stroke: "var(--color-status-pm-due)" }}
+              stroke="#f59e0b"
               strokeWidth={1.5}
               strokeDasharray="4 3"
             />
             <text
               x={dueX}
               y={layout.bandY - 20}
-              fontSize={10}
-              fontWeight={700}
-              style={{ fill: "var(--color-status-pm-due)" }}
+              fontSize={11}
+              fontWeight={600}
+              fill="#f59e0b"
               textAnchor="middle"
             >
               PM Due
@@ -277,7 +309,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y1={axisY}
               x2={width - PAD_R}
               y2={axisY}
-              stroke="var(--color-border-strong)"
+              stroke="#e5e5e5"
               strokeWidth={1}
             />
 
@@ -300,14 +332,14 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                     y1={axisY}
                     x2={x}
                     y2={axisY + 5}
-                    stroke="var(--color-border-strong)"
+                    stroke="#d4d4d4"
                     strokeWidth={1}
                   />
                   <text
                     x={x}
                     y={axisY + 18}
                     fontSize={10}
-                    fill="var(--color-text-secondary)"
+                    fill="#6a6a6a"
                     textAnchor="middle"
                     fontWeight={v === 0 ? 600 : 400}
                   >
@@ -318,7 +350,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                       x={x}
                       y={axisY + 30}
                       fontSize={9}
-                      fill="var(--color-text-muted)"
+                      fill="#a3a3a3"
                       textAnchor="middle"
                     >
                       mi {suffix}
@@ -338,7 +370,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   y1={layout.bandY + 8}
                   x2={layout.padL - 10}
                   y2={layout.bandY + layout.bandH - 8}
-                  stroke="var(--color-border-strong)"
+                  stroke="#e5e5e5"
                   strokeWidth={1}
                 />
                 <text
@@ -346,7 +378,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   y={layout.cy - 16}
                   fontSize={11}
                   fontWeight={700}
-                  fill="var(--color-status-running)"
+                  fill="#22c55e"
                   textAnchor="end"
                   letterSpacing="0.04em"
                 >
@@ -357,7 +389,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   y={layout.cy + 1}
                   fontSize={11}
                   fontWeight={600}
-                  fill="var(--color-text-primary)"
+                  fill="#222222"
                   textAnchor="end"
                 >
                   on schedule
@@ -366,7 +398,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   x={layout.padL - 24}
                   y={layout.cy + 16}
                   fontSize={10}
-                  fill="var(--color-text-muted)"
+                  fill="#929292"
                   textAnchor="end"
                 >
                   3,000+ mi until PM
@@ -394,9 +426,9 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                     cy={p.y}
                     r={isHovered ? 7 : CIRCLE_R}
                     fill={STATUS_COLORS[p.status]}
+                    stroke={isRoadCall ? "#ef4444" : "none"}
                     strokeWidth={isRoadCall ? 1.5 : 0}
                     style={{
-                      stroke: isRoadCall ? "var(--color-status-maintenance)" : "none",
                       cursor: "pointer",
                       opacity: isDimmed ? 0.12 : 1,
                       transition:
@@ -503,20 +535,36 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
         <div
           className="mt-3 flex items-center gap-2 rounded-xl px-3 py-2.5"
           style={{
-            background: "var(--color-severity-routine-bg)",
-            border: "1px solid var(--color-severity-routine-bg)",
+            background: "#f0fdf4",
+            border: "1px solid #dcfce7",
           }}
         >
           <span
-            className="text-[13px] font-bold tracking-[0.02em]"
-            style={{ color: "var(--color-status-running)" }}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: "#22c55e",
+              letterSpacing: "0.02em",
+            }}
           >
             + {healthyTailCount}
           </span>
-          <span className="text-[12px] font-semibold text-foreground">
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 600,
+              color: "#222222",
+            }}
+          >
             on schedule
           </span>
-          <span className="text-[11px] font-medium text-text-secondary">
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 500,
+              color: "#6a6a6a",
+            }}
+          >
             (3,000+ mi until PM)
           </span>
         </div>
