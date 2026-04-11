@@ -4,25 +4,31 @@ import type { ReactNode } from "react";
 import { RoleProvider } from "@/hooks/use-role";
 import { DepotProvider } from "@/hooks/use-depot";
 import { TopBar } from "@/components/top-bar";
-import { NavRail } from "@/components/nav-rail";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 /**
  * Client-side shell for the whole app. Lives in `app/layout.tsx` so the
- * RoleProvider and DepotProvider contexts survive client-side navigation
- * between routes. Without lifting them here, role and depot state would
- * reset every time the user moves between the dashboard and a browse page.
+ * RoleProvider, DepotProvider, and SidebarProvider contexts survive
+ * client-side navigation between routes.
  */
-export function AppShell({ children }: { children: ReactNode }) {
+export function AppShell({
+  children,
+  defaultOpen = true,
+}: {
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
   return (
     <RoleProvider>
       <DepotProvider>
-        <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-          <TopBar />
-          <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-            <NavRail />
-            <main style={{ flex: 1, overflow: "auto" }}>{children}</main>
-          </div>
-        </div>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar />
+          <SidebarInset className="h-svh md:peer-data-[variant=inset]:h-[calc(100svh-1rem)] overflow-hidden">
+            <TopBar />
+            <div className="flex flex-1 flex-col overflow-auto">{children}</div>
+          </SidebarInset>
+        </SidebarProvider>
       </DepotProvider>
     </RoleProvider>
   );
