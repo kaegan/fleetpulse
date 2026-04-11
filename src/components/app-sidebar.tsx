@@ -41,8 +41,12 @@ const recordItems = [
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, isMobile, setOpenMobile } = useSidebar();
   const [whatsNewOpen, setWhatsNewOpen] = React.useState(false);
+
+  const handleNavClick = React.useCallback(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -94,7 +98,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     tooltip={item.label}
                     className="text-[15px] font-medium [&>svg]:!size-6 group-data-[collapsible=icon]:justify-center"
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={handleNavClick}>
                       <item.icon weight={isActive ? "fill" : "duotone"} />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.label}
