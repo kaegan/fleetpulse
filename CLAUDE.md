@@ -30,7 +30,6 @@ Fleet management tool for Transitland, a fictional paratransit agency. Built as 
 ### Top Bar (shared)
 - Left: FleetPulse logo + current garage name
 - Center: Role switcher toggle
-- Right: Current date/time
 
 For the detailed view-by-view feature breakdown (kanban with drag-and-drop, fleet wall, KPI strip with availability sparkline, Domino's tracker with severity filter + bottleneck bar), see `PRODUCT_SPEC.md` § Feature Scope.
 
