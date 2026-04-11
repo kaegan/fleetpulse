@@ -2,11 +2,11 @@
 
 import { useState, type ReactNode } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
@@ -34,12 +34,12 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
   const isEmpty = overdue.length === 0 && comingDue.length === 0;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="p-0">
-        <SheetTitle className="sr-only">Pull In Next</SheetTitle>
-        <SheetDescription className="sr-only">
+    <ResponsiveSheet open={open} onOpenChange={onOpenChange}>
+      <ResponsiveSheetContent side="right" className="p-0">
+        <ResponsiveSheetTitle className="sr-only">Pull In Next</ResponsiveSheetTitle>
+        <ResponsiveSheetDescription className="sr-only">
           Buses overdue for preventive maintenance and buses coming due soon.
-        </SheetDescription>
+        </ResponsiveSheetDescription>
 
         <div className="p-5 sm:p-7">
           {/* Header */}
@@ -123,8 +123,8 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
             </Section>
           )}
         </div>
-      </SheetContent>
-    </Sheet>
+      </ResponsiveSheetContent>
+    </ResponsiveSheet>
   );
 }
 

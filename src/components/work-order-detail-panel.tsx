@@ -16,11 +16,11 @@ import { TimeDisplay } from "@/components/time-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import {
   IconClipboardListFillDuo18,
   IconWrenchScrewdriverFillDuo18,
@@ -52,17 +52,20 @@ export function WorkOrderDetailPanel({
   }, [order, bus]);
 
   return (
-    <Sheet open={Boolean(order)} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="p-0">
-        <SheetTitle className="sr-only">
+    <ResponsiveSheet
+      open={Boolean(order)}
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <ResponsiveSheetContent side="right" className="p-0">
+        <ResponsiveSheetTitle className="sr-only">
           {displayOrder
             ? `Work order ${displayOrder.id} details`
             : "Work order details"}
-        </SheetTitle>
-        <SheetDescription className="sr-only">
+        </ResponsiveSheetTitle>
+        <ResponsiveSheetDescription className="sr-only">
           Issue, stage progress, assignment, timeline, and the bus this work
           order is attached to.
-        </SheetDescription>
+        </ResponsiveSheetDescription>
         {displayOrder && (
           <PanelContent
             order={displayOrder}
@@ -70,8 +73,8 @@ export function WorkOrderDetailPanel({
             onOpenBus={onOpenBus}
           />
         )}
-      </SheetContent>
-    </Sheet>
+      </ResponsiveSheetContent>
+    </ResponsiveSheet>
   );
 }
 

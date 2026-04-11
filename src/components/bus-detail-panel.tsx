@@ -21,11 +21,11 @@ import {
 } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import {
   IconBusFillDuo18,
   IconGaugeFillDuo18,
@@ -52,20 +52,23 @@ export function BusDetailPanel({
   }, [bus]);
 
   return (
-    <Sheet open={Boolean(bus)} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="p-0">
-        <SheetTitle className="sr-only">
+    <ResponsiveSheet
+      open={Boolean(bus)}
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <ResponsiveSheetContent side="right" className="p-0">
+        <ResponsiveSheetTitle className="sr-only">
           {displayBus ? `Bus #${displayBus.busNumber} details` : "Bus details"}
-        </SheetTitle>
-        <SheetDescription className="sr-only">
+        </ResponsiveSheetTitle>
+        <ResponsiveSheetDescription className="sr-only">
           Vehicle info, preventive maintenance status, active work orders, and
           service history.
-        </SheetDescription>
+        </ResponsiveSheetDescription>
         {displayBus && (
           <PanelContent bus={displayBus} onSelectWorkOrder={onSelectWorkOrder} />
         )}
-      </SheetContent>
-    </Sheet>
+      </ResponsiveSheetContent>
+    </ResponsiveSheet>
   );
 }
 
