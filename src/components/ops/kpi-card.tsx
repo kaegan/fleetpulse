@@ -119,7 +119,7 @@ export function KpiCard({
       : 0;
 
   const cardClassName =
-    "rounded-lg shadow-card transition-shadow " +
+    "min-w-0 rounded-lg shadow-card transition-shadow " +
     (isPrimary
       ? "p-5 sm:p-6 md:p-[28px_32px]"
       : "p-4 sm:p-5 md:p-[24px_28px]") +
@@ -134,7 +134,7 @@ export function KpiCard({
       // keep the Card's visual hover style above for the shadow lift.
       role={isClickable ? undefined : undefined}
     >
-      <div style={{ marginBottom: isPrimary ? 20 : 14 }}>
+      <div className="flex min-w-0" style={{ marginBottom: isPrimary ? 20 : 14 }}>
         <SectionPill
           label={label}
           color={pillColor}
@@ -239,10 +239,10 @@ export function KpiCard({
       {hasCountFooter && (
         <div className="mt-5 flex flex-col gap-1.5 border-t border-black/[0.06] pt-3">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-xs font-medium text-[#929292]">
+            <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
               Yesterday
             </span>
-            <div className="flex items-baseline gap-2">
+            <div className="flex shrink-0 items-baseline gap-2">
               <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
                 {yesterdayValue}
               </span>
@@ -251,10 +251,10 @@ export function KpiCard({
           </div>
           {forecastValue !== undefined && (
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xs font-medium text-[#929292]">
+              <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
                 Tomorrow (est.)
               </span>
-              <div className="flex items-baseline gap-2">
+              <div className="flex shrink-0 items-baseline gap-2">
                 <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
                   {forecastValue}
                 </span>
@@ -274,7 +274,7 @@ export function KpiCard({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="block w-full text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
+      className="block w-full min-w-0 text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
     >
       {cardInner}
     </button>
