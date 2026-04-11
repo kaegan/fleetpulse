@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
-import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -36,41 +35,38 @@ const DrawerContent = React.forwardRef<
       className={cn(
         // Inset 8px from screen sides, flush with the bottom (so the safe-area
         // inset on the inner wrapper covers the home indicator). Top corners
-        // rounded to 24px to match --radius-lg. Capped at 90vh so the user
-        // always sees the page peeking through above the sheet — that's the
-        // visual cue that this is a layer, not a replacement.
-        "fixed inset-x-2 bottom-0 z-50 flex max-h-[90vh] flex-col overflow-hidden rounded-t-[24px] bg-card shadow-panel",
+        // rounded to 24px to match --radius-lg. Capped at 80vh so a clear
+        // strip of the page stays visible above the sheet — that's the cue
+        // that the sheet is a layer floating *over* content, not a new page.
+        "fixed inset-x-2 bottom-0 z-50 flex max-h-[80vh] flex-col overflow-hidden rounded-t-[24px] bg-card shadow-panel",
         className
       )}
       {...props}
     >
-      {/* Sticky header strip — non-scrollable, contains the drag handle and
-       * close button. Sits outside the overflow-y-auto wrapper so the body
-       * can scroll independently while the handle area stays draggable.
+      {/* Drag-dismiss strip — sits outside the scrollable body so vaul never
+       * has to disambiguate scroll vs drag. With `handleOnly` on the Root
+       * (set in responsive-sheet.tsx) vaul only listens for drag gestures
+       * on this <Handle>, so the body content scrolls freely without ever
+       * triggering vaul's scrollLockTimeout cooldown.
        *
-       * The drag/scroll separation is enforced by `handleOnly` on the Root
-       * (set in responsive-sheet.tsx): vaul only listens for drag gestures
-       * on the <Handle>, not on body content. This eliminates vaul's
-       * scrollLockTimeout entirely — after scrolling, the handle is still
-       * immediately responsive, no 500ms cooldown. */}
-      <div className="relative shrink-0 pt-2 pb-1">
+       * The Handle div is full-width and 36px tall (transparent) so the
+       * entire top strip is the hit area — users can grab anywhere along
+       * the top of the sheet, not just within a 48px-wide window. The
+       * visible grabber bar is a sibling with `pointer-events-none` so it
+       * paints over the Handle without intercepting touches. */}
+      <div className="relative shrink-0">
         <DrawerPrimitive.Handle
           preventCycle
           aria-label="Drag down to dismiss"
-          // Override vaul's default handle CSS (#e2e2e4, 5×32, opacity .7)
-          // with the FleetPulse warm palette and a slightly chunkier bar.
-          // Tailwind `!` ensures these win over vaul's injected stylesheet.
-          className="!my-2 !h-1.5 !w-12 !rounded-full !bg-black/20 !opacity-100"
+          // Strip vaul's default visual styles and turn the Handle into an
+          // invisible full-width drag strip. `!`-prefixed utilities win over
+          // vaul's injected stylesheet.
+          className="!my-0 !block !h-9 !w-full !rounded-none !bg-transparent !opacity-100"
         />
-        {/* Fallback close button — pull-down works for users who notice the
-         * handle, but it's not always discoverable, so give them a tap target
-         * too. iOS modal sheets use the same pattern (drag OR tap "Done"). */}
-        <DrawerPrimitive.Close
-          aria-label="Close"
-          className="absolute right-4 top-2.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#f2f2f2] text-[#6a6a6a] transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-        >
-          <XIcon className="h-4 w-4" />
-        </DrawerPrimitive.Close>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/25"
+        />
       </div>
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {children}
