@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRole } from "@/hooks/use-role";
 import type { Role } from "@/data/types";
@@ -35,10 +37,19 @@ const modes: { key: Role; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-const browseItems = [
+type BrowseItem = {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  /** When set, the item renders as a Next.js Link; otherwise it's a "Soon" stub. */
+  href: string | null;
+};
+
+const browseItems: BrowseItem[] = [
   {
     key: "buses",
     label: "Buses",
+    href: null,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M8 6v6" /><path d="M16 6v6" />
@@ -51,6 +62,7 @@ const browseItems = [
   {
     key: "work-orders",
     label: "Work Orders",
+    href: null,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
@@ -62,6 +74,7 @@ const browseItems = [
   {
     key: "parts",
     label: "Parts",
+    href: null,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m7.5 4.27 9 5.15" />
@@ -86,10 +99,13 @@ const ChevronLeft = () => (
 
 export function NavRail() {
   const { role, setRole } = useRole();
+  const pathname = usePathname();
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [whatsNewOpen, setWhatsNewOpen] = useState(false);
 
   const width = expanded ? EXPANDED_WIDTH : COLLAPSED_WIDTH;
+  const onDashboard = pathname === "/";
 
   return (
     <motion.nav
@@ -112,12 +128,20 @@ export function NavRail() {
       {/* Role modes */}
       <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 8px" }}>
         {modes.map(({ key, label, icon }) => {
-          const isActive = role === key;
+          // Active = on the dashboard AND in this role mode. When the user is
+          // on a browse page (e.g. /buses), neither role button is highlighted
+          // because they're not viewing a dashboard at all.
+          const isActive = onDashboard && role === key;
 
           return (
             <button
               key={key}
-              onClick={() => setRole(key)}
+              onClick={() => {
+                setRole(key);
+                // Role buttons are "go to dashboard in this mode" — if the
+                // user is on a browse page, send them back to the dashboard.
+                if (!onDashboard) router.push("/");
+              }}
               aria-label={label}
               style={{
                 position: "relative",
@@ -194,65 +218,142 @@ export function NavRail() {
       <SectionLabel expanded={expanded}>Browse</SectionLabel>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 2, padding: "0 8px" }}>
-        {browseItems.map(({ key, label, icon }) => (
-          <button
-            key={key}
-            disabled
-            aria-label={label}
-            style={{
-              position: "relative",
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              height: 36,
-              paddingLeft: 11,
-              paddingRight: 10,
-              borderRadius: 10,
-              border: "none",
-              background: "transparent",
-              color: "#cccccc",
-              cursor: "default",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-            }}
-          >
-            <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
-            <AnimatePresence>
-              {expanded && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 500,
-                    letterSpacing: "-0.01em",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
-                >
-                  {label}
+        {browseItems.map(({ key, label, icon, href }) => {
+          if (href) {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={key}
+                href={href}
+                aria-label={label}
+                aria-current={isActive ? "page" : undefined}
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  height: 36,
+                  paddingLeft: 11,
+                  paddingRight: 10,
+                  borderRadius: 10,
+                  textDecoration: "none",
+                  background: isActive ? `${BRAND_COLOR}14` : "transparent",
+                  color: isActive ? BRAND_COLOR : "#999999",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  transition: "background 0.15s ease, color 0.15s ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+                    e.currentTarget.style.color = "#666666";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "#999999";
+                  }
+                }}
+              >
+                {isActive && (
                   <span
+                    aria-hidden
                     style={{
-                      fontSize: 10,
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.04em",
-                      color: "#bbbbbb",
-                      background: "#f0f0f0",
-                      padding: "1px 5px",
-                      borderRadius: 4,
+                      position: "absolute",
+                      left: -8,
+                      top: 8,
+                      bottom: 8,
+                      width: 3,
+                      borderRadius: 2,
+                      background: BRAND_COLOR,
+                    }}
+                  />
+                )}
+                <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
+                <AnimatePresence>
+                  {expanded && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15 }}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        letterSpacing: "-0.01em",
+                      }}
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            );
+          }
+
+          // Stub state for browse pages we haven't built yet — visible signal
+          // they're coming, but not interactive.
+          return (
+            <button
+              key={key}
+              disabled
+              aria-label={label}
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                height: 36,
+                paddingLeft: 11,
+                paddingRight: 10,
+                borderRadius: 10,
+                border: "none",
+                background: "transparent",
+                color: "#cccccc",
+                cursor: "default",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+              }}
+            >
+              <span style={{ flexShrink: 0, display: "flex" }}>{icon}</span>
+              <AnimatePresence>
+                {expanded && (
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      letterSpacing: "-0.01em",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
                     }}
                   >
-                    Soon
-                  </span>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
-        ))}
+                    {label}
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.04em",
+                        color: "#bbbbbb",
+                        background: "#f0f0f0",
+                        padding: "1px 5px",
+                        borderRadius: 4,
+                      }}
+                    >
+                      Soon
+                    </span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </button>
+          );
+        })}
       </div>
 
       {/* Empty space — click to expand when collapsed */}
