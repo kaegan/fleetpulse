@@ -39,19 +39,96 @@ export function getAvailabilityRate(buses: Bus[]): number {
   return (available / buses.length) * 100;
 }
 
-/** Tomorrow's estimated availability: today's available fleet plus
- *  buses with In Repair + QA Check work orders that complete overnight. */
+/** Rough daily mileage per bus — used to decide which running buses will
+ *  cross their PM threshold overnight. Matches the 120 mi/day assumption
+ *  already baked into buses.ts:85 when backfilling last-PM dates. */
+const DAILY_MILES_PER_BUS = 120;
+
+/** Heuristic: is this work order a scheduled PM job (vs. a corrective
+ *  repair)? WorkOrder has no job-type enum, so we pattern-match the issue
+ *  string the same way a mechanic would skim it. Kept intentionally narrow
+ *  — adding more keywords is cheap if the mock data grows. */
+function isPmWorkOrder(wo: WorkOrder): boolean {
+  return /\bPM-[AB]\b|oil change|coolant|tire rotation|inspect/i.test(
+    wo.issue
+  );
+}
+
+/** Tomorrow's estimated counts per status. Every term here should be
+ *  traceable to something a user can already see in the UI, so the four
+ *  count cards, the Fleet Availability card, and the Fleet Health
+ *  Distribution chart all tell the same story.
+ *
+ *  Signals we use:
+ *   - Stage 3/4 work orders (In Repair + Road Ready) finish overnight →
+ *     those buses move from in-maintenance back into the available pool.
+ *     Visible in the In Maintenance drill-down sheet and the WO tracker.
+ *   - A completing WO classified as a PM job returns its bus to `running`
+ *     (the PM is now fresh). A completing repair returns it to whatever
+ *     its pre-repair bucket was — for simplicity we treat that as
+ *     `running` too, since repair WOs are generated off road calls /
+ *     breakdowns, not PM backlog.
+ *   - Running buses within ~1 day of their PM threshold roll over into
+ *     pm-due. Visible as the dots immediately right of the PM Due line
+ *     in the Fleet Health Distribution chart.
+ *   - Road calls are inherently unpredictable, so forecast = today. We
+ *     deliberately avoid fabricating a trend.
+ *
+ *  Invariant: forecast totals still sum to `buses.length`. */
+export function getForecastCounts(
+  buses: Bus[],
+  workOrders: WorkOrder[]
+): Record<BusStatus, number> {
+  const counts = getStatusCounts(buses);
+
+  // Stage 3/4 WOs — these buses leave in-maintenance overnight.
+  const completing = workOrders.filter(
+    (wo) => wo.stage === 3 || wo.stage === 4
+  );
+  const completingPm = completing.filter(isPmWorkOrder).length;
+  const completingRepair = completing.length - completingPm;
+  const totalCompleting = completingPm + completingRepair;
+
+  // Running buses about to cross their PM threshold — the dots hugging
+  // the right side of the PM Due line in the Fleet Health chart.
+  const rollingIntoPmDue = buses.filter(
+    (b) =>
+      b.status === "running" &&
+      milesUntilPm(b) > 0 &&
+      milesUntilPm(b) <= DAILY_MILES_PER_BUS
+  ).length;
+
+  return {
+    // Running gains both PM and repair completions, loses buses rolling
+    // into pm-due. A completed PM job *was* a pm-due bus, so it doesn't
+    // touch the pm-due column here — it left that column when it entered
+    // the shop.
+    running: counts.running + totalCompleting - rollingIntoPmDue,
+    "pm-due": counts["pm-due"] + rollingIntoPmDue,
+    "in-maintenance": Math.max(0, counts["in-maintenance"] - totalCompleting),
+    "road-call": counts["road-call"],
+  };
+}
+
+/** Tomorrow's estimated *available* bus count (running + pm-due). Single
+ *  source of truth for the primary Fleet Availability card's "X buses"
+ *  sub-label, so it can never drift from the four count cards. */
+export function getForecastAvailableCount(
+  buses: Bus[],
+  workOrders: WorkOrder[]
+): number {
+  const fc = getForecastCounts(buses, workOrders);
+  return fc.running + fc["pm-due"];
+}
+
+/** Tomorrow's estimated availability rate as a percentage. Derived from
+ *  getForecastAvailableCount so the rate and the count can never
+ *  disagree. */
 export function getForecastAvailability(
   buses: Bus[],
   workOrders: WorkOrder[]
 ): number {
-  const available = buses.filter(
-    (b) => b.status === "running" || b.status === "pm-due"
-  ).length;
-  const completing = workOrders.filter(
-    (wo) => wo.stage === 3 || wo.stage === 4
-  ).length;
-  return ((available + completing) / buses.length) * 100;
+  return (getForecastAvailableCount(buses, workOrders) / buses.length) * 100;
 }
 
 /** Format a duration between now and an ISO timestamp as "Xh Ym" or "Xd Yh" */
