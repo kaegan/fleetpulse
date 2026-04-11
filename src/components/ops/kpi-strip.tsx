@@ -37,6 +37,10 @@ export function KpiStrip() {
   const counts = getStatusCounts(scopedBuses);
   const availRate = getAvailabilityRate(scopedBuses);
   const forecastRate = getForecastAvailability(scopedBuses, scopedWorkOrders);
+  // Forecast bus count — already available + anything finishing overnight
+  // (stages 3 & 4, matching getForecastAvailability's definition). Rounded
+  // so ops see a clean integer decision unit alongside the percent.
+  const forecastCount = Math.round((forecastRate / 100) * scopedBuses.length);
   const p = KPI_PILLS;
 
   return (
@@ -51,6 +55,7 @@ export function KpiStrip() {
         pillBg={p["Fleet Availability"].bg}
         pillIcon={<IconGaugeFillDuo18 />}
         forecast={forecastRate}
+        forecastCount={forecastCount}
         // Sparkline reflects fleet-wide history; hide it when scoped to one
         // depot so the trendline isn't misread as that depot's history.
         sparklineData={scope === "all" ? availabilityHistory : undefined}

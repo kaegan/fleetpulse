@@ -2,8 +2,15 @@
 
 import { useMemo, useRef, useState } from "react";
 import { buses } from "@/data/buses";
+import { busHistory, getBusHistory } from "@/data/bus-history";
 import { MECHANICS } from "@/data/mechanics";
-import type { Garage, Severity } from "@/data/types";
+import type {
+  Bus,
+  BusHistoryEntry,
+  Garage,
+  HistoryOutcome,
+  Severity,
+} from "@/data/types";
 import {
   BRAND_COLOR,
   CURRENT_MECHANIC,
@@ -12,6 +19,11 @@ import {
   SEVERITY_LABELS,
   SEVERITY_ICONS,
 } from "@/lib/constants";
+import {
+  getCrossGarageCallout,
+  getSimilarRecentIssues,
+  type SimilarIssueMatch,
+} from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +40,9 @@ interface LogRepairFormProps {
   recentBusNumbers: string[];
   onCancel: () => void;
   onSubmit: (draft: LogRepairDraft) => void;
+  /** Called when the mechanic taps into a related bus from the similarity
+   *  peek. Parent should close the form and open the bus detail panel. */
+  onViewBus?: (bus: Bus) => void;
 }
 
 const SEVERITY_ORDER: Severity[] = ["critical", "high", "routine"];
@@ -37,6 +52,7 @@ export function LogRepairForm({
   recentBusNumbers,
   onCancel,
   onSubmit,
+  onViewBus,
 }: LogRepairFormProps) {
   const [busId, setBusId] = useState<number | null>(null);
   const [busQuery, setBusQuery] = useState("");
@@ -56,6 +72,35 @@ export function LogRepairForm({
     () => (busId ? garageBuses.find((b) => b.id === busId) ?? null : null),
     [busId, garageBuses]
   );
+
+  // M-2: if the selected bus was recently worked on at the *other* garage,
+  // surface that the moment the mechanic picks the bus — before they start
+  // diagnosing. Reuses the same 14-day window the BusDetailPanel uses.
+  const crossGarageCallout = useMemo(() => {
+    if (!selectedBus) return null;
+    return getCrossGarageCallout(selectedBus, getBusHistory(selectedBus.id));
+  }, [selectedBus]);
+
+  // M-4: once a symptom has been entered, look across all service history for
+  // recent jobs on *other* buses at the other garage matching the same
+  // keyword. Surfaces "has anyone else seen this?" without the mechanic having
+  // to go hunt.
+  const similarIssues = useMemo<SimilarIssueMatch[]>(() => {
+    const trimmed = issue.trim();
+    if (trimmed.length < 3) return [];
+    return getSimilarRecentIssues(trimmed, busHistory, {
+      withinDays: 30,
+      excludeBusId: selectedBus?.id,
+      excludeGarage: garage,
+      onlyOtherGarage: true,
+    }).slice(0, 3);
+  }, [issue, selectedBus, garage]);
+
+  const handleOpenSimilarBus = (matchBusId: number) => {
+    if (!onViewBus) return;
+    const bus = buses.find((b) => b.id === matchBusId);
+    if (bus) onViewBus(bus);
+  };
 
   const recentBuses = useMemo(() => {
     if (recentBusNumbers.length === 0) return [];
@@ -171,38 +216,46 @@ export function LogRepairForm({
         )}
 
         {selectedBus ? (
-          <div
-            className="flex items-center justify-between rounded-[12px] border-[1.5px] px-3.5 py-2.5 sm:px-4 sm:py-3.5"
-            style={{
-              background: "#fdf0ed",
-              borderColor: BRAND_COLOR,
-            }}
-          >
-            <div className="flex flex-col gap-0.5">
-              <span
-                style={{
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: "#222222",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Bus #{selectedBus.busNumber}
-              </span>
-              <span style={{ fontSize: 12, fontWeight: 500, color: "#6a6a6a" }}>
-                {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi
-              </span>
-            </div>
-            <Button
-              type="button"
-              variant="link"
-              size="sm"
-              onClick={handleClearBus}
-              className="text-[13px] text-[var(--primary)] no-underline hover:underline-offset-4 px-2"
+          <>
+            <div
+              className="flex items-center justify-between rounded-[12px] border-[1.5px] px-3.5 py-2.5 sm:px-4 sm:py-3.5"
+              style={{
+                background: "#fdf0ed",
+                borderColor: BRAND_COLOR,
+              }}
             >
-              Change
-            </Button>
-          </div>
+              <div className="flex flex-col gap-0.5">
+                <span
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: "#222222",
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  Bus #{selectedBus.busNumber}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: "#6a6a6a" }}>
+                  {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi
+                </span>
+              </div>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={handleClearBus}
+                className="text-[13px] text-[var(--primary)] no-underline hover:underline-offset-4 px-2"
+              >
+                Change
+              </Button>
+            </div>
+            {crossGarageCallout && (
+              <CrossGarageInlineWarning
+                entry={crossGarageCallout.entry}
+                daysAgo={crossGarageCallout.daysAgo}
+              />
+            )}
+          </>
         ) : (
           <>
             <Input
@@ -267,6 +320,13 @@ export function LogRepairForm({
           onChange={(e) => setIssue(e.target.value)}
           maxLength={120}
         />
+        {similarIssues.length > 0 && (
+          <SimilarIssuesPeek
+            matches={similarIssues}
+            currentGarage={garage}
+            onPickBus={onViewBus ? handleOpenSimilarBus : undefined}
+          />
+        )}
       </div>
 
       {/* Field 3: Severity */}
@@ -403,3 +463,161 @@ function RecentChip({
     </button>
   );
 }
+
+// Compact inline version of the CrossGarageCallout from bus-detail-panel.
+// Form-row scale rather than drawer-section scale — lives directly beneath
+// the selected bus chip so the mechanic sees "this bus has recent work at
+// the other garage" the moment they pick it.
+function CrossGarageInlineWarning({
+  entry,
+  daysAgo,
+}: {
+  entry: BusHistoryEntry;
+  daysAgo: number;
+}) {
+  const otherGarageLabel =
+    entry.garage === "north" ? "North Garage" : "South Garage";
+  const whenLabel =
+    daysAgo === 0
+      ? "earlier today"
+      : daysAgo === 1
+        ? "yesterday"
+        : `${daysAgo} days ago`;
+  const outcomeLead =
+    entry.outcome === "deferred"
+      ? `${entry.mechanicName} deferred this job`
+      : entry.outcome === "recurring"
+        ? `${entry.mechanicName} flagged a recurring issue`
+        : `${entry.mechanicName} completed work`;
+
+  return (
+    <div
+      className="mt-2 flex items-start gap-2.5 rounded-[12px] border border-[#f5c6b8] px-3 py-2.5"
+      style={{ background: "#fdf0ed" }}
+    >
+      <span
+        className="flex-shrink-0 text-[15px] leading-none"
+        style={{ marginTop: 1 }}
+        aria-hidden
+      >
+        ⚠️
+      </span>
+      <div className="min-w-0 flex-1">
+        <div
+          className="text-[10px] font-bold uppercase tracking-[0.04em]"
+          style={{ color: "#d4654a", marginBottom: 2 }}
+        >
+          Arrived from {otherGarageLabel} · {whenLabel}
+        </div>
+        <div
+          className="text-[12px] leading-[1.4]"
+          style={{ color: "#6a3b2a", fontWeight: 500 }}
+        >
+          {entry.issue} — {outcomeLead}
+          {entry.note && (
+            <>
+              {" "}
+              <span className="italic" style={{ color: "#8b5a44" }}>
+                &ldquo;{entry.note}&rdquo;
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// M-4: when the mechanic enters an issue, show up to 3 related jobs at the
+// other garage. Each row is tappable — opens the referenced bus's detail
+// panel so the mechanic can compare notes before committing.
+function SimilarIssuesPeek({
+  matches,
+  currentGarage,
+  onPickBus,
+}: {
+  matches: SimilarIssueMatch[];
+  currentGarage: Garage;
+  onPickBus?: (busId: number) => void;
+}) {
+  const otherGarageLabel = currentGarage === "north" ? "South" : "North";
+  return (
+    <div
+      className="mt-2 rounded-[12px] border border-[#e5e5e5] p-2.5"
+      style={{ background: "#fafaf9" }}
+    >
+      <div
+        className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.04em]"
+        style={{ color: "#6a6a6a" }}
+      >
+        {matches.length} similar{" "}
+        {matches.length === 1 ? "job" : "jobs"} at {otherGarageLabel} Garage in
+        the last 30 days
+      </div>
+      <div className="flex flex-col gap-1">
+        {matches.map((m) => {
+          const busNumber = String(m.busId).padStart(3, "0");
+          const whenLabel =
+            m.daysAgo === 0
+              ? "today"
+              : m.daysAgo === 1
+                ? "yesterday"
+                : `${m.daysAgo}d ago`;
+          const outcomeTag = OUTCOME_MINI[m.entry.outcome];
+          const body = (
+            <div className="flex w-full items-center gap-2 text-[12px]">
+              <span className="font-bold text-[#222222]">
+                #{busNumber}
+              </span>
+              <span
+                className="truncate font-medium text-[#6a6a6a]"
+                style={{ flex: 1, minWidth: 0 }}
+              >
+                {m.entry.issue}
+              </span>
+              <span
+                className="flex-shrink-0 rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.02em]"
+                style={{ background: outcomeTag.bg, color: outcomeTag.color }}
+              >
+                {outcomeTag.label}
+              </span>
+              <span
+                className="flex-shrink-0 text-[11px] font-medium"
+                style={{ color: "#929292" }}
+              >
+                {whenLabel}
+              </span>
+            </div>
+          );
+
+          if (!onPickBus) {
+            return (
+              <div key={m.entry.id} className="px-1 py-0.5">
+                {body}
+              </div>
+            );
+          }
+          return (
+            <button
+              key={m.entry.id}
+              type="button"
+              onClick={() => onPickBus(m.busId)}
+              className="rounded-[8px] px-1.5 py-1 text-left transition-colors hover:bg-[#f2f2f2] cursor-pointer"
+            >
+              {body}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const OUTCOME_MINI: Record<
+  HistoryOutcome,
+  { label: string; color: string; bg: string }
+> = {
+  completed: { label: "Done", color: "#166534", bg: "#f0fdf4" },
+  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
+  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
+};

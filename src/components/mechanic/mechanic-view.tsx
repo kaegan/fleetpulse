@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
+import { PullInNextCard } from "./pull-in-next-card";
 import { SectionPill } from "@/components/section-pill";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -168,6 +169,11 @@ export function MechanicView() {
         </p>
       </div>
 
+      {/* Pull in next — tactical decision surface for M-3: "Which buses
+          should I pull in next for PM?" Lives above the kanban so it's the
+          first thing a mechanic sees when picking up a shift. */}
+      <PullInNextCard onBusClick={setSelectedBus} />
+
       {/* Action row: scope toggle + log-new-repair CTA */}
       <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
         <ScopeToggle
@@ -208,6 +214,13 @@ export function MechanicView() {
             recentBusNumbers={recentBusNumbers}
             onCancel={() => setIsLogOpen(false)}
             onSubmit={handleCreate}
+            onViewBus={(bus) => {
+              // Dismiss the form and open the detail panel so the mechanic
+              // can inspect the related bus's history. They can re-open the
+              // form after if they still want to log the current repair.
+              setIsLogOpen(false);
+              setSelectedBus(bus);
+            }}
           />
         </DialogContent>
       </Dialog>

@@ -5,6 +5,7 @@ import type { Bus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
+import { hoursSince } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -19,6 +20,34 @@ interface TrackerRowProps {
   onSelectBus?: (bus: Bus) => void;
 }
 
+// Threshold for "this has been sitting in the same stage for a while".
+// 24h = subtle warmer tint, 48h = full-warmth "stuck" tag. Anything under 24h
+// shows no tag so the common case stays quiet.
+const AGING_SOFT_HOURS = 24;
+const AGING_STUCK_HOURS = 48;
+
+function getAgingTag(
+  stageEnteredAt: string
+): { label: string; color: string; bg: string } | null {
+  const hours = hoursSince(stageEnteredAt);
+  if (hours >= AGING_STUCK_HOURS) {
+    const days = Math.floor(hours / 24);
+    return {
+      label: `Stuck ${days}d`,
+      color: "#b4541a",
+      bg: "#fff4ed",
+    };
+  }
+  if (hours >= AGING_SOFT_HOURS) {
+    return {
+      label: "Aging 1d+",
+      color: "#92400e",
+      bg: "#fffbeb",
+    };
+  }
+  return null;
+}
+
 const RESTING_SHADOW =
   "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)";
 const HOVER_SHADOW =
@@ -26,6 +55,7 @@ const HOVER_SHADOW =
 
 export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
   const sev = SEVERITY_COLORS[order.severity];
+  const agingTag = getAgingTag(order.stageEnteredAt);
 
   const handleClick = () => {
     if (!onSelectBus) return;
@@ -203,9 +233,9 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         })}
       </div>
 
-      {/* Mobile-only bottom: time in stage */}
+      {/* Mobile-only bottom: time in stage + aging tag */}
       <div
-        className="lg:hidden"
+        className="flex items-center gap-2 lg:hidden"
         style={{
           fontSize: 11,
           fontWeight: 500,
@@ -213,19 +243,21 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         }}
       >
         <TimeDisplay isoDate={order.stageEnteredAt} />
+        {agingTag && <AgingTag tag={agingTag} />}
       </div>
 
-      {/* Desktop-only: Time in status */}
+      {/* Desktop-only: Time in status + aging tag */}
       <div
-        className="hidden lg:block"
+        className="hidden items-center justify-end gap-2 lg:flex"
         style={{
-          minWidth: 60,
+          minWidth: 88,
           textAlign: "right",
           fontSize: 12,
           fontWeight: 500,
           color: "#929292",
         }}
       >
+        {agingTag && <AgingTag tag={agingTag} />}
         <TimeDisplay isoDate={order.stageEnteredAt} />
       </div>
 
@@ -239,5 +271,20 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
       </Badge>
     </motion.div>
     </TooltipProvider>
+  );
+}
+
+function AgingTag({
+  tag,
+}: {
+  tag: { label: string; color: string; bg: string };
+}) {
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase leading-none tracking-[0.02em] whitespace-nowrap"
+      style={{ color: tag.color, background: tag.bg }}
+    >
+      {tag.label}
+    </span>
   );
 }

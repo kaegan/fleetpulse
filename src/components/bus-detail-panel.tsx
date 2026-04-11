@@ -13,7 +13,12 @@ import {
   SEVERITY_ICONS,
   STAGES,
 } from "@/lib/constants";
-import { formatNumber, milesUntilPm } from "@/lib/utils";
+import {
+  formatNumber,
+  milesUntilPm,
+  daysBetween,
+  getCrossGarageCallout,
+} from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
 import {
   Sheet,
@@ -325,8 +330,6 @@ function PanelContent({ bus }: { bus: Bus }) {
 // Solves the cross-garage JTBD: "When a bus arrives at my garage from the
 // other location, I want to see everything that's been done to it."
 
-const CROSS_GARAGE_CALLOUT_WINDOW_DAYS = 14;
-
 function ServiceHistorySection({
   bus,
   history,
@@ -336,17 +339,11 @@ function ServiceHistorySection({
 }) {
   // Cross-garage callout: show when the most recent history entry is from the
   // *other* garage and within the last 14 days. This is the JTBD hero moment.
-  const mostRecent = history[0];
-  const showCrossGarageCallout =
-    mostRecent &&
-    mostRecent.garage !== bus.garage &&
-    daysBetween(mostRecent.date, new Date()) <= CROSS_GARAGE_CALLOUT_WINDOW_DAYS;
+  const callout = getCrossGarageCallout(bus, history);
 
   return (
     <>
-      {showCrossGarageCallout && mostRecent && (
-        <CrossGarageCallout entry={mostRecent} />
-      )}
+      {callout && <CrossGarageCallout entry={callout.entry} />}
 
       <div style={{ marginBottom: 10 }}>
         <SectionPill
@@ -580,12 +577,6 @@ const OUTCOME_STYLES: Record<HistoryOutcome, { label: string; color: string; bg:
   deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
   recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
 };
-
-function daysBetween(isoDate: string, now: Date): number {
-  const then = new Date(isoDate);
-  const ms = now.getTime() - then.getTime();
-  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
-}
 
 function formatHistoryDate(isoDate: string): string {
   const d = new Date(isoDate);

@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { Bus, BusStatus, WorkOrder } from "@/data/types";
+import type {
+  Bus,
+  BusHistoryEntry,
+  BusStatus,
+  Garage,
+  WorkOrder,
+} from "@/data/types";
 
 /** shadcn class-name helper: merge clsx + tailwind-merge */
 export function cn(...inputs: ClassValue[]) {
@@ -88,4 +94,116 @@ export function milesUntilPm(bus: Bus): number {
 /** Format number with comma separators */
 export function formatNumber(n: number): string {
   return n.toLocaleString("en-US");
+}
+
+/** Window (in days) used to decide whether a cross-garage history entry is
+ *  fresh enough to flag as "just arrived from the other garage". */
+export const CROSS_GARAGE_CALLOUT_WINDOW_DAYS = 14;
+
+/** Whole calendar days between an ISO timestamp and `now`, never negative. */
+export function daysBetween(isoDate: string, now: Date = new Date()): number {
+  const then = new Date(isoDate);
+  const ms = now.getTime() - then.getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+}
+
+/** Cross-garage callout: if a bus's most-recent service entry happened at the
+ *  *other* garage within the last 14 days, surface it so a mechanic sees prior
+ *  work the moment they pick the bus up. Returns `null` when there's nothing
+ *  worth flagging. */
+export function getCrossGarageCallout(
+  bus: Bus,
+  history: BusHistoryEntry[],
+  now: Date = new Date()
+): { entry: BusHistoryEntry; daysAgo: number } | null {
+  const mostRecent = history[0];
+  if (!mostRecent) return null;
+  if (mostRecent.garage === bus.garage) return null;
+  const daysAgo = daysBetween(mostRecent.date, now);
+  if (daysAgo > CROSS_GARAGE_CALLOUT_WINDOW_DAYS) return null;
+  return { entry: mostRecent, daysAgo };
+}
+
+/** Extract the handful of keywords that identify a repair symptom so we can
+ *  match "HVAC compressor failure" against "HVAC refrigerant recharge". Keeping
+ *  this naive on purpose — a real EAM would use a parts taxonomy. */
+function extractIssueKeywords(issue: string): string[] {
+  const KEYWORDS = [
+    "hvac",
+    "brake",
+    "transmission",
+    "alternator",
+    "coolant",
+    "oil",
+    "tire",
+    "steering",
+    "ramp",
+    "wheelchair",
+    "battery",
+    "air brake",
+    "compressor",
+    "rotor",
+    "fluid",
+  ];
+  const lowered = issue.toLowerCase();
+  return KEYWORDS.filter((k) => lowered.includes(k));
+}
+
+export interface SimilarIssueMatch {
+  busId: number;
+  entry: BusHistoryEntry;
+  daysAgo: number;
+}
+
+/** Search all bus service history for recent entries that share a keyword with
+ *  the current issue string. Used by the Log Repair form to help mechanics
+ *  spot "has anyone else seen this symptom recently?" before they dive in. */
+export function getSimilarRecentIssues(
+  issue: string,
+  allHistory: Record<number, BusHistoryEntry[]>,
+  options: {
+    withinDays?: number;
+    excludeBusId?: number;
+    excludeGarage?: Garage;
+    onlyOtherGarage?: boolean;
+    now?: Date;
+  } = {}
+): SimilarIssueMatch[] {
+  const {
+    withinDays = 30,
+    excludeBusId,
+    excludeGarage,
+    onlyOtherGarage = false,
+    now = new Date(),
+  } = options;
+
+  const keywords = extractIssueKeywords(issue);
+  if (keywords.length === 0) return [];
+
+  const matches: SimilarIssueMatch[] = [];
+  for (const [busIdStr, entries] of Object.entries(allHistory)) {
+    const busId = Number(busIdStr);
+    if (excludeBusId !== undefined && busId === excludeBusId) continue;
+    for (const entry of entries) {
+      if (onlyOtherGarage && excludeGarage && entry.garage === excludeGarage) {
+        continue;
+      }
+      const entryKeywords = extractIssueKeywords(entry.issue);
+      const overlap = keywords.some((k) => entryKeywords.includes(k));
+      if (!overlap) continue;
+      const daysAgo = daysBetween(entry.date, now);
+      if (daysAgo > withinDays) continue;
+      matches.push({ busId, entry, daysAgo });
+    }
+  }
+
+  // Newest first so the peek shows the freshest reference case.
+  return matches.sort((a, b) => a.daysAgo - b.daysAgo);
+}
+
+/** Hours (integer, non-negative) between an ISO timestamp and `now`. */
+export function hoursSince(isoDate: string, now: Date = new Date()): number {
+  const then = new Date(isoDate);
+  const ms = now.getTime() - then.getTime();
+  return Math.max(0, Math.floor(ms / (1000 * 60 * 60)));
 }
