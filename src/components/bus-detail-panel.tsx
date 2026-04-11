@@ -88,36 +88,15 @@ function PanelContent({
   return (
     <div className="p-5 sm:p-7">
       {/* Bus number */}
-      <h2
-        style={{
-          fontSize: 28,
-          fontWeight: 700,
-          color: "#222222",
-          letterSpacing: "-0.03em",
-          marginBottom: 4,
-        }}
-      >
+      <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-[#222222]">
         Bus #{bus.busNumber}
       </h2>
 
       {/* Status + garage */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          marginBottom: 28,
-        }}
-      >
+      <div className="mb-7 flex items-center gap-2.5">
         <span
+          className="inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-[13px] font-semibold"
           style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            fontSize: 13,
-            fontWeight: 600,
-            padding: "4px 12px",
-            borderRadius: 999,
             background:
               bus.status === "road-call" ? "#f5f5f5" : `${color}18`,
             color:
@@ -131,16 +110,12 @@ function PanelContent({
           }}
         >
           <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: color,
-            }}
+            className="h-2 w-2 rounded-full"
+            style={{ background: color }}
           />
           {STATUS_LABELS[bus.status]}
         </span>
-        <span style={{ fontSize: 13, fontWeight: 500, color: "#929292" }}>
+        <span className="text-[13px] font-medium text-[#929292]">
           {bus.garage === "north" ? "North Garage" : "South Garage"}
         </span>
       </div>
@@ -159,29 +134,14 @@ function PanelContent({
       <div style={{ marginBottom: 10 }}>
         <SectionPill label="Preventive Maintenance" color="#f59e0b" bgColor="#fffbeb" icon={<IconGaugeFillDuo18 />} />
       </div>
-      <div
-        style={{
-          background: "#fafaf9",
-          borderRadius: 14,
-          padding: 16,
-          marginBottom: 24,
-          border: "1px solid rgba(0,0,0,0.04)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: 10,
-          }}
-        >
-          <span style={{ fontSize: 13, fontWeight: 500, color: "#6a6a6a" }}>
+      <div className="mb-6 rounded-md border border-black/[0.04] bg-[#fafaf9] p-4">
+        <div className="mb-2.5 flex justify-between">
+          <span className="text-[13px] font-medium text-[#6a6a6a]">
             A-Service (every {formatNumber(PM_INTERVAL_MILES)} mi)
           </span>
           <span
+            className="text-[13px] font-semibold"
             style={{
-              fontSize: 13,
-              fontWeight: 600,
               color: milesLeft <= 0 ? "#ef4444" : milesLeft < 1000 ? "#f59e0b" : "#22c55e",
             }}
           >
@@ -192,18 +152,10 @@ function PanelContent({
         </div>
 
         {/* Progress bar */}
-        <div
-          style={{
-            height: 6,
-            background: "#f2f2f2",
-            borderRadius: 999,
-            overflow: "hidden",
-            marginBottom: 10,
-          }}
-        >
+        <div className="mb-2.5 h-1.5 overflow-hidden rounded-pill bg-[#f2f2f2]">
           <div
+            className="h-full rounded-pill transition-[width] duration-300 ease-out"
             style={{
-              height: "100%",
               width: `${pmProgress}%`,
               background:
                 pmProgress >= 100
@@ -211,21 +163,11 @@ function PanelContent({
                   : pmProgress > 80
                     ? "#f59e0b"
                     : "#22c55e",
-              borderRadius: 999,
-              transition: "width 0.3s ease",
             }}
           />
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 11,
-            fontWeight: 500,
-            color: "#b5b5b5",
-          }}
-        >
+        <div className="flex justify-between text-[11px] font-medium text-[#b5b5b5]">
           <span>Last PM: {formatNumber(bus.lastPmMileage)} mi</span>
           <span>Due: {formatNumber(bus.nextPmDueMileage)} mi</span>
         </div>
@@ -253,8 +195,8 @@ function PanelContent({
                   disabled={!isInteractive}
                   className={
                     isInteractive
-                      ? "text-left w-full rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
-                      : "text-left w-full rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px]"
+                      ? "text-left w-full rounded-md border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+                      : "text-left w-full rounded-md border border-black/[0.06] bg-[#fafaf9] p-[14px]"
                   }
                 >
                   <div

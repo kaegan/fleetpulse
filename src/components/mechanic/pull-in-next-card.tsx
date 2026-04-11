@@ -51,7 +51,7 @@ export function PullInNextCard({ onBusClick }: PullInNextCardProps) {
 
   if (candidates.length === 0) {
     return (
-      <Card className="mb-[18px] flex flex-col items-start gap-3 rounded-[20px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:gap-4">
+      <Card className="mb-[18px] flex flex-col items-start gap-3 rounded-lg p-5 shadow-card sm:flex-row sm:items-center sm:gap-4">
         <SectionPill
           label="Queue Clear"
           color="#22c55e"
@@ -74,7 +74,7 @@ export function PullInNextCard({ onBusClick }: PullInNextCardProps) {
   }
 
   return (
-    <Card className="mb-[18px] rounded-[20px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)]">
+    <Card className="mb-[18px] rounded-lg p-5 shadow-card">
       {/* Header */}
       <div style={{ marginBottom: 14 }}>
         <div style={{ marginBottom: 10 }}>

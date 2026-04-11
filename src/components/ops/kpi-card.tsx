@@ -65,12 +65,8 @@ function DeltaChip({
   if (delta === 0) {
     return (
       <span
-        style={{
-          fontSize: 12,
-          fontWeight: 600,
-          color,
-          fontVariantNumeric: "tabular-nums",
-        }}
+        className="text-xs font-semibold tabular-nums"
+        style={{ color }}
       >
         —
       </span>
@@ -79,13 +75,8 @@ function DeltaChip({
   const arrow = delta > 0 ? "↑" : "↓";
   return (
     <span
-      style={{
-        fontSize: 12,
-        fontWeight: 700,
-        color,
-        fontVariantNumeric: "tabular-nums",
-        whiteSpace: "nowrap",
-      }}
+      className="text-xs font-bold tabular-nums whitespace-nowrap"
+      style={{ color }}
     >
       {arrow} {Math.abs(delta)}
     </span>
@@ -128,7 +119,7 @@ export function KpiCard({
       : 0;
 
   const cardClassName =
-    "rounded-[24px] shadow-card transition-shadow " +
+    "rounded-lg shadow-card transition-shadow " +
     (isPrimary
       ? "p-5 sm:p-6 md:p-[28px_32px]"
       : "p-4 sm:p-5 md:p-[24px_28px]") +
@@ -160,31 +151,24 @@ export function KpiCard({
       >
         <span
           className={
-            isPrimary
+            "font-bold tracking-[-0.03em] leading-none " +
+            (isPrimary
               ? "text-5xl sm:text-6xl md:text-[72px]"
-              : "text-[32px] sm:text-[36px] md:text-[40px]"
+              : "text-[32px] sm:text-[36px] md:text-[40px]")
           }
-          style={{
-            fontWeight: 700,
-            color,
-            letterSpacing: "-0.03em",
-            lineHeight: 1,
-          }}
+          style={{ color }}
         >
           {displayValue}
         </span>
         {suffix && (
           <span
             className={
-              isPrimary
+              "font-semibold opacity-50 " +
+              (isPrimary
                 ? "text-2xl sm:text-3xl md:text-[36px]"
-                : "text-lg sm:text-xl md:text-[24px]"
+                : "text-lg sm:text-xl md:text-[24px]")
             }
-            style={{
-              fontWeight: 600,
-              color,
-              opacity: 0.5,
-            }}
+            style={{ color }}
           >
             {suffix}
           </span>
@@ -228,46 +212,23 @@ export function KpiCard({
 
       {/* Primary-card forecast row (Fleet Availability only) */}
       {forecast !== undefined && !hasCountFooter && (
-        <div
-          style={{
-            marginTop: 14,
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 8,
-          }}
-        >
-          <span
-            style={{
-              fontSize: 13,
-              fontWeight: 500,
-              color: "#6a6a6a",
-            }}
-          >
+        <div className="mt-3.5 flex flex-wrap items-center gap-2">
+          <span className="text-[13px] font-medium text-[#6a6a6a]">
             Tomorrow (est.)
           </span>
           <span
-            style={{
-              fontSize: 15,
-              fontWeight: 700,
-              color: forecast > value ? "#22c55e" : "#6a6a6a",
-            }}
+            className="text-[15px] font-bold"
+            style={{ color: forecast > value ? "#22c55e" : "#6a6a6a" }}
           >
             {forecast.toFixed(1)}%
           </span>
           {forecastCount !== undefined && (
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: "#929292",
-              }}
-            >
+            <span className="text-[13px] font-medium text-[#929292]">
               · {forecastCount} buses
             </span>
           )}
           {forecast > value && (
-            <span style={{ fontSize: 13, color: "#22c55e", fontWeight: 600 }}>
+            <span className="text-[13px] font-semibold text-[#22c55e]">
               +{(forecast - value).toFixed(1)}
             </span>
           )}
@@ -276,80 +237,25 @@ export function KpiCard({
 
       {/* Count-card footer: Yesterday + Tomorrow rows */}
       {hasCountFooter && (
-        <div
-          className="mt-5 border-t border-black/[0.06] pt-3"
-          style={{ display: "flex", flexDirection: "column", gap: 6 }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "baseline",
-              justifyContent: "space-between",
-              gap: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 12,
-                fontWeight: 500,
-                color: "#929292",
-              }}
-            >
+        <div className="mt-5 flex flex-col gap-1.5 border-t border-black/[0.06] pt-3">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-xs font-medium text-[#929292]">
               Yesterday
             </span>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: 8,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#6a6a6a",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
+            <div className="flex items-baseline gap-2">
+              <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
                 {yesterdayValue}
               </span>
               <DeltaChip delta={yesterdayDelta} direction={deltaDirection} />
             </div>
           </div>
           {forecastValue !== undefined && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                justifyContent: "space-between",
-                gap: 8,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: "#929292",
-                }}
-              >
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-xs font-medium text-[#929292]">
                 Tomorrow (est.)
               </span>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: 8,
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#6a6a6a",
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
+              <div className="flex items-baseline gap-2">
+                <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
                   {forecastValue}
                 </span>
                 <DeltaChip delta={forecastDelta} direction={deltaDirection} />
@@ -368,7 +274,7 @@ export function KpiCard({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="block w-full text-left rounded-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
+      className="block w-full text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
     >
       {cardInner}
     </button>

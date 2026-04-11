@@ -49,7 +49,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
   // Positive empty state — still worth rendering the card so the layout stays stable.
   if (actionable.length === 0) {
     return (
-      <Card className="mb-6 flex flex-col items-start gap-3 rounded-[24px] p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
+      <Card className="mb-6 flex flex-col items-start gap-3 rounded-lg p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <SectionPill
           label="Fleet On Schedule"
           color="#22c55e"
@@ -70,7 +70,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
   }
 
   return (
-    <Card className="mb-6 rounded-[24px] p-5 shadow-card sm:p-6">
+    <Card className="mb-6 rounded-lg p-5 shadow-card sm:p-6">
       {/* Header */}
       <div
         style={{
