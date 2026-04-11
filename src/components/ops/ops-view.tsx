@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { KpiStrip } from "./kpi-strip";
 import { ActionCard } from "./action-card";
 import { FleetHealthChart } from "./fleet-health-chart";
@@ -8,54 +7,62 @@ import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import {
   StatusBusListPanel,
+  getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
+import { usePanelNav } from "@/hooks/use-panel-nav";
 import type { Bus, WorkOrder } from "@/data/types";
 
+// Panels on Fleet Overview form a drill-down graph (list → bus → WO,
+// WO → bus, etc.). Each entry carries a short destination label that
+// the next panel in the chain renders as `Back to {label}`. See
+// src/hooks/use-panel-nav.ts for the stack machinery.
+type OpsPanelEntry =
+  | { kind: "busList"; label: string; busListKind: BusListKind }
+  | { kind: "bus"; label: string; bus: Bus }
+  | { kind: "workOrder"; label: string; workOrder: WorkOrder };
+
 export function OpsView() {
-  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
-    null
-  );
-  const [busListKind, setBusListKind] = useState<BusListKind | null>(null);
+  const nav = usePanelNav<OpsPanelEntry>();
+  const current = nav.current;
 
-  // Mutually exclusive: opening one detail panel clears the others so two
-  // right-side sheets are never stacked.
-  const openBus = (bus: Bus) => {
-    setSelectedWorkOrder(null);
-    setBusListKind(null);
-    setSelectedBus(bus);
-  };
-  const openWorkOrder = (wo: WorkOrder) => {
-    setSelectedBus(null);
-    setBusListKind(null);
-    setSelectedWorkOrder(wo);
-  };
-  const openBusList = (kind: BusListKind) => {
-    setSelectedBus(null);
-    setSelectedWorkOrder(null);
-    setBusListKind(kind);
-  };
-  // Cross-link from WO sheet → bus sheet. Wait for the WO sheet to fully
-  // close and unmount before opening the bus sheet — otherwise Radix's
-  // Presence can get stuck with both sheets stacked in the DOM because the
-  // first sheet's exit animation gets orphaned when the second one opens.
-  // Sheet close animation is 300ms, plus a small buffer.
-  const openBusFromWorkOrder = (bus: Bus) => {
-    setSelectedWorkOrder(null);
-    setTimeout(() => setSelectedBus(bus), 320);
-  };
-  // Same handoff from the bus-list sheet → the individual bus sheet.
-  const openBusFromBusList = (bus: Bus) => {
-    setBusListKind(null);
-    setTimeout(() => setSelectedBus(bus), 320);
-  };
+  // Root-entry callbacks: the click originates from the page (KPI strip,
+  // action card row, fleet chart, tracker), not from inside another
+  // panel. These `open` the nav with a fresh single-entry stack so no
+  // back button is shown.
+  const openBusList = (busListKind: BusListKind) =>
+    nav.open({
+      kind: "busList",
+      label: getBusListPillLabel(busListKind),
+      busListKind,
+    });
+  const openBusRoot = (bus: Bus) =>
+    nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
+  const openWorkOrderRoot = (wo: WorkOrder) =>
+    nav.open({ kind: "workOrder", label: wo.id, workOrder: wo });
 
-  const selectedWorkOrderBus = selectedWorkOrder
-    ? buses.find((b) => b.id === selectedWorkOrder.busId) ?? null
+  // Drill-down callbacks: the click originates from inside an already-
+  // open panel, so we `drill` to push a new entry on top. The hook
+  // handles the 320ms Radix Presence handoff and wires the back button
+  // for the new panel automatically.
+  const drillToBus = (bus: Bus) =>
+    nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
+  const drillToWorkOrder = (wo: WorkOrder) =>
+    nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo });
+
+  // Derive props for each panel from `current`. A panel is "open" only
+  // when `current` matches its kind — everything else reads null and
+  // stays closed.
+  const currentBus = current?.kind === "bus" ? current.bus : null;
+  const currentWorkOrder =
+    current?.kind === "workOrder" ? current.workOrder : null;
+  const currentWorkOrderBus = currentWorkOrder
+    ? buses.find((b) => b.id === currentWorkOrder.busId) ?? null
     : null;
+  const currentBusListKind =
+    current?.kind === "busList" ? current.busListKind : null;
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
@@ -85,27 +92,31 @@ export function OpsView() {
 
       <KpiStrip onOpenStatusList={openBusList} />
       <ActionCard
-        onBusClick={openBus}
+        onBusClick={openBusRoot}
         onViewAll={() => openBusList("overdue")}
       />
-      <FleetHealthChart onBusClick={openBus} />
-      <WorkOrderTracker onSelectWorkOrder={openWorkOrder} />
+      <FleetHealthChart onBusClick={openBusRoot} />
+      <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
       <BusDetailPanel
-        bus={selectedBus}
-        onClose={() => setSelectedBus(null)}
-        onSelectWorkOrder={openWorkOrder}
+        bus={currentBus}
+        onClose={nav.close}
+        onSelectWorkOrder={drillToWorkOrder}
+        backLabel={currentBus ? nav.backButton?.label : undefined}
+        onBack={currentBus ? nav.backButton?.onBack : undefined}
       />
       <WorkOrderDetailPanel
-        order={selectedWorkOrder}
-        bus={selectedWorkOrderBus}
-        onClose={() => setSelectedWorkOrder(null)}
-        onOpenBus={openBusFromWorkOrder}
+        order={currentWorkOrder}
+        bus={currentWorkOrderBus}
+        onClose={nav.close}
+        onOpenBus={drillToBus}
+        backLabel={currentWorkOrder ? nav.backButton?.label : undefined}
+        onBack={currentWorkOrder ? nav.backButton?.onBack : undefined}
       />
       <StatusBusListPanel
-        kind={busListKind}
-        onClose={() => setBusListKind(null)}
-        onSelectBus={openBusFromBusList}
+        kind={currentBusListKind}
+        onClose={nav.close}
+        onSelectBus={drillToBus}
       />
     </div>
   );

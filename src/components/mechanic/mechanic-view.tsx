@@ -16,6 +16,7 @@ import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
+import { usePanelNav } from "@/hooks/use-panel-nav";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 
 type MineScope = "mine" | "all";
@@ -28,45 +29,54 @@ const SUBTITLE: Record<"all" | "north" | "south", string> = {
   south: "active work orders in garage",
 };
 
+// Panels on Service Board: kanban → WO, banner → PM sheet → bus, WO ↔
+// bus drill-downs. The PmDueSheet joins the nav stack so clicking a
+// bus inside it gets an automatic `Back to Pull In Next` back button.
+// See src/hooks/use-panel-nav.ts for the stack machinery.
+type MechanicPanelEntry =
+  | { kind: "pmDue"; label: string }
+  | { kind: "bus"; label: string; bus: Bus }
+  | { kind: "workOrder"; label: string; workOrder: WorkOrder };
+
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [scope, setScope] = useState<MineScope>("mine");
-  const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
-  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
-    null
-  );
   const [isLogOpen, setIsLogOpen] = useState(false);
-  const [isPmSheetOpen, setIsPmSheetOpen] = useState(false);
   const { scope: depotScope } = useDepot();
   const { overdue: overdueCandidates, comingDue: comingDueCandidates } =
     useOverdueCandidates();
 
-  // Mutually exclusive: opening one right-side sheet clears the other so two
-  // sheets are never stacked.
-  const openBus = useCallback((bus: Bus) => {
-    setSelectedWorkOrder(null);
-    setSelectedBus(bus);
-  }, []);
-  const openWorkOrder = useCallback((wo: WorkOrder) => {
-    setSelectedBus(null);
-    setSelectedWorkOrder(wo);
-  }, []);
-  // Cross-link from WO sheet → bus sheet. Wait for the WO sheet to fully
-  // close and unmount before opening the bus sheet — otherwise Radix's
-  // Presence can get stuck with both sheets stacked in the DOM because the
-  // first sheet's exit animation gets orphaned when the second one opens.
-  // Sheet close animation is 300ms, plus a small buffer.
-  const openBusFromWorkOrder = useCallback((bus: Bus) => {
-    setSelectedWorkOrder(null);
-    setTimeout(() => setSelectedBus(bus), 320);
-  }, []);
-  // Same handoff from the PM sheet → individual bus sheet. Close the PM
-  // sheet first and wait for its exit animation before opening the bus
-  // sheet, for the same Radix Presence reason.
-  const openBusFromPmSheet = useCallback((bus: Bus) => {
-    setIsPmSheetOpen(false);
-    setTimeout(() => setSelectedBus(bus), 320);
-  }, []);
+  const nav = usePanelNav<MechanicPanelEntry>();
+  const current = nav.current;
+
+  // Root-entry opens come from the page (banner, kanban, intake form).
+  // These reset the stack so no back button is shown on the target.
+  const openPmDueSheet = useCallback(
+    () => nav.open({ kind: "pmDue", label: "Pull In Next" }),
+    [nav]
+  );
+  const openBusRoot = useCallback(
+    (bus: Bus) =>
+      nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus }),
+    [nav]
+  );
+  const openWorkOrderRoot = useCallback(
+    (wo: WorkOrder) => nav.open({ kind: "workOrder", label: wo.id, workOrder: wo }),
+    [nav]
+  );
+
+  // Drill-down opens come from inside an already-open panel — push on
+  // top of the stack and let the hook handle the 320ms handoff + back
+  // wiring.
+  const drillToBus = useCallback(
+    (bus: Bus) =>
+      nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus }),
+    [nav]
+  );
+  const drillToWorkOrder = useCallback(
+    (wo: WorkOrder) => nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo }),
+    [nav]
+  );
 
   // When the user clicks "Log new repair", we need a concrete garage to
   // assign the new WO to. If scope is "all", default to north (the demo
@@ -154,16 +164,16 @@ export function MechanicView() {
       ? garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC)
       : garageOrders;
 
-  // Re-derive the open WO from `orders` state so stage advance / complete
-  // updates the sheet in place. If the WO is completed (removed from orders),
-  // the memo returns null and the sheet closes itself.
-  const liveSelectedWorkOrder = useMemo(
-    () =>
-      selectedWorkOrder
-        ? orders.find((wo) => wo.id === selectedWorkOrder.id) ?? null
-        : null,
-    [selectedWorkOrder, orders]
-  );
+  // Derive per-panel props from `current`. Each panel opens only when
+  // `current` matches its kind; everything else reads null and stays
+  // closed. The WO is re-looked-up in `orders` so stage-advance /
+  // complete updates the sheet in place, and the sheet auto-closes
+  // if the WO is completed (removed from orders).
+  const currentBus = current?.kind === "bus" ? current.bus : null;
+  const liveSelectedWorkOrder = useMemo(() => {
+    if (current?.kind !== "workOrder") return null;
+    return orders.find((wo) => wo.id === current.workOrder.id) ?? null;
+  }, [current, orders]);
   const liveSelectedWorkOrderBus = useMemo(
     () =>
       liveSelectedWorkOrder
@@ -171,6 +181,7 @@ export function MechanicView() {
         : null,
     [liveSelectedWorkOrder]
   );
+  const isPmSheetOpen = current?.kind === "pmDue";
 
   // Most-recently-created unique bus numbers in this garage, for the form's
   // "Recent" chip row.
@@ -223,7 +234,7 @@ export function MechanicView() {
       <PmDueBanner
         overdueCount={overdueCandidates.length}
         comingDueCount={comingDueCandidates.length}
-        onClick={() => setIsPmSheetOpen(true)}
+        onClick={openPmDueSheet}
       />
 
       {/* Action row: scope toggle + log-new-repair CTA */}
@@ -246,24 +257,30 @@ export function MechanicView() {
         workOrders={visibleOrders}
         onStageChange={handleStageChange}
         onComplete={handleComplete}
-        onSelectWorkOrder={openWorkOrder}
+        onSelectWorkOrder={openWorkOrderRoot}
       />
 
       <BusDetailPanel
-        bus={selectedBus}
-        onClose={() => setSelectedBus(null)}
-        onSelectWorkOrder={openWorkOrder}
+        bus={currentBus}
+        onClose={nav.close}
+        onSelectWorkOrder={drillToWorkOrder}
+        backLabel={currentBus ? nav.backButton?.label : undefined}
+        onBack={currentBus ? nav.backButton?.onBack : undefined}
       />
       <WorkOrderDetailPanel
         order={liveSelectedWorkOrder}
         bus={liveSelectedWorkOrderBus}
-        onClose={() => setSelectedWorkOrder(null)}
-        onOpenBus={openBusFromWorkOrder}
+        onClose={nav.close}
+        onOpenBus={drillToBus}
+        backLabel={liveSelectedWorkOrder ? nav.backButton?.label : undefined}
+        onBack={liveSelectedWorkOrder ? nav.backButton?.onBack : undefined}
       />
       <PmDueSheet
         open={isPmSheetOpen}
-        onOpenChange={setIsPmSheetOpen}
-        onBusClick={openBusFromPmSheet}
+        onOpenChange={(open) => {
+          if (!open) nav.close();
+        }}
+        onBusClick={drillToBus}
       />
 
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
@@ -283,7 +300,7 @@ export function MechanicView() {
               // can inspect the related bus's history. They can re-open the
               // form after if they still want to log the current repair.
               setIsLogOpen(false);
-              setSelectedBus(bus);
+              openBusRoot(bus);
             }}
           />
         </DialogContent>
