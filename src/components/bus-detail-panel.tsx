@@ -11,7 +11,7 @@ import {
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
@@ -263,7 +263,7 @@ function PanelContent({
                     }}
                   >
                     <span style={{ fontFamily: "monospace" }}>{wo.id}</span>
-                    <span>{STAGES[wo.stage]}</span>
+                    <span>{STAGE_LABELS[wo.stage]}</span>
                   </div>
                   {wo.mechanicName && (
                     <div
