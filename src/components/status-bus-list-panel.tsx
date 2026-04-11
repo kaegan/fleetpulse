@@ -296,7 +296,7 @@ function BusRow({
     <button
       type="button"
       onClick={onClick}
-      className="text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[12px_14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+      className="text-left rounded-md border border-black/[0.06] bg-[#fafaf9] p-[12px_14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
     >
       {/* Top row: bus # + garage + kind-specific right value */}
       <div

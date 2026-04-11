@@ -164,7 +164,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
   const isMobile = width !== null && width < MOBILE_BREAKPOINT;
 
   return (
-    <Card className="mb-6 rounded-[24px] p-5 shadow-card sm:p-6">
+    <Card className="mb-6 rounded-lg p-5 shadow-card sm:p-6">
       {/* Header: title + caption on left, status legend on right.
           Depot filter used to live here as a local pill — it's now the
           global switcher in the top bar (`src/components/top-bar.tsx`), so
