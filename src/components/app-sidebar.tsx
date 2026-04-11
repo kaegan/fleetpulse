@@ -132,7 +132,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           onClick={() => {
             if (state === "collapsed") toggleSidebar();
           }}
-          className="min-h-8 flex-1 group-data-[collapsible=icon]:cursor-e-resize"
+          className="min-h-8 flex-1 group-data-[collapsible=icon]:cursor-pointer"
         />
       </SidebarContent>
 
