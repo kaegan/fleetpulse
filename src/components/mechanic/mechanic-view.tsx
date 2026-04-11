@@ -13,11 +13,55 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { buses } from "@/data/buses";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
-import { CURRENT_MECHANIC } from "@/lib/constants";
+import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
 import { usePanelNav } from "@/hooks/use-panel-nav";
-import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
+import type {
+  BlockReason,
+  Bus,
+  Garage,
+  PartsStatus,
+  Severity,
+  WorkOrder,
+  WorkOrderStage,
+} from "@/data/types";
+
+/**
+ * Resolve a requested stage transition against the parts gate.
+ *
+ * Forward-only gate: dragging a WO into Repairing while parts are unresolved
+ * auto-routes to Held with the matching blocker reason. Backward drags always
+ * succeed — mechanics need to correct their own mistakes without admin help
+ * (per PRODUCT_SPEC.md §2). Held → Repairing still has to pass through the
+ * parts gate like any other forward move.
+ */
+function resolveStageTransition(
+  wo: WorkOrder,
+  requested: WorkOrderStage
+): { stage: WorkOrderStage; blockReason?: BlockReason; notice?: string } {
+  const isForward = stageIndex(requested) > stageIndex(wo.stage);
+  if (!isForward) return { stage: requested };
+
+  if (requested === "repairing") {
+    if (wo.partsStatus === "needed") {
+      return {
+        stage: "held",
+        blockReason: "parts-needed",
+        notice: "Parts haven't been ordered — parked in Held.",
+      };
+    }
+    if (wo.partsStatus === "ordered") {
+      return {
+        stage: "held",
+        blockReason: "parts-ordered",
+        notice: "Parts on order — parked in Held until the kit arrives.",
+      };
+    }
+  }
+
+  return { stage: requested };
+}
 
 type MineScope = "mine" | "all";
 
@@ -83,15 +127,53 @@ export function MechanicView() {
   // mechanic's home garage). If scope is north/south, use that.
   const newRepairGarage: Garage = depotScope === "all" ? "north" : depotScope;
 
-  const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
-    setOrders((prev) =>
-      prev.map((wo) =>
-        wo.id === woId
-          ? { ...wo, stage: newStage, stageEnteredAt: new Date().toISOString() }
-          : wo
-      )
-    );
-  }, []);
+  const handleStageChange = useCallback(
+    (woId: string, newStage: WorkOrderStage) => {
+      setOrders((prev) => {
+        const wo = prev.find((o) => o.id === woId);
+        if (!wo) return prev;
+
+        const { stage, blockReason, notice } = resolveStageTransition(
+          wo,
+          newStage
+        );
+
+        // Always surface the notice — even when the card doesn't actually
+        // move (e.g. clicking advance on a blocked Held card). Otherwise
+        // the mechanic clicks the button and nothing happens.
+        if (notice) toast(notice);
+
+        if (stage === wo.stage) return prev;
+
+        const now = new Date().toISOString();
+        return prev.map((o) =>
+          o.id === woId
+            ? {
+                ...o,
+                stage,
+                stageEnteredAt: now,
+                // Preserve blockReason when landing in Held, clear it otherwise.
+                blockReason:
+                  stage === "held"
+                    ? blockReason ?? o.blockReason
+                    : undefined,
+                blockEta: stage === "held" ? o.blockEta : undefined,
+              }
+            : o
+        );
+      });
+    },
+    []
+  );
+
+  const handleUpdateParts = useCallback(
+    (woId: string, partsStatus: PartsStatus) => {
+      setOrders((prev) =>
+        prev.map((wo) => (wo.id === woId ? { ...wo, partsStatus } : wo))
+      );
+    },
+    []
+  );
 
   const handleComplete = useCallback((woId: string) => {
     setOrders((prev) => prev.filter((wo) => wo.id !== woId));
@@ -119,11 +201,13 @@ export function MechanicView() {
         busNumber: draft.busNumber,
         issue: draft.issue,
         severity: draft.severity,
-        stage: 0,
+        // New WOs land in Triage — the mechanic has the bus in the yard
+        // and still needs to do the walk-around before Diagnosing.
+        stage: "triage",
         bayNumber: null,
         garage: newRepairGarage,
         mechanicName: draft.assignedTo,
-        partsStatus: "n/a",
+        partsStatus: "not-needed",
         createdAt: now,
         stageEnteredAt: now,
       };
@@ -258,6 +342,7 @@ export function MechanicView() {
         onStageChange={handleStageChange}
         onComplete={handleComplete}
         onSelectWorkOrder={openWorkOrderRoot}
+        onUpdateParts={handleUpdateParts}
       />
 
       <BusDetailPanel

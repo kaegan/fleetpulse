@@ -10,7 +10,7 @@ import {
   SEVERITY_COLORS,
   SEVERITY_ICONS,
   SEVERITY_LABELS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
@@ -410,7 +410,7 @@ function RightValue({
         }}
       >
         {formatTimeInStatus(workOrder.stageEnteredAt)} in{" "}
-        {STAGES[workOrder.stage]}
+        {STAGE_LABELS[workOrder.stage]}
       </span>
     );
   }

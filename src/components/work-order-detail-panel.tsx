@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import type { Bus, WorkOrder } from "@/data/types";
 import {
-  STAGES,
+  STAGE_LABELS,
+  PARTS_STATUS_LABELS,
+  BLOCK_REASON_LABELS,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
@@ -150,7 +152,20 @@ function PanelContent({
         />
       </div>
       <p className="mb-[26px] pl-0.5 text-xs font-medium text-[#6a6a6a]">
-        Currently <strong className="text-[#222222]">{STAGES[order.stage]}</strong>
+        Currently{" "}
+        <strong className="text-[#222222]">{STAGE_LABELS[order.stage]}</strong>
+        {order.stage === "held" && order.blockReason && (
+          <>
+            {" · "}
+            <span className="text-[#b4541a]">
+              {BLOCK_REASON_LABELS[order.blockReason]}
+            </span>
+            {order.blockEta && <> · ETA {formatEta(order.blockEta)}</>}
+          </>
+        )}
+        {order.stage === "inbound" && order.arrivalEta && (
+          <> · ETA {formatEta(order.arrivalEta)}</>
+        )}
         {" · "}
         <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
       </p>
@@ -177,20 +192,8 @@ function PanelContent({
         />
         <InfoRow
           label="Parts"
-          value={
-            order.partsStatus === "available"
-              ? "Ready"
-              : order.partsStatus === "ordered"
-                ? "On order"
-                : "Not needed"
-          }
-          valueColor={
-            order.partsStatus === "available"
-              ? "#166534"
-              : order.partsStatus === "ordered"
-                ? "#92400e"
-                : undefined
-          }
+          value={PARTS_STATUS_LABELS[order.partsStatus]}
+          valueColor={partsColor(order.partsStatus)}
         />
       </InfoGrid>
 
@@ -346,6 +349,41 @@ function formatOpenedDate(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+// Compact ETA formatter for header/timeline hints. Drops the year since
+// everything shown here is within the next few days.
+function formatEta(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  if (sameDay) return time;
+  return `${d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })} ${time}`;
+}
+
+function partsColor(status: WorkOrder["partsStatus"]): string | undefined {
+  switch (status) {
+    case "in-stock":
+      return "#166534";
+    case "ordered":
+      return "#92400e";
+    case "needed":
+      return "#991b1b";
+    case "not-needed":
+    default:
+      return undefined;
+  }
 }
 
 function formatPmStatus(bus: Bus): string {
