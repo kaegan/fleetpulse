@@ -20,6 +20,7 @@ import {
   getCrossGarageCallout,
 } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
+import { BackButton } from "@/components/back-button";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
@@ -37,12 +38,18 @@ interface BusDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  // Drill-down back affordance. Present only when this panel was opened
+  // from another panel (e.g. the PM Due list) — see usePanelNav.
+  backLabel?: string;
+  onBack?: () => void;
 }
 
 export function BusDetailPanel({
   bus,
   onClose,
   onSelectWorkOrder,
+  backLabel,
+  onBack,
 }: BusDetailPanelProps) {
   // Snapshot the last non-null bus so the sheet keeps rendering its contents
   // through the close animation after the parent clears `bus`.
@@ -65,7 +72,12 @@ export function BusDetailPanel({
           service history.
         </ResponsiveSheetDescription>
         {displayBus && (
-          <PanelContent bus={displayBus} onSelectWorkOrder={onSelectWorkOrder} />
+          <PanelContent
+            bus={displayBus}
+            onSelectWorkOrder={onSelectWorkOrder}
+            backLabel={backLabel}
+            onBack={onBack}
+          />
         )}
       </ResponsiveSheetContent>
     </ResponsiveSheet>
@@ -75,9 +87,13 @@ export function BusDetailPanel({
 function PanelContent({
   bus,
   onSelectWorkOrder,
+  backLabel,
+  onBack,
 }: {
   bus: Bus;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  backLabel?: string;
+  onBack?: () => void;
 }) {
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
@@ -90,6 +106,8 @@ function PanelContent({
 
   return (
     <div className="p-5 sm:p-7">
+      {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
+
       {/* Bus number */}
       <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-[#222222]">
         Bus #{bus.busNumber}

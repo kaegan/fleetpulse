@@ -11,6 +11,7 @@ import {
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
+import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { TimeDisplay } from "@/components/time-display";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +34,10 @@ interface WorkOrderDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
   onOpenBus: (bus: Bus) => void;
+  // Drill-down back affordance. Present only when this panel was opened
+  // from another panel (e.g. a bus's active work order) — see usePanelNav.
+  backLabel?: string;
+  onBack?: () => void;
 }
 
 export function WorkOrderDetailPanel({
@@ -40,6 +45,8 @@ export function WorkOrderDetailPanel({
   bus,
   onClose,
   onOpenBus,
+  backLabel,
+  onBack,
 }: WorkOrderDetailPanelProps) {
   // Snapshot the last non-null order so the sheet keeps rendering its contents
   // through the close animation after the parent clears `order` (mirrors the
@@ -71,6 +78,8 @@ export function WorkOrderDetailPanel({
             order={displayOrder}
             bus={displayBus}
             onOpenBus={onOpenBus}
+            backLabel={backLabel}
+            onBack={onBack}
           />
         )}
       </ResponsiveSheetContent>
@@ -82,15 +91,21 @@ function PanelContent({
   order,
   bus,
   onOpenBus,
+  backLabel,
+  onBack,
 }: {
   order: WorkOrder;
   bus: Bus | null;
   onOpenBus: (bus: Bus) => void;
+  backLabel?: string;
+  onBack?: () => void;
 }) {
   const sev = SEVERITY_COLORS[order.severity];
 
   return (
     <div className="p-5 sm:p-7">
+      {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
+
       {/* ── Header: issue + meta row ───────────────────────────────────── */}
       {/* pr-11 keeps the h2 clear of the sheet close button in the top-right. */}
       <h2 className="mb-2 pr-11 text-[24px] font-bold leading-tight tracking-[-0.02em] text-[#222222]">

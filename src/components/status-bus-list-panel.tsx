@@ -96,7 +96,7 @@ const META: Record<BusListKind, StatusMeta> = {
     emptyMessage: "No road calls in this depot today.",
   },
   overdue: {
-    pillLabel: "Action Needed Today",
+    pillLabel: "Action Needed",
     // Borrow the ActionCard's coral treatment — this list is the "todo"
     // view, not the "PM Due" health view.
     pillColor: "#b4541a",
@@ -108,6 +108,12 @@ const META: Record<BusListKind, StatusMeta> = {
     emptyMessage: "Nothing overdue right now.",
   },
 };
+
+// Helper for back-button labels when drilling from this panel into a bus
+// detail. Reuses the pillLabel so copy stays in sync.
+export function getBusListPillLabel(kind: BusListKind): string {
+  return META[kind].pillLabel;
+}
 
 // Rows use the same "miles overdue in coral" styling for both pm-due (a seed
 // flag) and overdue (a derived set). Helper keeps the condition readable.
