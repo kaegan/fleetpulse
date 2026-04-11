@@ -6,36 +6,37 @@ import { ActionCard } from "./action-card";
 import { FleetHealthChart } from "./fleet-health-chart";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
-import { StatusBusListPanel } from "@/components/status-bus-list-panel";
+import {
+  StatusBusListPanel,
+  type BusListKind,
+} from "@/components/status-bus-list-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
-import { SectionPill } from "@/components/section-pill";
 import { buses } from "@/data/buses";
-import type { Bus, BusStatus, WorkOrder } from "@/data/types";
-import { IconRadarFillDuo18 } from "nucleo-ui-fill-duo-18";
+import type { Bus, WorkOrder } from "@/data/types";
 
 export function OpsView() {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
     null
   );
-  const [statusListKind, setStatusListKind] = useState<BusStatus | null>(null);
+  const [busListKind, setBusListKind] = useState<BusListKind | null>(null);
 
   // Mutually exclusive: opening one detail panel clears the others so two
   // right-side sheets are never stacked.
   const openBus = (bus: Bus) => {
     setSelectedWorkOrder(null);
-    setStatusListKind(null);
+    setBusListKind(null);
     setSelectedBus(bus);
   };
   const openWorkOrder = (wo: WorkOrder) => {
     setSelectedBus(null);
-    setStatusListKind(null);
+    setBusListKind(null);
     setSelectedWorkOrder(wo);
   };
-  const openStatusList = (status: BusStatus) => {
+  const openBusList = (kind: BusListKind) => {
     setSelectedBus(null);
     setSelectedWorkOrder(null);
-    setStatusListKind(status);
+    setBusListKind(kind);
   };
   // Cross-link from WO sheet → bus sheet. Wait for the WO sheet to fully
   // close and unmount before opening the bus sheet — otherwise Radix's
@@ -46,9 +47,9 @@ export function OpsView() {
     setSelectedWorkOrder(null);
     setTimeout(() => setSelectedBus(bus), 320);
   };
-  // Same handoff from the status-list sheet → the individual bus sheet.
-  const openBusFromStatusList = (bus: Bus) => {
-    setStatusListKind(null);
+  // Same handoff from the bus-list sheet → the individual bus sheet.
+  const openBusFromBusList = (bus: Bus) => {
+    setBusListKind(null);
     setTimeout(() => setSelectedBus(bus), 320);
   };
 
@@ -60,14 +61,6 @@ export function OpsView() {
     <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
       {/* Section header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ marginBottom: 10 }}>
-          <SectionPill
-            label="Fleet Overview"
-            color="#3b82f6"
-            bgColor="#eff6ff"
-            icon={<IconRadarFillDuo18 />}
-          />
-        </div>
         <h1
           style={{
             fontSize: 22,
@@ -90,8 +83,11 @@ export function OpsView() {
         </p>
       </div>
 
-      <KpiStrip onOpenStatusList={openStatusList} />
-      <ActionCard onBusClick={openBus} />
+      <KpiStrip onOpenStatusList={openBusList} />
+      <ActionCard
+        onBusClick={openBus}
+        onViewAll={() => openBusList("overdue")}
+      />
       <FleetHealthChart onBusClick={openBus} />
       <WorkOrderTracker onSelectWorkOrder={openWorkOrder} />
 
@@ -107,9 +103,9 @@ export function OpsView() {
         onOpenBus={openBusFromWorkOrder}
       />
       <StatusBusListPanel
-        status={statusListKind}
-        onClose={() => setStatusListKind(null)}
-        onSelectBus={openBusFromStatusList}
+        kind={busListKind}
+        onClose={() => setBusListKind(null)}
+        onSelectBus={openBusFromBusList}
       />
     </div>
   );

@@ -7,7 +7,7 @@ Fleet management tool for Transitland, a fictional paratransit agency. Built as 
 - **Product spec** — `PRODUCT_SPEC.md` (problem statement, stakeholders, success metrics, cross-domain inspiration, V1 feature scope, V2 roadmap). Start here for product intent.
 - **Jobs to be done** — `JTBD.md` (pain + job statements for both personas). Scope boundary for any new feature work — if something doesn't map to a JTBD here, don't build it.
 - **Visual system** — `DESIGN.md` (Airbnb-warm palette, coral/copper accent, Airbnb Cereal typography, three-layer shadows). Trust this for anything visual.
-- **Reference mockup** — `fleetpulse-role-switcher.jsx` in project root, for visual reference only (not production code).
+- **Reference mockup** — `reference/fleetpulse-role-switcher.jsx`, kept as a historical North Star from the early Figma Dev Mode iteration. The shipped UI has diverged (Linear-style sidebar, densified KPI cards, slimmed kanban, URL-routed views) — treat the mockup as inspiration, not spec.
 
 > ⚠️ Any reference to a "dark industrial" palette (`#0a0a0a` backgrounds, amber/blue role accents, garage-environment framing) from an older revision of this doc is stale. DESIGN.md is the source of truth.
 
@@ -20,17 +20,14 @@ Fleet management tool for Transitland, a fictional paratransit agency. Built as 
 
 ## Architecture Conventions
 
-### Role Switcher (Figma Dev Mode pattern)
-- Toggle in the top bar: "Mechanic" | "Ops Manager"
-- One click swaps the entire interface below
-- Active role gets its accent treatment; inactive is muted
-- State boolean — conditionally render different layout components
-- Same data layer, radically different UX
+### Role is conveyed by route, not by toggle
+- `/fleet-overview` → Ops Manager view
+- `/service-board` → Mechanic view
+- The sidebar is the switch surface. There is no per-view role context.
+- Same data layer, two radically different UX surfaces.
 
 ### Top Bar (shared)
-- Left: FleetPulse logo + current garage name
-- Center: Role switcher toggle
-- Right: Current date/time
+- Sidebar trigger, depot switcher. Role is conveyed by route, not by toggle.
 
 For the detailed view-by-view feature breakdown (kanban with drag-and-drop, fleet wall, KPI strip with availability sparkline, Domino's tracker with severity filter + bottleneck bar), see `PRODUCT_SPEC.md` § Feature Scope.
 

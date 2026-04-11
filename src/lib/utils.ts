@@ -150,19 +150,6 @@ export function formatTimeInStatus(isoDate: string): string {
   return `${days}d ${remainingHours}h`;
 }
 
-/** Format bus number with leading zeros */
-export function formatBusNumber(id: number): string {
-  return String(id).padStart(3, "0");
-}
-
-/** Get work orders for a specific bus */
-export function getWorkOrdersForBus(
-  workOrders: WorkOrder[],
-  busId: number
-): WorkOrder[] {
-  return workOrders.filter((wo) => wo.busId === busId);
-}
-
 /** Miles until next PM, can be negative if overdue */
 export function milesUntilPm(bus: Bus): number {
   return bus.nextPmDueMileage - bus.mileage;

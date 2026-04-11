@@ -89,39 +89,15 @@ function PanelContent({
   return (
     <div className="p-5 sm:p-7">
       {/* ── Header: issue + meta row ───────────────────────────────────── */}
-      <h2
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#222222",
-          letterSpacing: "-0.02em",
-          marginBottom: 8,
-          lineHeight: 1.2,
-          paddingRight: 44, // keep clear of the sheet close button
-        }}
-      >
+      {/* pr-11 keeps the h2 clear of the sheet close button in the top-right. */}
+      <h2 className="mb-2 pr-11 text-[24px] font-bold leading-tight tracking-[-0.02em] text-[#222222]">
         {order.issue}
       </h2>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          flexWrap: "wrap",
-          marginBottom: 28,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "monospace",
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#929292",
-          }}
-        >
+      <div className="mb-7 flex flex-wrap items-center gap-2">
+        <span className="font-mono text-xs font-semibold text-[#929292]">
           {order.id}
         </span>
-        <span style={{ fontSize: 12, color: "#d4d4d4" }}>&middot;</span>
+        <span className="text-xs text-[#d4d4d4]">&middot;</span>
         <Badge variant="outline" className="px-2.5 py-[3px]">
           Bus #{order.busNumber}
         </Badge>
@@ -130,12 +106,8 @@ function PanelContent({
           style={{ color: sev.text, background: sev.bg }}
         >
           <span
-            style={{
-              display: "flex",
-              color: sev.dot,
-              width: 14,
-              height: 14,
-            }}
+            className="flex h-3.5 w-3.5"
+            style={{ color: sev.dot }}
           >
             {SEVERITY_ICONS[order.severity]}
           </span>
@@ -144,7 +116,7 @@ function PanelContent({
       </div>
 
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <SectionPill
           label="Progress"
           color="#d4654a"
@@ -152,37 +124,21 @@ function PanelContent({
           icon={<IconClipboardListFillDuo18 />}
         />
       </div>
-      <div
-        style={{
-          background: "#fafaf9",
-          borderRadius: 14,
-          padding: "20px 18px 18px",
-          marginBottom: 8,
-          border: "1px solid rgba(0,0,0,0.04)",
-        }}
-      >
+      <div className="mb-2 rounded-md border border-black/[0.04] bg-[#fafaf9] px-[18px] pt-5 pb-[18px]">
         <StagePipeline
           currentStage={order.stage}
           severity={order.severity}
           size="lg"
         />
       </div>
-      <p
-        style={{
-          fontSize: 12,
-          fontWeight: 500,
-          color: "#6a6a6a",
-          marginBottom: 26,
-          paddingLeft: 2,
-        }}
-      >
-        Currently <strong style={{ color: "#222222" }}>{STAGES[order.stage]}</strong>
+      <p className="mb-[26px] pl-0.5 text-xs font-medium text-[#6a6a6a]">
+        Currently <strong className="text-[#222222]">{STAGES[order.stage]}</strong>
         {" · "}
         <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
       </p>
 
       {/* ── Assignment ─────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <SectionPill
           label="Assignment"
           color="#8b5cf6"
@@ -221,7 +177,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* ── Timeline ───────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <SectionPill
           label="Timeline"
           color="#64748b"
@@ -238,7 +194,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* ── Bus context ────────────────────────────────────────────────── */}
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <SectionPill
           label="Bus"
           color="#3b82f6"
@@ -247,44 +203,16 @@ function PanelContent({
         />
       </div>
       {bus ? (
-        <div
-          style={{
-            background: "#fafaf9",
-            borderRadius: 14,
-            padding: 16,
-            border: "1px solid rgba(0,0,0,0.06)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              marginBottom: 12,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#222222",
-                letterSpacing: "-0.02em",
-              }}
-            >
+        <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <span className="text-lg font-bold tracking-[-0.02em] text-[#222222]">
               Bus #{bus.busNumber}
             </span>
-            <span style={{ fontSize: 12, fontWeight: 500, color: "#929292" }}>
+            <span className="text-xs font-medium text-[#929292]">
               {bus.garage === "north" ? "North Garage" : "South Garage"}
             </span>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 12,
-              marginBottom: 14,
-            }}
-          >
+          <div className="mb-3.5 grid grid-cols-2 gap-3">
             <MiniStat label="Model" value={`${bus.model} ${bus.year}`} />
             <MiniStat
               label="Mileage"
@@ -307,14 +235,7 @@ function PanelContent({
           </Button>
         </div>
       ) : (
-        <p
-          style={{
-            fontSize: 13,
-            fontWeight: 500,
-            color: "#b5b5b5",
-            padding: "12px 0",
-          }}
-        >
+        <p className="py-3 text-[13px] font-medium text-[#b5b5b5]">
           Bus record not available.
         </p>
       )}
@@ -336,11 +257,9 @@ function InfoGrid({
   return (
     <div
       className={
-        cols === 2
-          ? "grid grid-cols-2 gap-2.5"
-          : "grid grid-cols-2 gap-2.5 sm:grid-cols-3"
+        "mb-[26px] grid grid-cols-2 gap-2.5 " +
+        (cols === 3 ? "sm:grid-cols-3" : "")
       }
-      style={{ marginBottom: 26 }}
     >
       {children}
     </div>
@@ -361,31 +280,13 @@ function InfoRow({
   muted?: boolean;
 }) {
   return (
-    <div
-      style={{
-        background: "#fafaf9",
-        borderRadius: 10,
-        padding: "10px 14px",
-        border: "1px solid rgba(0,0,0,0.04)",
-      }}
-    >
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 500,
-          color: "#b5b5b5",
-          marginBottom: 4,
-        }}
-      >
+    <div className="rounded-sm border border-black/[0.04] bg-[#fafaf9] px-3.5 py-2.5">
+      <div className="mb-1 text-[11px] font-medium text-[#b5b5b5]">
         {label}
       </div>
       <div
-        style={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: valueColor ?? (muted ? "#929292" : "#222222"),
-          letterSpacing: "-0.01em",
-        }}
+        className="text-sm font-semibold tracking-[-0.01em]"
+        style={{ color: valueColor ?? (muted ? "#929292" : "#222222") }}
       >
         {valueNode ?? value}
       </div>
@@ -404,24 +305,12 @@ function MiniStat({
 }) {
   return (
     <div>
-      <div
-        style={{
-          fontSize: 10,
-          fontWeight: 600,
-          color: "#b5b5b5",
-          textTransform: "uppercase",
-          letterSpacing: "0.04em",
-          marginBottom: 3,
-        }}
-      >
+      <div className="mb-[3px] text-[10px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
         {label}
       </div>
       <div
-        style={{
-          fontSize: 13,
-          fontWeight: 600,
-          color: valueColor ?? "#222222",
-        }}
+        className="text-[13px] font-semibold"
+        style={{ color: valueColor ?? "#222222" }}
       >
         {value}
       </div>

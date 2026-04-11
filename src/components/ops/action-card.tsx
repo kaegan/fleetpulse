@@ -12,6 +12,10 @@ import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface ActionCardProps {
   onBusClick: (bus: Bus) => void;
+  // Opens the slide-in panel listing every overdue bus. Called from the
+  // header count and the "+ N more" footer — any row in the short list
+  // still drills into a single bus via onBusClick.
+  onViewAll: () => void;
 }
 
 const MAX_ROWS = 5;
@@ -21,8 +25,10 @@ interface OverdueEntry {
   overdueMiles: number;
 }
 
-export function ActionCard({ onBusClick }: ActionCardProps) {
+export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [headerHovered, setHeaderHovered] = useState(false);
+  const [footerHovered, setFooterHovered] = useState(false);
   const { scope } = useDepot();
 
   const actionable = useMemo<OverdueEntry[]>(() => {
@@ -43,7 +49,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   // Positive empty state — still worth rendering the card so the layout stays stable.
   if (actionable.length === 0) {
     return (
-      <Card className="mb-6 flex flex-col items-start gap-3 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:gap-4 sm:p-6">
+      <Card className="mb-6 flex flex-col items-start gap-3 rounded-lg p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <SectionPill
           label="Fleet On Schedule"
           color="#22c55e"
@@ -64,7 +70,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   }
 
   return (
-    <Card className="mb-6 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:p-6">
+    <Card className="mb-6 rounded-lg p-5 shadow-card sm:p-6">
       {/* Header */}
       <div
         style={{
@@ -76,7 +82,19 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
           flexWrap: "wrap",
         }}
       >
-        <div>
+        <button
+          type="button"
+          onClick={onViewAll}
+          onMouseEnter={() => setHeaderHovered(true)}
+          onMouseLeave={() => setHeaderHovered(false)}
+          style={{
+            all: "unset",
+            display: "block",
+            cursor: "pointer",
+            maxWidth: "100%",
+          }}
+          aria-label={`View all ${actionable.length} overdue buses`}
+        >
           <div style={{ marginBottom: 10 }}>
             <SectionPill
               label="Action Needed Today"
@@ -89,14 +107,32 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
             style={{
               fontSize: 20,
               fontWeight: 700,
-              color: "#222222",
+              color: headerHovered ? "#b4541a" : "#222222",
               letterSpacing: "-0.02em",
               margin: 0,
               marginBottom: 3,
+              transition: "color 0.12s ease-out",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
-            {actionable.length} bus{actionable.length === 1 ? "" : "es"} overdue
-            for service
+            <span>
+              {actionable.length} bus{actionable.length === 1 ? "" : "es"} overdue
+              for service
+            </span>
+            <span
+              aria-hidden
+              style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: headerHovered ? "#b4541a" : "#cccccc",
+                transform: headerHovered ? "translateX(2px)" : "translateX(0)",
+                transition: "color 0.12s, transform 0.12s",
+              }}
+            >
+              →
+            </span>
           </h2>
           <p
             style={{
@@ -109,17 +145,11 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
             Schedule these before they break down on route. Top{" "}
             {Math.min(MAX_ROWS, actionable.length)} shown, ranked by urgency.
           </p>
-        </div>
+        </button>
       </div>
 
       {/* Action rows */}
-      <div
-        style={{
-          border: "1px solid #f0f0f0",
-          borderRadius: 14,
-          overflow: "hidden",
-        }}
-      >
+      <div>
         {topRows.map(({ bus, overdueMiles }, idx) => {
           const isHovered = hoveredId === bus.id;
           const isLast = idx === topRows.length - 1;
@@ -261,20 +291,44 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
         })}
       </div>
 
-      {/* Footer */}
-      {remainingCount > 0 && (
-        <div
+      {/* Footer — clickable link into the full overdue list. Always rendered
+          when there are any overdue buses so the affordance is discoverable
+          even before the list exceeds the top-5 cutoff. */}
+      {actionable.length > 0 && (
+        <button
+          type="button"
+          onClick={onViewAll}
+          onMouseEnter={() => setFooterHovered(true)}
+          onMouseLeave={() => setFooterHovered(false)}
           style={{
+            all: "unset",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
             marginTop: 12,
-            paddingLeft: 18,
+            marginLeft: 18,
             fontSize: 12,
-            fontWeight: 500,
-            color: "#929292",
+            fontWeight: 600,
+            color: footerHovered ? "#b4541a" : "#929292",
+            cursor: "pointer",
+            transition: "color 0.12s ease-out",
           }}
         >
-          + {remainingCount} more overdue bus
-          {remainingCount === 1 ? "" : "es"} further down the queue
-        </div>
+          <span>
+            {remainingCount > 0
+              ? `+ ${remainingCount} more overdue bus${remainingCount === 1 ? "" : "es"} — view all ${actionable.length}`
+              : `View all ${actionable.length} overdue bus${actionable.length === 1 ? "" : "es"}`}
+          </span>
+          <span
+            aria-hidden
+            style={{
+              transform: footerHovered ? "translateX(2px)" : "translateX(0)",
+              transition: "transform 0.12s",
+            }}
+          >
+            →
+          </span>
+        </button>
       )}
     </Card>
   );
