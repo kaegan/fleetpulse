@@ -41,7 +41,7 @@ export function PmDueBanner({
       type="button"
       onClick={onClick}
       aria-label={`Review ${overdueCount + comingDueCount} buses needing preventive maintenance`}
-      className="group mb-[18px] flex w-full items-center gap-3 rounded-2xl px-5 py-[14px] text-left transition-all hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      className="group mb-[18px] flex w-full cursor-pointer items-center gap-3 rounded-2xl px-5 py-[14px] text-left transition-all hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
       style={{
         background: "#fff4ed",
       }}
