@@ -6,7 +6,6 @@ import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
 import { PullInNextCard } from "./pull-in-next-card";
-import { SectionPill } from "@/components/section-pill";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -16,15 +15,15 @@ import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
-import { IconWrenchScrewdriverFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 type MineScope = "mine" | "all";
 
-// Visible header strings keyed by global depot scope.
-const HEADER: Record<"all" | "north" | "south", { title: string; subtitle: string }> = {
-  all: { title: "All Garages", subtitle: "active work orders in fleet" },
-  north: { title: "North Garage", subtitle: "active work orders in garage" },
-  south: { title: "South Garage", subtitle: "active work orders in garage" },
+// Subtitle suffix keyed by global depot scope. The h1 stays "Service Board";
+// garage context comes from the top-bar dropdown, not the page header.
+const SUBTITLE: Record<"all" | "north" | "south", string> = {
+  all: "active work orders in fleet",
+  north: "active work orders in garage",
+  south: "active work orders in garage",
 };
 
 export function MechanicView() {
@@ -182,14 +181,6 @@ export function MechanicView() {
     <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
       {/* Section header */}
       <div style={{ marginBottom: 22 }}>
-        <div style={{ marginBottom: 10 }}>
-          <SectionPill
-            label="Service Board"
-            color="#8b5cf6"
-            bgColor="#f5f3ff"
-            icon={<IconWrenchScrewdriverFillDuo18 />}
-          />
-        </div>
         <h1
           style={{
             fontSize: 22,
@@ -199,7 +190,7 @@ export function MechanicView() {
             marginBottom: 4,
           }}
         >
-          {HEADER[depotScope].title}
+          Service Board
         </h1>
         <p
           style={{
@@ -208,7 +199,7 @@ export function MechanicView() {
             color: "#929292",
           }}
         >
-          Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} {HEADER[depotScope].subtitle}
+          Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} {SUBTITLE[depotScope]}
         </p>
       </div>
 

@@ -11,10 +11,8 @@ import {
   type BusListKind,
 } from "@/components/status-bus-list-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
-import { SectionPill } from "@/components/section-pill";
 import { buses } from "@/data/buses";
 import type { Bus, WorkOrder } from "@/data/types";
-import { IconRadarFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 export function OpsView() {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
@@ -63,14 +61,6 @@ export function OpsView() {
     <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
       {/* Section header */}
       <div style={{ marginBottom: 28 }}>
-        <div style={{ marginBottom: 10 }}>
-          <SectionPill
-            label="Fleet Overview"
-            color="#3b82f6"
-            bgColor="#eff6ff"
-            icon={<IconRadarFillDuo18 />}
-          />
-        </div>
         <h1
           style={{
             fontSize: 22,
