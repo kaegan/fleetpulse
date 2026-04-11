@@ -8,7 +8,6 @@ import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
-import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface ActionCardProps {
   onBusClick: (bus: Bus) => void;
@@ -95,14 +94,6 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
           }}
           aria-label={`View all ${actionable.length} overdue buses`}
         >
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill
-              label="Action Needed Today"
-              color="#b4541a"
-              bgColor="#fff4ed"
-              icon={<IconTriangleWarningFillDuo18 />}
-            />
-          </div>
           <h2
             style={{
               fontSize: 20,

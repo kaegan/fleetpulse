@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { TrackerRow } from "./tracker-row";
-import { SectionPill } from "@/components/section-pill";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
@@ -15,7 +14,6 @@ import {
   stageIndex,
 } from "@/lib/constants";
 import type { Severity, WorkOrder } from "@/data/types";
-import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "All", value: "all" },
@@ -71,14 +69,6 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
     <div>
       {/* Section header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ marginBottom: 10 }}>
-          <SectionPill
-            label="Work Orders"
-            color="#d4654a"
-            bgColor="#fdf0ed"
-            icon={<IconClipboardListFillDuo18 />}
-          />
-        </div>
         <h2
           style={{
             fontSize: 18,
