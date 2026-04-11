@@ -12,6 +12,13 @@ import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface ActionCardProps {
   onBusClick: (bus: Bus) => void;
+  /**
+   * When provided, the "+ N more" footer becomes a clickable button that
+   * opens the same `BusListSheet` (`pm-due` category) the KPI strip uses.
+   * Optional so this card can still render with a static footer in contexts
+   * that don't wire a drill-down destination.
+   */
+  onSeeMoreClick?: () => void;
 }
 
 const MAX_ROWS = 5;
@@ -21,7 +28,7 @@ interface OverdueEntry {
   overdueMiles: number;
 }
 
-export function ActionCard({ onBusClick }: ActionCardProps) {
+export function ActionCard({ onBusClick, onSeeMoreClick }: ActionCardProps) {
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const { scope } = useDepot();
 
@@ -261,21 +268,59 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
         })}
       </div>
 
-      {/* Footer */}
-      {remainingCount > 0 && (
-        <div
-          style={{
-            marginTop: 12,
-            paddingLeft: 18,
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#929292",
-          }}
-        >
-          + {remainingCount} more overdue bus
-          {remainingCount === 1 ? "" : "es"} further down the queue
-        </div>
-      )}
+      {/* Footer — when there are more overdue buses than the top rows show,
+          the footer becomes a button that opens the same BusListSheet the
+          KPI strip uses (triage drill-down, not random-access browse).
+          Falls back to static text if no destination is wired.
+
+          TODO: ActionCard's actionable filter is `milesUntilPm < 0 && !inActiveWO`
+          while BusListSheet's `pm-due` filter is `status === "pm-due"`. Both
+          coincide in current seed data; if they drift, extract a shared
+          getActionablePmBuses() helper into lib/utils so both surfaces consume
+          the same source of truth. */}
+      {remainingCount > 0 &&
+        (onSeeMoreClick ? (
+          <button
+            type="button"
+            onClick={onSeeMoreClick}
+            className="group mt-3 flex w-full cursor-pointer items-center justify-between rounded-[12px] border border-[#f0f0f0] bg-white px-4 py-3 text-left transition-all duration-150 ease-out hover:border-[#e6dccf] hover:bg-[#fff9f3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d4654a]/40"
+            style={{ fontFamily: "inherit" }}
+          >
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#b4541a",
+                letterSpacing: "-0.005em",
+              }}
+            >
+              View all {actionable.length} overdue buses
+            </span>
+            <span
+              className="transition-transform duration-150 group-hover:translate-x-0.5"
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#b4541a",
+              }}
+            >
+              →
+            </span>
+          </button>
+        ) : (
+          <div
+            style={{
+              marginTop: 12,
+              paddingLeft: 18,
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#929292",
+            }}
+          >
+            + {remainingCount} more overdue bus
+            {remainingCount === 1 ? "" : "es"} further down the queue
+          </div>
+        ))}
     </Card>
   );
 }
