@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 import {
   STAGE_LABELS,
   PARTS_STATUS_LABELS,
@@ -9,6 +9,7 @@ import {
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
+  OUTCOME_STYLES,
   PM_INTERVAL_MILES,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
@@ -26,6 +27,13 @@ import {
 
 interface WorkOrderDetailPanelProps {
   order: WorkOrder | null;
+  /**
+   * Completed historical service entry. When provided (and `order` is null),
+   * the panel renders in historical mode: outcome badge in the header,
+   * Service Details grid, and an optional handoff note callout. No stage
+   * pipeline or parts/bay/timeline UI.
+   */
+  historyEntry: BusHistoryEntry | null;
   bus: Bus | null;
   onClose: () => void;
   onOpenBus: (bus: Bus) => void;
@@ -37,40 +45,57 @@ interface WorkOrderDetailPanelProps {
 
 export function WorkOrderDetailPanel({
   order,
+  historyEntry,
   bus,
   onClose,
   onOpenBus,
   backLabel,
   onBack,
 }: WorkOrderDetailPanelProps) {
-  // Snapshot the last non-null order so the sheet keeps rendering its contents
-  // through the close animation after the parent clears `order` (mirrors the
-  // BusDetailPanel pattern).
+  // Snapshot the last non-null record so the sheet keeps rendering its
+  // contents through the close animation after the parent clears the props.
+  // Only one of displayOrder/displayHistoryEntry is non-null at a time —
+  // when a new record arrives, we clear the other so the branch picks the
+  // right body. We do NOT clear on double-null so the outgoing content
+  // stays visible during the 320ms swap handoff.
   const [displayOrder, setDisplayOrder] = useState<WorkOrder | null>(order);
+  const [displayHistoryEntry, setDisplayHistoryEntry] =
+    useState<BusHistoryEntry | null>(historyEntry);
   const [displayBus, setDisplayBus] = useState<Bus | null>(bus);
   useEffect(() => {
-    if (order) setDisplayOrder(order);
+    if (order) {
+      setDisplayOrder(order);
+      setDisplayHistoryEntry(null);
+    } else if (historyEntry) {
+      setDisplayHistoryEntry(historyEntry);
+      setDisplayOrder(null);
+    }
     if (bus) setDisplayBus(bus);
-  }, [order, bus]);
+  }, [order, historyEntry, bus]);
+
+  const titleText = displayOrder
+    ? `Work order ${displayOrder.id} details`
+    : displayHistoryEntry
+      ? `Service history ${displayHistoryEntry.id} details`
+      : "Work order details";
 
   return (
     <ResponsiveSheet
-      open={Boolean(order)}
+      open={Boolean(order || historyEntry)}
       onOpenChange={(open) => !open && onClose()}
     >
       <ResponsiveSheetContent side="right" className="p-0">
         <ResponsiveSheetTitle className="sr-only">
-          {displayOrder
-            ? `Work order ${displayOrder.id} details`
-            : "Work order details"}
+          {titleText}
         </ResponsiveSheetTitle>
         <ResponsiveSheetDescription className="sr-only">
           Issue, stage progress, assignment, timeline, and the bus this work
           order is attached to.
         </ResponsiveSheetDescription>
-        {displayOrder && (
+        {(displayOrder || displayHistoryEntry) && (
           <PanelContent
             order={displayOrder}
+            historyEntry={displayHistoryEntry}
             bus={displayBus}
             onOpenBus={onOpenBus}
             backLabel={backLabel}
@@ -84,18 +109,28 @@ export function WorkOrderDetailPanel({
 
 function PanelContent({
   order,
+  historyEntry,
   bus,
   onOpenBus,
   backLabel,
   onBack,
 }: {
-  order: WorkOrder;
+  order: WorkOrder | null;
+  historyEntry: BusHistoryEntry | null;
   bus: Bus | null;
   onOpenBus: (bus: Bus) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
-  const sev = SEVERITY_COLORS[order.severity];
+  // Exactly one of order / historyEntry is non-null (enforced by the
+  // wrapper's snapshot effect). Pull a few shared header fields off
+  // whichever record is active.
+  const record = order ?? historyEntry!;
+  const sev = SEVERITY_COLORS[record.severity];
+  // History entries don't carry a busNumber, so fall back to the bus
+  // context (always passed in alongside the entry by the drill caller).
+  const busNumber = order ? order.busNumber : bus?.busNumber ?? "—";
+  const outcome = historyEntry ? OUTCOME_STYLES[historyEntry.outcome] : null;
 
   return (
     <div className="p-5 sm:p-7">
@@ -104,15 +139,15 @@ function PanelContent({
       {/* ── Header: issue + meta row ───────────────────────────────────── */}
       {/* pr-11 keeps the h2 clear of the sheet close button in the top-right. */}
       <h2 className="mb-2 pr-11 text-[24px] font-bold leading-tight tracking-[-0.02em] text-[#222222]">
-        {order.issue}
+        {record.issue}
       </h2>
       <div className="mb-7 flex flex-wrap items-center gap-2">
         <span className="font-mono text-xs font-semibold text-[#929292]">
-          {order.id}
+          {record.id}
         </span>
         <span className="text-xs text-[#d4d4d4]">&middot;</span>
         <Badge variant="outline" className="px-2.5 py-[3px]">
-          Bus #{order.busNumber}
+          Bus #{busNumber}
         </Badge>
         <Badge
           className="px-2.5 py-[3px] gap-1"
@@ -122,12 +157,76 @@ function PanelContent({
             className="flex h-3.5 w-3.5"
             style={{ color: sev.dot }}
           >
-            {SEVERITY_ICONS[order.severity]}
+            {SEVERITY_ICONS[record.severity]}
           </span>
-          {SEVERITY_LABELS[order.severity]}
+          {SEVERITY_LABELS[record.severity]}
         </Badge>
+        {outcome && (
+          <Badge
+            className="px-2.5 py-[3px]"
+            style={{ color: outcome.color, background: outcome.bg }}
+          >
+            {outcome.label}
+          </Badge>
+        )}
       </div>
 
+      {order ? (
+        <ActiveWorkOrderBody order={order} />
+      ) : (
+        <HistoryEntryBody entry={historyEntry!} />
+      )}
+
+      {/* ── Bus context ────────────────────────────────────────────────── */}
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Bus</h3>
+      {bus ? (
+        <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
+          <div className="mb-3 flex items-baseline justify-between">
+            <span className="text-lg font-bold tracking-[-0.02em] text-[#222222]">
+              Bus #{bus.busNumber}
+            </span>
+            <span className="text-xs font-medium text-[#929292]">
+              {bus.garage === "north" ? "North Garage" : "South Garage"}
+            </span>
+          </div>
+          <div className="mb-3.5 grid grid-cols-2 gap-3">
+            <MiniStat label="Model" value={`${bus.model} ${bus.year}`} />
+            <MiniStat
+              label="Mileage"
+              value={`${formatNumber(bus.mileage)} mi`}
+            />
+            <MiniStat
+              label="Next PM"
+              value={formatPmStatus(bus)}
+              valueColor={pmColor(bus)}
+            />
+            <MiniStat label="Last PM" value={`${formatNumber(bus.lastPmMileage)} mi`} />
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={() => onOpenBus(bus)}
+          >
+            View full bus details <span aria-hidden>→</span>
+          </Button>
+        </div>
+      ) : (
+        <p className="py-3 text-[13px] font-medium text-[#b5b5b5]">
+          Bus record not available.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ── Body branches ────────────────────────────────────────────────────────
+// Sibling components keep PanelContent readable. Both rely on the local
+// InfoGrid/InfoRow/MiniStat helpers below.
+
+function ActiveWorkOrderBody({ order }: { order: WorkOrder }) {
+  return (
+    <>
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
       <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Progress</h3>
       <div className="mb-2 rounded-md border border-black/[0.04] bg-[#fafaf9] px-[18px] pt-5 pb-[18px]">
@@ -185,47 +284,36 @@ function PanelContent({
           valueNode={<TimeDisplay isoDate={order.stageEnteredAt} />}
         />
       </InfoGrid>
+    </>
+  );
+}
 
-      {/* ── Bus context ────────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Bus</h3>
-      {bus ? (
-        <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
-          <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-lg font-bold tracking-[-0.02em] text-[#222222]">
-              Bus #{bus.busNumber}
-            </span>
-            <span className="text-xs font-medium text-[#929292]">
-              {bus.garage === "north" ? "North Garage" : "South Garage"}
-            </span>
+function HistoryEntryBody({ entry }: { entry: BusHistoryEntry }) {
+  return (
+    <>
+      {/* ── Service Details ────────────────────────────────────────────── */}
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Service Details</h3>
+      <InfoGrid>
+        <InfoRow label="Mechanic" value={entry.mechanicName} />
+        <InfoRow
+          label="Garage"
+          value={entry.garage === "north" ? "North" : "South"}
+        />
+        <InfoRow label="Completed" value={formatHistoryDate(entry.date)} />
+      </InfoGrid>
+
+      {/* ── Handoff note (optional) ────────────────────────────────────── */}
+      {entry.note && (
+        <>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Handoff Note</h3>
+          <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9] px-4 py-3.5">
+            <p className="text-[13px] font-medium italic leading-[1.5] text-[#6a6a6a]">
+              &ldquo;{entry.note}&rdquo;
+            </p>
           </div>
-          <div className="mb-3.5 grid grid-cols-2 gap-3">
-            <MiniStat label="Model" value={`${bus.model} ${bus.year}`} />
-            <MiniStat
-              label="Mileage"
-              value={`${formatNumber(bus.mileage)} mi`}
-            />
-            <MiniStat
-              label="Next PM"
-              value={formatPmStatus(bus)}
-              valueColor={pmColor(bus)}
-            />
-            <MiniStat label="Last PM" value={`${formatNumber(bus.lastPmMileage)} mi`} />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => onOpenBus(bus)}
-          >
-            View full bus details <span aria-hidden>→</span>
-          </Button>
-        </div>
-      ) : (
-        <p className="py-3 text-[13px] font-medium text-[#b5b5b5]">
-          Bus record not available.
-        </p>
+        </>
       )}
-    </div>
+    </>
   );
 }
 
@@ -313,6 +401,18 @@ function formatOpenedDate(iso: string): string {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+  });
+}
+
+// Used by HistoryEntryBody. Mirrors the formatter in bus-detail-panel.tsx
+// (kept inline rather than shared — three lines, two callers, one would
+// import the other otherwise).
+function formatHistoryDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 

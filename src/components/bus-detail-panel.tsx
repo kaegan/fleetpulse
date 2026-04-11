@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 import { workOrders } from "@/data/work-orders";
 import { getBusHistory } from "@/data/bus-history";
 import {
+  OUTCOME_STYLES,
   STATUS_COLORS,
   STATUS_LABELS,
   PM_INTERVAL_MILES,
@@ -31,6 +32,7 @@ interface BusDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   // Drill-down back affordance. Present only when this panel was opened
   // from another panel (e.g. the PM Due list) — see usePanelNav.
   backLabel?: string;
@@ -41,6 +43,7 @@ export function BusDetailPanel({
   bus,
   onClose,
   onSelectWorkOrder,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: BusDetailPanelProps) {
@@ -68,6 +71,7 @@ export function BusDetailPanel({
           <PanelContent
             bus={displayBus}
             onSelectWorkOrder={onSelectWorkOrder}
+            onSelectHistoryEntry={onSelectHistoryEntry}
             backLabel={backLabel}
             onBack={onBack}
           />
@@ -80,11 +84,13 @@ export function BusDetailPanel({
 function PanelContent({
   bus,
   onSelectWorkOrder,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: {
   bus: Bus;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
@@ -289,7 +295,11 @@ function PanelContent({
       )}
 
       {/* Service History */}
-      <ServiceHistorySection bus={bus} history={history} />
+      <ServiceHistorySection
+        bus={bus}
+        history={history}
+        onSelectEntry={onSelectHistoryEntry}
+      />
     </div>
   );
 }
@@ -301,9 +311,11 @@ function PanelContent({
 function ServiceHistorySection({
   bus,
   history,
+  onSelectEntry,
 }: {
   bus: Bus;
   history: BusHistoryEntry[];
+  onSelectEntry?: (entry: BusHistoryEntry) => void;
 }) {
   // Cross-garage callout: show when the most recent history entry is from the
   // *other* garage and within the last 14 days. This is the JTBD hero moment.
@@ -333,6 +345,7 @@ function ServiceHistorySection({
               key={entry.id}
               entry={entry}
               currentGarage={bus.garage}
+              onClick={onSelectEntry}
             />
           ))}
         </div>
@@ -418,22 +431,27 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
 function HistoryEntryRow({
   entry,
   currentGarage,
+  onClick,
 }: {
   entry: BusHistoryEntry;
   currentGarage: Bus["garage"];
+  onClick?: (entry: BusHistoryEntry) => void;
 }) {
   const isOtherGarage = entry.garage !== currentGarage;
   const garageLabel = entry.garage === "north" ? "North" : "South";
   const outcome = OUTCOME_STYLES[entry.outcome];
+  const isInteractive = Boolean(onClick);
 
   return (
-    <div
-      style={{
-        background: "#fafaf9",
-        borderRadius: 14,
-        padding: 14,
-        border: "1px solid rgba(0,0,0,0.06)",
-      }}
+    <button
+      type="button"
+      onClick={onClick ? () => onClick(entry) : undefined}
+      disabled={!isInteractive}
+      className={
+        isInteractive
+          ? "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+          : "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px]"
+      }
     >
       {/* Top row: date + garage + outcome */}
       <div
@@ -528,15 +546,9 @@ function HistoryEntryRow({
           &ldquo;{entry.note}&rdquo;
         </div>
       )}
-    </div>
+    </button>
   );
 }
-
-const OUTCOME_STYLES: Record<HistoryOutcome, { label: string; color: string; bg: string }> = {
-  completed: { label: "Completed", color: "#166534", bg: "#f0fdf4" },
-  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
-  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
-};
 
 function formatHistoryDate(isoDate: string): string {
   const d = new Date(isoDate);
