@@ -17,7 +17,7 @@ const DrawerOverlay = React.forwardRef<
   <DrawerPrimitive.Overlay
     ref={ref}
     data-slot="drawer-overlay"
-    className={cn("fixed inset-0 z-40 bg-black/30", className)}
+    className={cn("fixed inset-0 z-40 bg-[var(--color-scrim)]", className)}
     {...props}
   />
 ));
@@ -65,7 +65,7 @@ const DrawerContent = React.forwardRef<
         />
         <span
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/25"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-border-strong"
         />
       </div>
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">

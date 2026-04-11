@@ -27,7 +27,11 @@ export default async function RootLayout({
   const defaultOpen = sidebarState === undefined ? true : sidebarState === "true";
 
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full flex flex-col">
         <AppShell defaultOpen={defaultOpen}>{children}</AppShell>
         <Toaster />

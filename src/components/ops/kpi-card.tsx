@@ -46,11 +46,11 @@ function deltaColor(
   delta: number,
   direction: DeltaDirection
 ): string {
-  if (delta === 0) return "#929292";
+  if (delta === 0) return "var(--color-text-muted)";
   const isGood =
     (delta > 0 && direction === "up-is-good") ||
     (delta < 0 && direction === "down-is-good");
-  return isGood ? "#16a34a" : "#dc2626";
+  return isGood ? "var(--color-severity-routine-text)" : "var(--color-status-maintenance)";
 }
 
 /** Inline delta chip: "↑2" / "↓2" / "—" with status-aware coloring. */
@@ -190,22 +190,10 @@ export function KpiCard({
           />
         </div>
       ) : suffix === "%" && !hasCountFooter ? (
-        <div
-          style={{
-            marginTop: 20,
-            height: 8,
-            background: "#f2f2f2",
-            borderRadius: 999,
-            overflow: "hidden",
-          }}
-        >
+        <div className="mt-5 h-2 overflow-hidden rounded-pill bg-muted">
           <div
-            style={{
-              height: "100%",
-              width: `${value}%`,
-              background: color,
-              borderRadius: 999,
-            }}
+            className="h-full rounded-pill"
+            style={{ width: `${value}%`, background: color }}
           />
         </div>
       ) : null}
@@ -213,22 +201,26 @@ export function KpiCard({
       {/* Primary-card forecast row (Fleet Availability only) */}
       {forecast !== undefined && !hasCountFooter && (
         <div className="mt-3.5 flex flex-wrap items-center gap-2">
-          <span className="text-[13px] font-medium text-[#6a6a6a]">
+          <span className="text-[13px] font-medium text-text-secondary">
             Tomorrow (est.)
           </span>
           <span
             className="text-[15px] font-bold"
-            style={{ color: forecast > value ? "#22c55e" : "#6a6a6a" }}
+            style={{
+              color: forecast > value
+                ? "var(--color-status-running)"
+                : "var(--color-text-secondary)",
+            }}
           >
             {forecast.toFixed(1)}%
           </span>
           {forecastCount !== undefined && (
-            <span className="text-[13px] font-medium text-[#929292]">
+            <span className="text-[13px] font-medium text-text-muted">
               · {forecastCount} buses
             </span>
           )}
           {forecast > value && (
-            <span className="text-[13px] font-semibold text-[#22c55e]">
+            <span className="text-[13px] font-semibold" style={{ color: "var(--color-status-running)" }}>
               +{(forecast - value).toFixed(1)}
             </span>
           )}
@@ -237,13 +229,13 @@ export function KpiCard({
 
       {/* Count-card footer: Yesterday + Tomorrow rows */}
       {hasCountFooter && (
-        <div className="mt-5 flex flex-col gap-1.5 border-t border-black/[0.06] pt-3">
+        <div className="mt-5 flex flex-col gap-1.5 border-t border-border pt-3">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
+            <span className="min-w-0 truncate text-xs font-medium text-text-muted">
               Yesterday
             </span>
             <div className="flex shrink-0 items-baseline gap-2">
-              <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
+              <span className="text-[13px] font-semibold text-text-secondary tabular-nums">
                 {yesterdayValue}
               </span>
               <DeltaChip delta={yesterdayDelta} direction={deltaDirection} />
@@ -251,11 +243,11 @@ export function KpiCard({
           </div>
           {forecastValue !== undefined && (
             <div className="flex items-baseline justify-between gap-2">
-              <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
+              <span className="min-w-0 truncate text-xs font-medium text-text-muted">
                 Tomorrow (est.)
               </span>
               <div className="flex shrink-0 items-baseline gap-2">
-                <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
+                <span className="text-[13px] font-semibold text-text-secondary tabular-nums">
                   {forecastValue}
                 </span>
                 <DeltaChip delta={forecastDelta} direction={deltaDirection} />

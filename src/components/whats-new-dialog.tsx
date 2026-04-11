@@ -23,9 +23,9 @@ const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 const CATEGORY_CLASSES: Record<Category, string> = {
-  feature: "bg-[#fdf0ed] text-[#d4654a]",
-  improvement: "bg-[#eff6ff] text-[#3b82f6]",
-  fix: "bg-[#f0fdf4] text-[#22c55e]",
+  feature: "bg-brand-light text-brand",
+  improvement: "bg-[var(--color-stage-diagnosing-bg)] text-[var(--color-stage-diagnosing)]",
+  fix: "bg-[var(--color-severity-routine-bg)] text-[var(--color-severity-routine)]",
 };
 
 function formatDate(iso: string): string {
@@ -53,20 +53,20 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
             <DialogTitle className="mt-2.5 text-[22px] font-bold tracking-[-0.03em] text-foreground">
               Latest updates
             </DialogTitle>
-            <p className="mt-1 text-sm font-medium text-[#929292]">
+            <p className="mt-1 text-sm font-medium text-text-muted">
               Recent changes that affect what you see and do in FleetPulse.
             </p>
           </div>
 
           {/* Entries */}
           {entries.length === 0 ? (
-            <p className="text-sm text-[#929292]">Nothing new to report yet.</p>
+            <p className="text-sm text-text-muted">Nothing new to report yet.</p>
           ) : (
             <ul className="flex flex-col">
               {entries.map((entry) => (
                 <li
                   key={entry.id}
-                  className="border-t border-[rgba(0,0,0,0.06)] py-4 first:border-t-0 first:pt-0"
+                  className="border-t border-border py-4 first:border-t-0 first:pt-0"
                 >
                   <div className="mb-2 flex items-center gap-2.5">
                     <Badge
@@ -75,14 +75,14 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                     >
                       {CATEGORY_LABEL[entry.category]}
                     </Badge>
-                    <span className="text-xs font-medium text-[#b5b5b5]">
+                    <span className="text-xs font-medium text-text-faint">
                       {formatDate(entry.date)}
                     </span>
                   </div>
                   <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-foreground">
                     {entry.title}
                   </h3>
-                  <p className="mt-1 text-sm font-medium leading-relaxed text-[#6a6a6a]">
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-text-secondary">
                     {entry.body}
                   </p>
                 </li>

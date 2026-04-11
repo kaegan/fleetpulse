@@ -52,14 +52,14 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
       <Card className="mb-6 flex flex-col items-start gap-3 rounded-lg p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <SectionPill
           label="Fleet On Schedule"
-          color="#22c55e"
-          bgColor="#f0fdf4"
+          color="var(--color-status-running)"
+          bgColor="var(--color-status-running-bg)"
         />
         <p
           style={{
             fontSize: 14,
             fontWeight: 500,
-            color: "#6a6a6a",
+            color: "var(--color-text-secondary)",
             margin: 0,
           }}
         >
@@ -98,8 +98,8 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
           <div style={{ marginBottom: 10 }}>
             <SectionPill
               label="Action Needed Today"
-              color="#b4541a"
-              bgColor="#fff4ed"
+              color="var(--color-brand)"
+              bgColor="var(--color-brand-light)"
               icon={<IconTriangleWarningFillDuo18 />}
             />
           </div>
@@ -107,7 +107,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
             style={{
               fontSize: 20,
               fontWeight: 700,
-              color: headerHovered ? "#b4541a" : "#222222",
+              color: headerHovered ? "var(--color-brand)" : "var(--color-text-primary)",
               letterSpacing: "-0.02em",
               margin: 0,
               marginBottom: 3,
@@ -126,7 +126,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
               style={{
                 fontSize: 16,
                 fontWeight: 500,
-                color: headerHovered ? "#b4541a" : "#cccccc",
+                color: headerHovered ? "var(--color-brand)" : "var(--color-text-faint)",
                 transform: headerHovered ? "translateX(2px)" : "translateX(0)",
                 transition: "color 0.12s, transform 0.12s",
               }}
@@ -138,7 +138,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
             style={{
               fontSize: 13,
               fontWeight: 500,
-              color: "#929292",
+              color: "var(--color-text-muted)",
               margin: 0,
             }}
           >
@@ -154,8 +154,8 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
           const isHovered = hoveredId === bus.id;
           const isLast = idx === topRows.length - 1;
           const garageColor =
-            bus.garage === "north" ? "#3b82f6" : "#7c3aed";
-          const garageBg = bus.garage === "north" ? "#eff6ff" : "#f5f3ff";
+            bus.garage === "north" ? "var(--color-stage-diagnosing)" : "var(--color-kpi-availability)";
+          const garageBg = bus.garage === "north" ? "var(--color-stage-diagnosing-bg)" : "var(--color-kpi-availability-bg)";
 
           return (
             <button
@@ -167,8 +167,8 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
               className="grid w-full items-center gap-3 p-[12px_14px] grid-cols-[auto_auto_1fr_16px] sm:gap-4 sm:p-[14px_18px] sm:grid-cols-[auto_auto_1fr_auto_auto_16px]"
               style={{
                 border: "none",
-                borderBottom: isLast ? "none" : "1px solid #f0f0f0",
-                background: isHovered ? "#fafaf9" : "#ffffff",
+                borderBottom: isLast ? "none" : "1px solid var(--color-border)",
+                background: isHovered ? "var(--color-card-hover)" : "var(--color-surface)",
                 cursor: "pointer",
                 transition: "background 0.12s ease-out",
                 fontFamily: "inherit",
@@ -181,7 +181,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: "#a3a3a3",
+                  color: "var(--color-text-muted)",
                   width: 14,
                   textAlign: "right",
                   letterSpacing: "0.02em",
@@ -195,7 +195,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                 className="text-[14px] sm:text-[15px]"
                 style={{
                   fontWeight: 700,
-                  color: "#222222",
+                  color: "var(--color-text-primary)",
                   letterSpacing: "-0.01em",
                 }}
               >
@@ -234,7 +234,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   className="text-[15px] sm:text-[17px]"
                   style={{
                     fontWeight: 800,
-                    color: "#b4541a",
+                    color: "var(--color-brand)",
                     letterSpacing: "-0.01em",
                     fontVariantNumeric: "tabular-nums",
                   }}
@@ -245,7 +245,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   className="text-[10px] sm:text-[11px]"
                   style={{
                     fontWeight: 600,
-                    color: "#b4541a",
+                    color: "var(--color-brand)",
                     letterSpacing: "0.03em",
                     textTransform: "uppercase",
                   }}
@@ -260,7 +260,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                 style={{
                   fontSize: 12,
                   fontWeight: 500,
-                  color: "#929292",
+                  color: "var(--color-text-muted)",
                   fontVariantNumeric: "tabular-nums",
                   minWidth: 88,
                   textAlign: "right",
@@ -277,7 +277,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   justifyContent: "center",
                   width: 16,
                   height: 16,
-                  color: isHovered ? "#b4541a" : "#cccccc",
+                  color: isHovered ? "var(--color-brand)" : "var(--color-text-faint)",
                   fontSize: 16,
                   fontWeight: 500,
                   transition: "color 0.12s, transform 0.12s",
@@ -309,7 +309,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
             marginLeft: 18,
             fontSize: 12,
             fontWeight: 600,
-            color: footerHovered ? "#b4541a" : "#929292",
+            color: footerHovered ? "var(--color-brand)" : "var(--color-text-muted)",
             cursor: "pointer",
             transition: "color 0.12s ease-out",
           }}

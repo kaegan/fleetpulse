@@ -71,17 +71,17 @@ export function StagePipeline({
                   ? sev.dot
                   : isCurrent
                     ? sev.bg
-                    : "#f2f2f2",
+                    : "var(--color-surface-warm)",
                 border: isCurrent
                   ? `2px solid ${sev.border}`
                   : isComplete
                     ? "none"
-                    : "1px solid rgba(0,0,0,0.08)",
+                    : "1px solid var(--color-border)",
                 color: isComplete
                   ? "#ffffff"
                   : isCurrent
                     ? sev.dot
-                    : "#b5b5b5",
+                    : "var(--color-text-faint)",
               }}
             >
               {isComplete ? "\u2713" : idx + 1}
@@ -120,8 +120,8 @@ export function StagePipeline({
                       color: isCurrent
                         ? sev.text
                         : isComplete
-                          ? "#6a6a6a"
-                          : "#b5b5b5",
+                          ? "var(--color-text-secondary)"
+                          : "var(--color-text-faint)",
                       whiteSpace: "nowrap",
                       textAlign: "center",
                     }}
@@ -137,7 +137,7 @@ export function StagePipeline({
                   style={{
                     flex: 1,
                     height: connectorHeight,
-                    background: isComplete ? sev.dot : "rgba(0,0,0,0.06)",
+                    background: isComplete ? sev.dot : "var(--color-border)",
                     marginLeft: 2,
                     marginRight: 2,
                     marginTop: circleSize / 2 - connectorHeight / 2,

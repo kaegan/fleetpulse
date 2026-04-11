@@ -13,6 +13,7 @@ import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
+import { InfoRow, InfoGrid, MiniStat } from "@/components/ui/info-row";
 import { TimeDisplay } from "@/components/time-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -108,14 +109,14 @@ function PanelContent({
 
       {/* ── Header: issue + meta row ───────────────────────────────────── */}
       {/* pr-11 keeps the h2 clear of the sheet close button in the top-right. */}
-      <h2 className="mb-2 pr-11 text-[24px] font-bold leading-tight tracking-[-0.02em] text-[#222222]">
+      <h2 className="mb-2 pr-11 text-[24px] font-bold leading-tight tracking-[-0.02em] text-foreground">
         {order.issue}
       </h2>
       <div className="mb-7 flex flex-wrap items-center gap-2">
-        <span className="font-mono text-xs font-semibold text-[#929292]">
+        <span className="font-mono text-xs font-semibold text-text-muted">
           {order.id}
         </span>
-        <span className="text-xs text-[#d4d4d4]">&middot;</span>
+        <span className="text-xs text-text-faint">&middot;</span>
         <Badge variant="outline" className="px-2.5 py-[3px]">
           Bus #{order.busNumber}
         </Badge>
@@ -137,20 +138,20 @@ function PanelContent({
       <div className="mb-2.5">
         <SectionPill
           label="Progress"
-          color="#d4654a"
-          bgColor="#fdf0ed"
+          color="var(--color-brand)"
+          bgColor="var(--color-brand-light)"
           icon={<IconClipboardListFillDuo18 />}
         />
       </div>
-      <div className="mb-2 rounded-md border border-black/[0.04] bg-[#fafaf9] px-[18px] pt-5 pb-[18px]">
+      <div className="mb-2 rounded-md border border-border bg-card-hover px-[18px] pt-5 pb-[18px]">
         <StagePipeline
           currentStage={order.stage}
           severity={order.severity}
           size="lg"
         />
       </div>
-      <p className="mb-[26px] pl-0.5 text-xs font-medium text-[#6a6a6a]">
-        Currently <strong className="text-[#222222]">{STAGES[order.stage]}</strong>
+      <p className="mb-[26px] pl-0.5 text-xs font-medium text-text-secondary">
+        Currently <strong className="text-foreground">{STAGES[order.stage]}</strong>
         {" · "}
         <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
       </p>
@@ -159,8 +160,8 @@ function PanelContent({
       <div className="mb-2.5">
         <SectionPill
           label="Assignment"
-          color="#8b5cf6"
-          bgColor="#f5f3ff"
+          color="var(--color-stage-in-repair)"
+          bgColor="var(--color-stage-in-repair-bg)"
           icon={<IconWrenchScrewdriverFillDuo18 />}
         />
       </div>
@@ -186,9 +187,9 @@ function PanelContent({
           }
           valueColor={
             order.partsStatus === "available"
-              ? "#166534"
+              ? "var(--color-severity-routine-text)"
               : order.partsStatus === "ordered"
-                ? "#92400e"
+                ? "var(--color-severity-high-text)"
                 : undefined
           }
         />
@@ -198,8 +199,8 @@ function PanelContent({
       <div className="mb-2.5">
         <SectionPill
           label="Timeline"
-          color="#64748b"
-          bgColor="#f1f5f9"
+          color="var(--color-stage-intake)"
+          bgColor="var(--color-stage-intake-bg)"
           icon={<IconClockRotateAnticlockwiseFillDuo18 />}
         />
       </div>
@@ -215,18 +216,18 @@ function PanelContent({
       <div className="mb-2.5">
         <SectionPill
           label="Bus"
-          color="#3b82f6"
-          bgColor="#eff6ff"
+          color="var(--color-stage-diagnosing)"
+          bgColor="var(--color-stage-diagnosing-bg)"
           icon={<IconBusFillDuo18 />}
         />
       </div>
       {bus ? (
-        <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
+        <div className="rounded-md border border-border bg-card-hover p-4">
           <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-lg font-bold tracking-[-0.02em] text-[#222222]">
+            <span className="text-lg font-bold tracking-[-0.02em] text-foreground">
               Bus #{bus.busNumber}
             </span>
-            <span className="text-xs font-medium text-[#929292]">
+            <span className="text-xs font-medium text-text-muted">
               {bus.garage === "north" ? "North Garage" : "South Garage"}
             </span>
           </div>
@@ -253,85 +254,10 @@ function PanelContent({
           </Button>
         </div>
       ) : (
-        <p className="py-3 text-[13px] font-medium text-[#b5b5b5]">
+        <p className="py-3 text-[13px] font-medium text-text-faint">
           Bus record not available.
         </p>
       )}
-    </div>
-  );
-}
-
-// ── Local presentational helpers ─────────────────────────────────────────
-// Inlined (not shared with BusDetailPanel) to keep the diff surface small.
-// Consolidate in a follow-up if three+ panels end up needing them.
-
-function InfoGrid({
-  children,
-  cols = 3,
-}: {
-  children: React.ReactNode;
-  cols?: 2 | 3;
-}) {
-  return (
-    <div
-      className={
-        "mb-[26px] grid grid-cols-2 gap-2.5 " +
-        (cols === 3 ? "sm:grid-cols-3" : "")
-      }
-    >
-      {children}
-    </div>
-  );
-}
-
-function InfoRow({
-  label,
-  value,
-  valueNode,
-  valueColor,
-  muted,
-}: {
-  label: string;
-  value?: string;
-  valueNode?: React.ReactNode;
-  valueColor?: string;
-  muted?: boolean;
-}) {
-  return (
-    <div className="rounded-sm border border-black/[0.04] bg-[#fafaf9] px-3.5 py-2.5">
-      <div className="mb-1 text-[11px] font-medium text-[#b5b5b5]">
-        {label}
-      </div>
-      <div
-        className="text-sm font-semibold tracking-[-0.01em]"
-        style={{ color: valueColor ?? (muted ? "#929292" : "#222222") }}
-      >
-        {valueNode ?? value}
-      </div>
-    </div>
-  );
-}
-
-function MiniStat({
-  label,
-  value,
-  valueColor,
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}) {
-  return (
-    <div>
-      <div className="mb-[3px] text-[10px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
-        {label}
-      </div>
-      <div
-        className="text-[13px] font-semibold"
-        style={{ color: valueColor ?? "#222222" }}
-      >
-        {value}
-      </div>
     </div>
   );
 }
@@ -358,7 +284,7 @@ function pmColor(bus: Bus): string {
   const miles = milesUntilPm(bus);
   const progress =
     ((bus.mileage - bus.lastPmMileage) / PM_INTERVAL_MILES) * 100;
-  if (miles <= 0) return "#ef4444";
-  if (progress > 80) return "#f59e0b";
-  return "#22c55e";
+  if (miles <= 0) return "var(--color-status-maintenance)";
+  if (progress > 80) return "var(--color-status-pm-due)";
+  return "var(--color-status-running)";
 }

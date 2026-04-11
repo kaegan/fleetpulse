@@ -208,7 +208,7 @@ export function MechanicView() {
           style={{
             fontSize: 22,
             fontWeight: 700,
-            color: "#222222",
+            color: "var(--color-text-primary)",
             letterSpacing: "-0.03em",
             marginBottom: 4,
           }}
@@ -219,7 +219,7 @@ export function MechanicView() {
           style={{
             fontSize: 14,
             fontWeight: 500,
-            color: "#929292",
+            color: "var(--color-text-muted)",
           }}
         >
           Signed in as {CURRENT_MECHANIC} &middot; {garageOrders.length} {SUBTITLE[depotScope]}

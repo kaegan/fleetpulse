@@ -79,13 +79,13 @@ export function AreaChart<T>({
           {targetValue !== undefined && (
             <ReferenceLine
               y={targetValue}
-              stroke="#22c55e"
+              stroke="var(--color-status-running)"
               strokeDasharray="6 4"
               strokeOpacity={0.3}
               label={{
                 value: targetLabel ?? String(targetValue),
                 position: "insideTopRight",
-                fill: "#22c55e",
+                fill: "var(--color-status-running)",
                 fontSize: 10,
                 fontWeight: 600,
                 opacity: 0.5,
@@ -104,7 +104,7 @@ export function AreaChart<T>({
               r: 4.5,
               stroke: color,
               strokeWidth: 2.5,
-              fill: "#ffffff",
+              fill: "var(--color-surface)",
             }}
             isAnimationActive
             animationDuration={1000}

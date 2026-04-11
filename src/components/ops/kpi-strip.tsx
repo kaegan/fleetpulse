@@ -80,7 +80,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         label={SCOPE_LABEL[scope]}
         value={availRate}
         suffix="%"
-        color={availRate > 85 ? "#22c55e" : "#d4654a"}
+        color={availRate > 85 ? "var(--color-status-running)" : "var(--color-brand)"}
         isPrimary
         pillColor={p["Fleet Availability"].color}
         pillBg={p["Fleet Availability"].bg}
@@ -95,7 +95,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         <KpiCard
           label="Running"
           value={counts.running}
-          color="#22c55e"
+          color="var(--color-status-running)"
           pillColor={p.Running.color}
           pillBg={p.Running.bg}
           pillIcon={<IconBoltSpeedFillDuo18 />}
@@ -110,7 +110,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         <KpiCard
           label="PM Due"
           value={counts["pm-due"]}
-          color="#f59e0b"
+          color="var(--color-status-pm-due)"
           pillColor={p["PM Due"].color}
           pillBg={p["PM Due"].bg}
           pillIcon={<IconWrenchFillDuo18 />}
@@ -127,7 +127,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         <KpiCard
           label="In Maintenance"
           value={counts["in-maintenance"]}
-          color="#ef4444"
+          color="var(--color-status-maintenance)"
           pillColor={p["In Maintenance"].color}
           pillBg={p["In Maintenance"].bg}
           pillIcon={<IconGearsFillDuo18 />}
@@ -144,7 +144,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         <KpiCard
           label="Road Calls"
           value={counts["road-call"]}
-          color="#64748b"
+          color="var(--color-kpi-roadcall)"
           pillColor={p["Road Calls"].color}
           pillBg={p["Road Calls"].bg}
           pillIcon={<IconSirenFillDuo18 />}

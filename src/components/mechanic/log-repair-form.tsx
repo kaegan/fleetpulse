@@ -26,6 +26,13 @@ import {
 } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface LogRepairDraft {
   busId: number;
@@ -172,26 +179,11 @@ export function LogRepairForm({
       <div>
         <h2
           id="log-repair-title"
-          className="text-[19px] sm:text-[22px]"
-          style={{
-            fontWeight: 700,
-            color: "#222222",
-            letterSpacing: "-0.03em",
-            margin: 0,
-            marginBottom: 2,
-            lineHeight: 1.2,
-          }}
+          className="mb-0.5 text-[19px] font-bold leading-[1.2] tracking-[-0.03em] text-foreground sm:text-[22px]"
         >
           Log new repair
         </h2>
-        <p
-          className="hidden sm:block text-[13px] sm:text-[14px]"
-          style={{
-            fontWeight: 500,
-            color: "#929292",
-            margin: 0,
-          }}
-        >
+        <p className="hidden text-[13px] font-medium text-text-muted sm:block sm:text-[14px]">
           {garageLabel} · Adds to Intake
         </p>
       </div>
@@ -202,7 +194,7 @@ export function LogRepairForm({
 
         {recentBuses.length > 0 && !selectedBus && (
           <div className="mb-2.5 hidden flex-wrap items-center gap-1.5 sm:flex">
-            <span className="mr-0.5 self-center text-[11px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
+            <span className="mr-0.5 self-center text-[11px] font-semibold uppercase tracking-[0.04em] text-text-faint">
               Recent
             </span>
             {recentBuses.map((b) => (
@@ -217,25 +209,12 @@ export function LogRepairForm({
 
         {selectedBus ? (
           <>
-            <div
-              className="flex items-center justify-between rounded-[12px] border-[1.5px] px-3.5 py-2.5 sm:px-4 sm:py-3.5"
-              style={{
-                background: "#fdf0ed",
-                borderColor: BRAND_COLOR,
-              }}
-            >
+            <div className="flex items-center justify-between rounded-[12px] border-[1.5px] border-brand bg-brand-light px-3.5 py-2.5 sm:px-4 sm:py-3.5">
               <div className="flex flex-col gap-0.5">
-                <span
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 700,
-                    color: "#222222",
-                    letterSpacing: "-0.02em",
-                  }}
-                >
+                <span className="text-[16px] font-bold tracking-[-0.02em] text-foreground">
                   Bus #{selectedBus.busNumber}
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 500, color: "#6a6a6a" }}>
+                <span className="text-[12px] font-medium text-text-secondary">
                   {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi
                 </span>
               </div>
@@ -276,7 +255,7 @@ export function LogRepairForm({
                     key={b.id}
                     type="button"
                     onClick={() => handlePickBus(b.id)}
-                    className="rounded-[10px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2.5 text-sm font-bold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
+                    className="cursor-pointer rounded-[10px] border-[1.5px] border-transparent bg-muted px-2 py-2.5 text-sm font-bold text-foreground transition-colors hover:border-brand hover:bg-brand-light"
                   >
                     #{b.busNumber}
                   </button>
@@ -301,8 +280,8 @@ export function LogRepairForm({
                 onClick={() => handlePickIssue(t)}
                 className="overflow-hidden rounded-[10px] border-[1.5px] px-2 py-2 text-ellipsis whitespace-nowrap text-[13px] font-semibold transition-colors cursor-pointer sm:px-2.5 sm:py-2.5"
                 style={{
-                  color: isActive ? BRAND_COLOR : "#6a6a6a",
-                  background: isActive ? "#fdf0ed" : "#f7f7f7",
+                  color: isActive ? BRAND_COLOR : "var(--color-text-secondary)",
+                  background: isActive ? "var(--color-brand-light)" : "var(--color-surface-warm)",
                   borderColor: isActive ? BRAND_COLOR : "transparent",
                 }}
               >
@@ -349,15 +328,15 @@ export function LogRepairForm({
                 onClick={() => setSeverity(sev)}
                 className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-2.5 text-sm font-bold transition-colors cursor-pointer sm:min-h-14 sm:py-3.5"
                 style={{
-                  color: isActive ? sc.text : "#6a6a6a",
-                  background: isActive ? sc.bg : "#f7f7f7",
+                  color: isActive ? sc.text : "var(--color-text-secondary)",
+                  background: isActive ? sc.bg : "var(--color-surface-warm)",
                   borderColor: isActive ? sc.border : "transparent",
                 }}
               >
                 <span
                   style={{
                     display: "flex",
-                    color: isActive ? sc.dot : "#b5b5b5",
+                    color: isActive ? sc.dot : "var(--color-text-faint)",
                     width: 16,
                     height: 16,
                   }}
@@ -374,45 +353,22 @@ export function LogRepairForm({
       {/* Field 4: Assigned to */}
       <div>
         <FieldLabel htmlFor="assigned-to-select">Assigned to</FieldLabel>
-        <select
-          id="assigned-to-select"
+        <Select
           value={assignedTo ?? ""}
-          onChange={(e) => setAssignedTo(e.target.value === "" ? null : e.target.value)}
-          className="px-3.5 py-2.5 sm:py-3"
-          style={{
-            width: "100%",
-            fontSize: 14,
-            fontWeight: 500,
-            color: "#222222",
-            background: "#ffffff",
-            border: "1.5px solid #e5e5e5",
-            borderRadius: 12,
-            outline: "none",
-            boxSizing: "border-box",
-            fontFamily: "inherit",
-            appearance: "none",
-            WebkitAppearance: "none",
-            MozAppearance: "none",
-            backgroundImage:
-              "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M3 4.5 6 7.5 9 4.5' stroke='%236a6a6a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
-            backgroundRepeat: "no-repeat",
-            backgroundPosition: "right 14px center",
-            paddingRight: 36,
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = BRAND_COLOR;
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = "#e5e5e5";
-          }}
+          onValueChange={(v) => setAssignedTo(v === "" ? null : v)}
         >
-          <option value="">Unassigned</option>
-          {MECHANICS.map((m) => (
-            <option key={m} value={m}>
-              {m === CURRENT_MECHANIC ? `${m} (you)` : m}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="assigned-to-select" className="h-11 text-[14px] sm:h-12">
+            <SelectValue placeholder="Unassigned" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Unassigned</SelectItem>
+            {MECHANICS.map((m) => (
+              <SelectItem key={m} value={m}>
+                {m === CURRENT_MECHANIC ? `${m} (you)` : m}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Footer */}
@@ -439,7 +395,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-0.5 block text-[13px] font-semibold text-[#222222] sm:mb-2.5"
+      className="mb-0.5 block text-[13px] font-semibold text-foreground sm:mb-2.5"
     >
       {children}
     </label>
@@ -457,7 +413,7 @@ function RecentChip({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-full border-[1.5px] border-transparent bg-[#f2f2f2] px-3 py-1.5 text-[13px] font-semibold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
+      className="cursor-pointer rounded-full border-[1.5px] border-transparent bg-muted px-3 py-1.5 text-[13px] font-semibold text-foreground transition-colors hover:border-brand hover:bg-brand-light"
     >
       {label}
     </button>
@@ -491,33 +447,20 @@ function CrossGarageInlineWarning({
         : `${entry.mechanicName} completed work`;
 
   return (
-    <div
-      className="mt-2 flex items-start gap-2.5 rounded-[12px] border border-[#f5c6b8] px-3 py-2.5"
-      style={{ background: "#fdf0ed" }}
-    >
-      <span
-        className="flex-shrink-0 text-[15px] leading-none"
-        style={{ marginTop: 1 }}
-        aria-hidden
-      >
+    <div className="mt-2 flex items-start gap-2.5 rounded-[12px] border border-brand/25 bg-brand-light px-3 py-2.5">
+      <span className="mt-[1px] shrink-0 text-[15px] leading-none" aria-hidden>
         ⚠️
       </span>
       <div className="min-w-0 flex-1">
-        <div
-          className="text-[10px] font-bold uppercase tracking-[0.04em]"
-          style={{ color: "#d4654a", marginBottom: 2 }}
-        >
+        <div className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.04em] text-brand">
           Arrived from {otherGarageLabel} · {whenLabel}
         </div>
-        <div
-          className="text-[12px] leading-[1.4]"
-          style={{ color: "#6a3b2a", fontWeight: 500 }}
-        >
+        <div className="text-[12px] font-medium leading-[1.4] text-text-secondary">
           {entry.issue} — {outcomeLead}
           {entry.note && (
             <>
               {" "}
-              <span className="italic" style={{ color: "#8b5a44" }}>
+              <span className="italic text-text-muted">
                 &ldquo;{entry.note}&rdquo;
               </span>
             </>
@@ -542,14 +485,8 @@ function SimilarIssuesPeek({
 }) {
   const otherGarageLabel = currentGarage === "north" ? "South" : "North";
   return (
-    <div
-      className="mt-2 rounded-[12px] border border-[#e5e5e5] p-2.5"
-      style={{ background: "#fafaf9" }}
-    >
-      <div
-        className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.04em]"
-        style={{ color: "#6a6a6a" }}
-      >
+    <div className="mt-2 rounded-[12px] border border-border bg-card-hover p-2.5">
+      <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.04em] text-text-secondary">
         {matches.length} similar{" "}
         {matches.length === 1 ? "job" : "jobs"} at {otherGarageLabel} Garage in
         the last 30 days
@@ -566,25 +503,19 @@ function SimilarIssuesPeek({
           const outcomeTag = OUTCOME_MINI[m.entry.outcome];
           const body = (
             <div className="flex w-full items-center gap-2 text-[12px]">
-              <span className="font-bold text-[#222222]">
+              <span className="font-bold text-foreground">
                 #{busNumber}
               </span>
-              <span
-                className="truncate font-medium text-[#6a6a6a]"
-                style={{ flex: 1, minWidth: 0 }}
-              >
+              <span className="min-w-0 flex-1 truncate font-medium text-text-secondary">
                 {m.entry.issue}
               </span>
               <span
-                className="flex-shrink-0 rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.02em]"
+                className="shrink-0 rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.02em]"
                 style={{ background: outcomeTag.bg, color: outcomeTag.color }}
               >
                 {outcomeTag.label}
               </span>
-              <span
-                className="flex-shrink-0 text-[11px] font-medium"
-                style={{ color: "#929292" }}
-              >
+              <span className="shrink-0 text-[11px] font-medium text-text-muted">
                 {whenLabel}
               </span>
             </div>
@@ -602,7 +533,7 @@ function SimilarIssuesPeek({
               key={m.entry.id}
               type="button"
               onClick={() => onPickBus(m.busId)}
-              className="rounded-[8px] px-1.5 py-1 text-left transition-colors hover:bg-[#f2f2f2] cursor-pointer"
+              className="cursor-pointer rounded-[8px] px-1.5 py-1 text-left transition-colors hover:bg-muted"
             >
               {body}
             </button>
@@ -617,7 +548,19 @@ const OUTCOME_MINI: Record<
   HistoryOutcome,
   { label: string; color: string; bg: string }
 > = {
-  completed: { label: "Done", color: "#166534", bg: "#f0fdf4" },
-  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
-  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
+  completed: {
+    label: "Done",
+    color: "var(--color-severity-routine-text)",
+    bg: "var(--color-severity-routine-bg)",
+  },
+  deferred: {
+    label: "Deferred",
+    color: "var(--color-severity-high-text)",
+    bg: "var(--color-severity-high-bg)",
+  },
+  recurring: {
+    label: "Recurring",
+    color: "var(--color-brand)",
+    bg: "var(--color-brand-light)",
+  },
 };

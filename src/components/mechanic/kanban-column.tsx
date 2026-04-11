@@ -43,7 +43,7 @@ export function KanbanColumn({
   onAdvance,
   className = "",
 }: KanbanColumnProps) {
-  const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "#929292", bg: "#f5f5f5" };
+  const pill = KANBAN_STAGE_PILLS[stageName] ?? { color: "var(--color-text-muted)", bg: "var(--color-surface-warm)" };
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
 
   return (
@@ -52,8 +52,8 @@ export function KanbanColumn({
       className={cn(
         "min-h-80 rounded-lg border p-3.5 transition-colors duration-150 sm:p-4 lg:min-h-96 lg:p-3 xl:p-4",
         isOver
-          ? "border-dashed border-brand bg-[#f5e7e2]"
-          : "border-black/[0.04] bg-surface-hover",
+          ? "border-dashed border-brand bg-brand-light"
+          : "border-border bg-secondary",
         className
       )}
     >

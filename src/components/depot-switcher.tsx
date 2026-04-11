@@ -99,7 +99,7 @@ export function DepotSwitcher() {
           style={{
             display: "flex",
             alignItems: "center",
-            color: "#6a6a6a",
+            color: "var(--color-text-secondary)",
           }}
         >
           <IconGarageFillDuo18 />
@@ -108,7 +108,7 @@ export function DepotSwitcher() {
           style={{
             fontSize: 13,
             fontWeight: 600,
-            color: "#222222",
+            color: "var(--color-text-primary)",
             letterSpacing: "-0.01em",
           }}
         >
@@ -128,10 +128,9 @@ export function DepotSwitcher() {
               left: position.left,
               top: position.top,
               minWidth: 200,
-              background: "#ffffff",
+              background: "var(--color-surface)",
               borderRadius: 12,
-              boxShadow:
-                "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.06), 0px 16px 32px rgba(0,0,0,0.04)",
+              boxShadow: "var(--shadow-panel)",
               padding: 6,
               zIndex: 999,
             }}
@@ -154,7 +153,7 @@ export function DepotSwitcher() {
                     borderRadius: 8,
                     border: "none",
                     background: "transparent",
-                    color: "#222222",
+                    color: "var(--color-text-primary)",
                     fontSize: 13,
                     fontWeight: isActive ? 600 : 500,
                     cursor: "pointer",
@@ -163,7 +162,7 @@ export function DepotSwitcher() {
                     transition: "background 0.12s ease",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+                    e.currentTarget.style.background = "var(--color-surface-warm)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
@@ -203,7 +202,7 @@ function ChevronDownIcon() {
       height="14"
       viewBox="0 0 16 16"
       fill="none"
-      stroke="#929292"
+      style={{ stroke: "var(--color-text-muted)" }}
       strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -221,7 +220,7 @@ function CheckIcon() {
       height="14"
       viewBox="0 0 16 16"
       fill="none"
-      stroke="#222222"
+      style={{ stroke: "var(--color-text-primary)" }}
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
