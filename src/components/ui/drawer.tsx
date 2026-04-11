@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
+import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -43,13 +44,34 @@ const DrawerContent = React.forwardRef<
       )}
       {...props}
     >
-      {/* Grab handle — drag affordance, also acts as the visible "this is
-       * dismissible" cue. The handle is the primary close gesture on mobile,
-       * which is why the responsive sheet hides the X button on this branch. */}
-      <div
-        aria-hidden
-        className="mx-auto mt-2.5 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-black/15"
-      />
+      {/* Sticky header strip — non-scrollable, contains the drag handle and
+       * close button. Sits outside the overflow-y-auto wrapper so the body
+       * can scroll independently while the handle area stays draggable.
+       *
+       * The drag/scroll separation is enforced by `handleOnly` on the Root
+       * (set in responsive-sheet.tsx): vaul only listens for drag gestures
+       * on the <Handle>, not on body content. This eliminates vaul's
+       * scrollLockTimeout entirely — after scrolling, the handle is still
+       * immediately responsive, no 500ms cooldown. */}
+      <div className="relative shrink-0 pt-2 pb-1">
+        <DrawerPrimitive.Handle
+          preventCycle
+          aria-label="Drag down to dismiss"
+          // Override vaul's default handle CSS (#e2e2e4, 5×32, opacity .7)
+          // with the FleetPulse warm palette and a slightly chunkier bar.
+          // Tailwind `!` ensures these win over vaul's injected stylesheet.
+          className="!my-2 !h-1.5 !w-12 !rounded-full !bg-black/20 !opacity-100"
+        />
+        {/* Fallback close button — pull-down works for users who notice the
+         * handle, but it's not always discoverable, so give them a tap target
+         * too. iOS modal sheets use the same pattern (drag OR tap "Done"). */}
+        <DrawerPrimitive.Close
+          aria-label="Close"
+          className="absolute right-4 top-2.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-[#f2f2f2] text-[#6a6a6a] transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <XIcon className="h-4 w-4" />
+        </DrawerPrimitive.Close>
+      </div>
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {children}
       </div>
