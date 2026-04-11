@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
-import { workOrders } from "@/data/work-orders";
+import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { getBusHistory } from "@/data/bus-history";
 import {
   OUTCOME_STYLES,
@@ -20,6 +20,7 @@ import {
   daysBetween,
   getCrossGarageCallout,
 } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/back-button";
 import {
   ResponsiveSheet,
@@ -32,6 +33,11 @@ interface BusDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  // Ops-only: when provided, the panel renders a "Schedule PM service"
+  // CTA for pm-due buses. Leaving this undefined (as mechanic view does)
+  // hides the CTA — role scoping without conditional logic inside the
+  // panel itself.
+  onSchedulePm?: (bus: Bus) => void;
   onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   // Drill-down back affordance. Present only when this panel was opened
   // from another panel (e.g. the PM Due list) — see usePanelNav.
@@ -43,6 +49,7 @@ export function BusDetailPanel({
   bus,
   onClose,
   onSelectWorkOrder,
+  onSchedulePm,
   onSelectHistoryEntry,
   backLabel,
   onBack,
@@ -71,6 +78,7 @@ export function BusDetailPanel({
           <PanelContent
             bus={displayBus}
             onSelectWorkOrder={onSelectWorkOrder}
+            onSchedulePm={onSchedulePm}
             onSelectHistoryEntry={onSelectHistoryEntry}
             backLabel={backLabel}
             onBack={onBack}
@@ -84,19 +92,24 @@ export function BusDetailPanel({
 function PanelContent({
   bus,
   onSelectWorkOrder,
+  onSchedulePm,
   onSelectHistoryEntry,
   backLabel,
   onBack,
 }: {
   bus: Bus;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onSchedulePm?: (bus: Bus) => void;
   onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
+  const { workOrders } = useWorkOrders();
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
   const milesLeft = milesUntilPm(bus);
+  const canSchedulePm =
+    Boolean(onSchedulePm) && milesLeft <= 0 && busWorkOrders.length === 0;
   const pmProgress = Math.min(
     ((bus.mileage - bus.lastPmMileage) / PM_INTERVAL_MILES) * 100,
     100
@@ -187,6 +200,16 @@ function PanelContent({
           <span>Last PM: {formatNumber(bus.lastPmMileage)} mi</span>
           <span>Due: {formatNumber(bus.nextPmDueMileage)} mi</span>
         </div>
+
+        {canSchedulePm && (
+          <Button
+            type="button"
+            onClick={() => onSchedulePm?.(bus)}
+            className="mt-4 w-full"
+          >
+            Schedule PM service
+          </Button>
+        )}
       </div>
 
       {/* Active Work Orders */}

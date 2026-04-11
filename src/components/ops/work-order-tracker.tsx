@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { TrackerRow } from "./tracker-row";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { workOrders } from "@/data/work-orders";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import {
   STAGE_LABELS,
@@ -34,11 +34,12 @@ interface WorkOrderTrackerProps {
 export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = {}) {
   const [filter, setFilter] = useState<Severity | "all">("all");
   const { scope } = useDepot();
+  const { workOrders } = useWorkOrders();
 
   // Scope first (depot), then severity, then sort.
   const scopedOrders = useMemo(
     () => filterByDepot(workOrders, scope),
-    [scope]
+    [scope, workOrders]
   );
 
   const severityOrder = { critical: 0, high: 1, routine: 2 };

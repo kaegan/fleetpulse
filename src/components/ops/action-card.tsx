@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { buses } from "@/data/buses";
-import { workOrders } from "@/data/work-orders";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import type { Bus } from "@/data/types";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
@@ -29,6 +29,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
   const [headerHovered, setHeaderHovered] = useState(false);
   const [footerHovered, setFooterHovered] = useState(false);
   const { scope } = useDepot();
+  const { workOrders } = useWorkOrders();
 
   const actionable = useMemo<OverdueEntry[]>(() => {
     // Exclude buses already in an active work order — those are already scheduled.
@@ -40,7 +41,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
           overdueMiles > 0 && !busesWithActiveWO.has(bus.id)
       )
       .sort((a, b) => b.overdueMiles - a.overdueMiles);
-  }, [scope]);
+  }, [scope, workOrders]);
 
   const topRows = actionable.slice(0, MAX_ROWS);
   const remainingCount = actionable.length - topRows.length;

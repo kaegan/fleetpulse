@@ -29,8 +29,13 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-// IDs of buses that have active work orders — always "in-maintenance"
-const WO_BUS_IDS = new Set([147, 203, 89, 56, 78, 195, 267, 41, 182, 112]);
+// IDs of buses that have active work orders — always "in-maintenance".
+// Includes the 10 featured WOs plus 2 pre-seeded PM-A intake WOs (55, 220)
+// representing pull-ins ops has already scheduled.
+const WO_BUS_IDS = new Set([
+  147, 203, 89, 56, 78, 195, 267, 41, 182, 112,
+  55, 220,
+]);
 
 // Additional buses in maintenance (in the shop but no featured work order).
 // Combined with WO_BUS_IDS this gives us ~24 in maintenance total (20-30 per brief).
@@ -38,11 +43,13 @@ const ADDITIONAL_MAINTENANCE_IDS = new Set([
   10, 37, 49, 62, 99, 131, 145, 185, 215, 245, 275, 290, 295, 300,
 ]);
 
-// Manually pick which bus IDs get non-running statuses for a realistic distribution.
-// This ensures consistent data across renders.
+// Manually pick which bus IDs are *still on the road* with overdue PM — the
+// actionable backlog the ops manager sees in the ActionCard. Shrunk from 30
+// to 10 because the story is that ops (with AI triage help) has already
+// scheduled most overdue buses into the shop. The stragglers that remain
+// are what ops needs to pull in next.
 const PM_DUE_IDS = new Set([
-  3, 7, 14, 22, 28, 35, 44, 52, 61, 68, 73, 81, 88, 96, 104, 110, 119, 128,
-  136, 142, 155, 163, 170, 180, 188, 197, 210, 240, 260, 285,
+  3, 22, 61, 104, 142, 155, 188, 210, 240, 285,
 ]);
 
 const ROAD_CALL_IDS = new Set([

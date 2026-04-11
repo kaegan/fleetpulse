@@ -201,4 +201,36 @@ export const workOrders: WorkOrder[] = [
     createdAt: daysAgoAt(2, 4, 0),
     stageEnteredAt: todayAt(7, 0),
   },
+  // Pre-seeded PM-A triage WOs — buses that ops already scheduled out of
+  // the overdue pool. They sit in Triage unassigned, waiting for a
+  // mechanic to pick them up. Gives the mechanic kanban lived-in density
+  // and foreshadows the ops-side "Schedule PM service" action.
+  {
+    id: "WO-1257",
+    busId: 55,
+    busNumber: "055",
+    issue: "PM-A service",
+    severity: "routine",
+    stage: "triage",
+    bayNumber: null,
+    garage: "north",
+    mechanicName: null,
+    partsStatus: "not-needed",
+    createdAt: todayAt(6, 45),
+    stageEnteredAt: todayAt(6, 45),
+  },
+  {
+    id: "WO-1258",
+    busId: 220,
+    busNumber: "220",
+    issue: "PM-A service",
+    severity: "routine",
+    stage: "triage",
+    bayNumber: null,
+    garage: "south",
+    mechanicName: null,
+    partsStatus: "not-needed",
+    createdAt: todayAt(7, 10),
+    stageEnteredAt: todayAt(7, 10),
+  },
 ];
