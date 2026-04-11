@@ -19,11 +19,11 @@ import {
 } from "@/lib/utils";
 import { SectionPill } from "@/components/section-pill";
 import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import {
   IconBoltSpeedFillDuo18,
   IconWrenchFillDuo18,
@@ -128,19 +128,22 @@ export function StatusBusListPanel({
   }, [kind]);
 
   return (
-    <Sheet open={Boolean(kind)} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="p-0">
-        <SheetTitle className="sr-only">
+    <ResponsiveSheet
+      open={Boolean(kind)}
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <ResponsiveSheetContent side="right" className="p-0">
+        <ResponsiveSheetTitle className="sr-only">
           {displayKind ? META[displayKind].heading : "Bus list"}
-        </SheetTitle>
-        <SheetDescription className="sr-only">
+        </ResponsiveSheetTitle>
+        <ResponsiveSheetDescription className="sr-only">
           Filtered list of buses matching the selected fleet status.
-        </SheetDescription>
+        </ResponsiveSheetDescription>
         {displayKind && (
           <PanelContent kind={displayKind} onSelectBus={onSelectBus} />
         )}
-      </SheetContent>
-    </Sheet>
+      </ResponsiveSheetContent>
+    </ResponsiveSheet>
   );
 }
 
