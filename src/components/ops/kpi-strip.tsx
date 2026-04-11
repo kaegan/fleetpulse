@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { KpiCard } from "./kpi-card";
 import { buses } from "@/data/buses";
-import { workOrders } from "@/data/work-orders";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { availabilityHistory } from "@/data/availability-history";
 import { getYesterdayCount } from "@/data/status-history";
 import type { BusStatus } from "@/data/types";
@@ -36,10 +36,11 @@ interface KpiStripProps {
 
 export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
   const { scope } = useDepot();
+  const { workOrders } = useWorkOrders();
   const scopedBuses = useMemo(() => filterByDepot(buses, scope), [scope]);
   const scopedWorkOrders = useMemo(
     () => filterByDepot(workOrders, scope),
-    [scope]
+    [scope, workOrders]
   );
 
   const counts = getStatusCounts(scopedBuses);

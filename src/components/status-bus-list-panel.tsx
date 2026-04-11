@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
-import { workOrders } from "@/data/work-orders";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
   KPI_PILLS,
@@ -161,6 +161,7 @@ function PanelContent({
   onSelectBus: (bus: Bus) => void;
 }) {
   const { scope } = useDepot();
+  const { workOrders } = useWorkOrders();
   const meta = META[kind];
   // Resolve pill colors: either from a KPI slot or an inline override.
   const pillColor = meta.pillColor ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].color : "#6a6a6a");
@@ -171,7 +172,7 @@ function PanelContent({
     const map = new Map<number, WorkOrder>();
     for (const wo of workOrders) map.set(wo.busId, wo);
     return map;
-  }, []);
+  }, [workOrders]);
 
   const rows = useMemo(() => {
     // "Overdue" is a derived set that mirrors ActionCard exactly: buses that
@@ -211,7 +212,7 @@ function PanelContent({
       default:
         return [...filtered].sort((a, b) => a.id - b.id);
     }
-  }, [kind, scope, worksByBus]);
+  }, [kind, scope, worksByBus, workOrders]);
 
   return (
     <div className="flex h-full flex-col p-5 pb-6 sm:p-7">

@@ -5,17 +5,14 @@ import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
-import { PmDueBanner } from "./pm-due-banner";
-import { PmDueSheet } from "./pm-due-sheet";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { buses } from "@/data/buses";
-import { workOrders as initialWorkOrders } from "@/data/work-orders";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { CURRENT_MECHANIC } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
 import { usePanelNav } from "@/hooks/use-panel-nav";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 
@@ -29,32 +26,25 @@ const SUBTITLE: Record<"all" | "north" | "south", string> = {
   south: "active work orders in garage",
 };
 
-// Panels on Service Board: kanban → WO, banner → PM sheet → bus, WO ↔
-// bus drill-downs. The PmDueSheet joins the nav stack so clicking a
-// bus inside it gets an automatic `Back to Pull In Next` back button.
-// See src/hooks/use-panel-nav.ts for the stack machinery.
+// Panels on Service Board: kanban → WO, WO ↔ bus drill-downs. PM
+// scheduling now lives on ops — see ops-view.tsx's handleSchedulePm —
+// so the mechanic no longer has a pm queue surface.
 type MechanicPanelEntry =
-  | { kind: "pmDue"; label: string }
   | { kind: "bus"; label: string; bus: Bus }
   | { kind: "workOrder"; label: string; workOrder: WorkOrder };
 
 export function MechanicView() {
-  const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
+  const { workOrders: orders, addWorkOrder, updateStage, completeWorkOrder } =
+    useWorkOrders();
   const [scope, setScope] = useState<MineScope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
   const { scope: depotScope } = useDepot();
-  const { overdue: overdueCandidates, comingDue: comingDueCandidates } =
-    useOverdueCandidates();
 
   const nav = usePanelNav<MechanicPanelEntry>();
   const current = nav.current;
 
-  // Root-entry opens come from the page (banner, kanban, intake form).
-  // These reset the stack so no back button is shown on the target.
-  const openPmDueSheet = useCallback(
-    () => nav.open({ kind: "pmDue", label: "Pull In Next" }),
-    [nav]
-  );
+  // Root-entry opens come from the page (kanban, intake form). These
+  // reset the stack so no back button is shown on the target.
   const openBusRoot = useCallback(
     (bus: Bus) =>
       nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus }),
@@ -83,19 +73,19 @@ export function MechanicView() {
   // mechanic's home garage). If scope is north/south, use that.
   const newRepairGarage: Garage = depotScope === "all" ? "north" : depotScope;
 
-  const handleStageChange = useCallback((woId: string, newStage: WorkOrderStage) => {
-    setOrders((prev) =>
-      prev.map((wo) =>
-        wo.id === woId
-          ? { ...wo, stage: newStage, stageEnteredAt: new Date().toISOString() }
-          : wo
-      )
-    );
-  }, []);
+  const handleStageChange = useCallback(
+    (woId: string, newStage: WorkOrderStage) => {
+      updateStage(woId, newStage);
+    },
+    [updateStage]
+  );
 
-  const handleComplete = useCallback((woId: string) => {
-    setOrders((prev) => prev.filter((wo) => wo.id !== woId));
-  }, []);
+  const handleComplete = useCallback(
+    (woId: string) => {
+      completeWorkOrder(woId);
+    },
+    [completeWorkOrder]
+  );
 
   const handleCreate = useCallback(
     (draft: {
@@ -105,16 +95,7 @@ export function MechanicView() {
       severity: Severity;
       assignedTo: string | null;
     }) => {
-      const now = new Date().toISOString();
-      // Compute next WO id from current state so concurrent opens can't collide.
-      const maxNum = orders.reduce((max, wo) => {
-        const n = parseInt(wo.id.replace("WO-", ""), 10);
-        return Number.isFinite(n) && n > max ? n : max;
-      }, 0);
-      const newId = `WO-${maxNum + 1}`;
-
-      const newOrder: WorkOrder = {
-        id: newId,
+      const newOrder = addWorkOrder({
         busId: draft.busId,
         busNumber: draft.busNumber,
         issue: draft.issue,
@@ -124,15 +105,12 @@ export function MechanicView() {
         garage: newRepairGarage,
         mechanicName: draft.assignedTo,
         partsStatus: "n/a",
-        createdAt: now,
-        stageEnteredAt: now,
-      };
+      });
 
-      setOrders((prev) => [...prev, newOrder]);
       setIsLogOpen(false);
       toast(
         <span>
-          Logged as <strong style={{ fontFamily: "monospace" }}>{newId}</strong>
+          Logged as <strong style={{ fontFamily: "monospace" }}>{newOrder.id}</strong>
         </span>,
         scope === "mine"
           ? {
@@ -144,7 +122,7 @@ export function MechanicView() {
           : undefined
       );
     },
-    [orders, scope, newRepairGarage]
+    [addWorkOrder, scope, newRepairGarage]
   );
 
   // Mechanic sees the work orders in their current depot scope. Defaults to
@@ -181,8 +159,6 @@ export function MechanicView() {
         : null,
     [liveSelectedWorkOrder]
   );
-  const isPmSheetOpen = current?.kind === "pmDue";
-
   // Most-recently-created unique bus numbers in this garage, for the form's
   // "Recent" chip row.
   const recentBusNumbers = useMemo(() => {
@@ -226,17 +202,6 @@ export function MechanicView() {
         </p>
       </div>
 
-      {/* Pull In Next discovery banner — tactical surface for M-3 ("which
-          buses should I pull in next for PM?"). Sits above the scope toggle
-          so it's the first thing a mechanic sees when opening the page.
-          Clicking expands the full planning list in a right-side drawer,
-          keeping Service Board otherwise single-concept (the kanban). */}
-      <PmDueBanner
-        overdueCount={overdueCandidates.length}
-        comingDueCount={comingDueCandidates.length}
-        onClick={openPmDueSheet}
-      />
-
       {/* Action row: scope toggle + log-new-repair CTA */}
       <div className="mb-[18px] flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <ScopeToggle
@@ -275,14 +240,6 @@ export function MechanicView() {
         backLabel={liveSelectedWorkOrder ? nav.backButton?.label : undefined}
         onBack={liveSelectedWorkOrder ? nav.backButton?.onBack : undefined}
       />
-      <PmDueSheet
-        open={isPmSheetOpen}
-        onOpenChange={(open) => {
-          if (!open) nav.close();
-        }}
-        onBusClick={drillToBus}
-      />
-
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
         <DialogContent
           showCloseButton={false}

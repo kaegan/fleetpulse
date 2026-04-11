@@ -1,5 +1,6 @@
 "use client";
 
+import { toast } from "sonner";
 import { KpiStrip } from "./kpi-strip";
 import { ActionCard } from "./action-card";
 import { FleetHealthChart } from "./fleet-health-chart";
@@ -10,8 +11,10 @@ import {
   getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
+import { TriagePanel } from "./triage-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
+import { useWorkOrders } from "@/contexts/work-orders-context";
 import { usePanelNav } from "@/hooks/use-panel-nav";
 import type { Bus, WorkOrder } from "@/data/types";
 
@@ -27,6 +30,32 @@ type OpsPanelEntry =
 export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
   const current = nav.current;
+  const { addWorkOrder } = useWorkOrders();
+
+  // Ops-side action: scheduling a PM pulls a bus off the road and into
+  // the mechanic's Intake column as a routine WO. Mechanic view leaves
+  // `onSchedulePm` undefined on BusDetailPanel so the CTA hides itself
+  // there — scheduling is an ops decision, not a wrench-turning decision.
+  const handleSchedulePm = (bus: Bus) => {
+    const created = addWorkOrder({
+      busId: bus.id,
+      busNumber: bus.busNumber,
+      issue: "PM-A service",
+      severity: "routine",
+      stage: 0,
+      bayNumber: null,
+      garage: bus.garage,
+      mechanicName: null,
+      partsStatus: "n/a",
+    });
+    toast(
+      <span>
+        Scheduled — Bus #{bus.busNumber} added to Service Board intake as{" "}
+        <strong style={{ fontFamily: "monospace" }}>{created.id}</strong>
+      </span>
+    );
+    nav.close();
+  };
 
   // Root-entry callbacks: the click originates from the page (KPI strip,
   // action card row, fleet chart, tracker), not from inside another
@@ -96,12 +125,14 @@ export function OpsView() {
         onViewAll={() => openBusList("overdue")}
       />
       <FleetHealthChart onBusClick={openBusRoot} />
+      <TriagePanel onSelectWorkOrder={openWorkOrderRoot} />
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
       <BusDetailPanel
         bus={currentBus}
         onClose={nav.close}
         onSelectWorkOrder={drillToWorkOrder}
+        onSchedulePm={handleSchedulePm}
         backLabel={currentBus ? nav.backButton?.label : undefined}
         onBack={currentBus ? nav.backButton?.onBack : undefined}
       />

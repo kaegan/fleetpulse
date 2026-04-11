@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { DepotProvider } from "@/hooks/use-depot";
+import { WorkOrdersProvider } from "@/contexts/work-orders-context";
 import { TopBar } from "@/components/top-bar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -20,13 +21,15 @@ export function AppShell({
 }) {
   return (
     <DepotProvider>
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
-        <SidebarInset className="h-svh md:peer-data-[variant=inset]:h-[calc(100svh-1rem)] overflow-hidden">
-          <TopBar />
-          <div className="flex flex-1 flex-col overflow-auto">{children}</div>
-        </SidebarInset>
-      </SidebarProvider>
+      <WorkOrdersProvider>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar />
+          <SidebarInset className="h-svh md:peer-data-[variant=inset]:h-[calc(100svh-1rem)] overflow-hidden">
+            <TopBar />
+            <div className="flex flex-1 flex-col overflow-auto">{children}</div>
+          </SidebarInset>
+        </SidebarProvider>
+      </WorkOrdersProvider>
     </DepotProvider>
   );
 }
