@@ -9,8 +9,6 @@ export type WorkOrderStage = 0 | 1 | 2 | 3 | 4;
 
 export type PartsStatus = "available" | "ordered" | "n/a";
 
-export type Role = "mechanic" | "ops";
-
 export interface Bus {
   id: number;
   busNumber: string; // "001" through "300"
