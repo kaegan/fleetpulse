@@ -19,7 +19,6 @@ import {
   daysBetween,
   getCrossGarageCallout,
 } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import {
   ResponsiveSheet,
@@ -27,12 +26,6 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconBusFillDuo18,
-  IconGaugeFillDuo18,
-  IconClipboardListFillDuo18,
-  IconClockRotateAnticlockwiseFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 interface BusDetailPanelProps {
   bus: Bus | null;
@@ -142,9 +135,7 @@ function PanelContent({
       </div>
 
       {/* Vehicle info */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Vehicle Info" color="#3b82f6" bgColor="#eff6ff" icon={<IconBusFillDuo18 />} />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Vehicle Info</h3>
       <InfoGrid>
         <InfoRow label="Model" value={bus.model} />
         <InfoRow label="Year" value={String(bus.year)} />
@@ -152,9 +143,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* PM Status */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Preventive Maintenance" color="#f59e0b" bgColor="#fffbeb" icon={<IconGaugeFillDuo18 />} />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Preventive Maintenance</h3>
       <div className="mb-6 rounded-md border border-black/[0.04] bg-[#fafaf9] p-4">
         <div className="mb-2.5 flex justify-between">
           <span className="text-[13px] font-medium text-[#6a6a6a]">
@@ -197,9 +186,7 @@ function PanelContent({
       {/* Active Work Orders */}
       {busWorkOrders.length > 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Active Work Orders" color="#ef4444" bgColor="#fef2f2" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Active Work Orders</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
@@ -286,9 +273,7 @@ function PanelContent({
 
       {busWorkOrders.length === 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Work Orders" color="#929292" bgColor="#f5f5f5" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Work Orders</h3>
           <p
             style={{
               fontSize: 13,
@@ -328,14 +313,7 @@ function ServiceHistorySection({
     <>
       {callout && <CrossGarageCallout entry={callout.entry} />}
 
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill
-          label="Service History"
-          color="#64748b"
-          bgColor="#f1f5f9"
-          icon={<IconClockRotateAnticlockwiseFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Service History</h3>
 
       {history.length === 0 ? (
         <p

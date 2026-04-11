@@ -12,7 +12,6 @@ import {
   PM_INTERVAL_MILES,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { TimeDisplay } from "@/components/time-display";
@@ -24,12 +23,6 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconClipboardListFillDuo18,
-  IconWrenchScrewdriverFillDuo18,
-  IconClockRotateAnticlockwiseFillDuo18,
-  IconBusFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 interface WorkOrderDetailPanelProps {
   order: WorkOrder | null;
@@ -136,14 +129,7 @@ function PanelContent({
       </div>
 
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
-      <div className="mb-2.5">
-        <SectionPill
-          label="Progress"
-          color="#d4654a"
-          bgColor="#fdf0ed"
-          icon={<IconClipboardListFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Progress</h3>
       <div className="mb-2 rounded-md border border-black/[0.04] bg-[#fafaf9] px-[18px] pt-5 pb-[18px]">
         <StagePipeline
           currentStage={order.stage}
@@ -171,14 +157,7 @@ function PanelContent({
       </p>
 
       {/* ── Assignment ─────────────────────────────────────────────────── */}
-      <div className="mb-2.5">
-        <SectionPill
-          label="Assignment"
-          color="#8b5cf6"
-          bgColor="#f5f3ff"
-          icon={<IconWrenchScrewdriverFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Assignment</h3>
       <InfoGrid>
         <InfoRow
           label="Mechanic"
@@ -198,14 +177,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* ── Timeline ───────────────────────────────────────────────────── */}
-      <div className="mb-2.5">
-        <SectionPill
-          label="Timeline"
-          color="#64748b"
-          bgColor="#f1f5f9"
-          icon={<IconClockRotateAnticlockwiseFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Timeline</h3>
       <InfoGrid cols={2}>
         <InfoRow label="Opened" value={formatOpenedDate(order.createdAt)} />
         <InfoRow
@@ -215,14 +187,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* ── Bus context ────────────────────────────────────────────────── */}
-      <div className="mb-2.5">
-        <SectionPill
-          label="Bus"
-          color="#3b82f6"
-          bgColor="#eff6ff"
-          icon={<IconBusFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Bus</h3>
       {bus ? (
         <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
           <div className="mb-3 flex items-baseline justify-between">

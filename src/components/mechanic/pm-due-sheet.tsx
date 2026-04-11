@@ -12,10 +12,7 @@ import { Card } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
 import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
 import type { Bus } from "@/data/types";
-import {
-  IconWrenchFillDuo18,
-  IconClockFillDuo18,
-} from "nucleo-ui-fill-duo-18";
+import { IconWrenchFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface PmDueSheetProps {
   open: boolean;
@@ -44,14 +41,6 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
         <div className="p-5 sm:p-7">
           {/* Header */}
           <div style={{ marginBottom: 22 }}>
-            <div style={{ marginBottom: 10 }}>
-              <SectionPill
-                label="Pull In Next"
-                color="#b4541a"
-                bgColor="#fff4ed"
-                icon={<IconWrenchFillDuo18 />}
-              />
-            </div>
             <h2
               style={{
                 fontSize: 22,
@@ -82,9 +71,6 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
           {overdue.length > 0 && (
             <Section
               label="Overdue for PM"
-              color="#b4541a"
-              bgColor="#fff4ed"
-              icon={<IconWrenchFillDuo18 />}
               helperText="Not yet in the queue. Grab these before they break down on route."
             >
               {overdue.map(({ bus, milesOverdue }, idx) => (
@@ -104,9 +90,6 @@ export function PmDueSheet({ open, onOpenChange, onBusClick }: PmDueSheetProps) 
           {comingDue.length > 0 && (
             <Section
               label="Coming Due Soon"
-              color="#92400e"
-              bgColor="#fffbeb"
-              icon={<IconClockFillDuo18 />}
               helperText="Approaching PM interval. Plan these into the next shift."
             >
               {comingDue.map(({ bus, milesRemaining }, idx) => (
@@ -141,24 +124,18 @@ function overdueCountLine(overdue: number, comingDue: number): string {
 
 function Section({
   label,
-  color,
-  bgColor,
-  icon,
   helperText,
   children,
 }: {
   label: string;
-  color: string;
-  bgColor: string;
-  icon: ReactNode;
   helperText: string;
   children: ReactNode;
 }) {
   return (
     <div style={{ marginBottom: 22 }}>
-      <div style={{ marginBottom: 8 }}>
-        <SectionPill label={label} color={color} bgColor={bgColor} icon={icon} />
-      </div>
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">
+        {label}
+      </h3>
       <p
         style={{
           fontSize: 12,
