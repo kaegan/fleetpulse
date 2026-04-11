@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, BusHistoryEntry, HistoryOutcome } from "@/data/types";
+import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
 import { workOrders } from "@/data/work-orders";
 import { getBusHistory } from "@/data/bus-history";
 import {
@@ -36,9 +36,14 @@ import {
 interface BusDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
 }
 
-export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
+export function BusDetailPanel({
+  bus,
+  onClose,
+  onSelectWorkOrder,
+}: BusDetailPanelProps) {
   // Snapshot the last non-null bus so the sheet keeps rendering its contents
   // through the close animation after the parent clears `bus`.
   const [displayBus, setDisplayBus] = useState<Bus | null>(bus);
@@ -56,13 +61,21 @@ export function BusDetailPanel({ bus, onClose }: BusDetailPanelProps) {
           Vehicle info, preventive maintenance status, active work orders, and
           service history.
         </SheetDescription>
-        {displayBus && <PanelContent bus={displayBus} />}
+        {displayBus && (
+          <PanelContent bus={displayBus} onSelectWorkOrder={onSelectWorkOrder} />
+        )}
       </SheetContent>
     </Sheet>
   );
 }
 
-function PanelContent({ bus }: { bus: Bus }) {
+function PanelContent({
+  bus,
+  onSelectWorkOrder,
+}: {
+  bus: Bus;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
+}) {
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
   const milesLeft = milesUntilPm(bus);
@@ -227,15 +240,22 @@ function PanelContent({ bus }: { bus: Bus }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
+              const isInteractive = Boolean(onSelectWorkOrder);
               return (
-                <div
+                <button
                   key={wo.id}
-                  style={{
-                    background: "#fafaf9",
-                    borderRadius: 14,
-                    padding: 14,
-                    border: "1px solid rgba(0,0,0,0.06)",
-                  }}
+                  type="button"
+                  onClick={
+                    onSelectWorkOrder
+                      ? () => onSelectWorkOrder(wo)
+                      : undefined
+                  }
+                  disabled={!isInteractive}
+                  className={
+                    isInteractive
+                      ? "text-left w-full rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+                      : "text-left w-full rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px]"
+                  }
                 >
                   <div
                     style={{
@@ -294,7 +314,7 @@ function PanelContent({ bus }: { bus: Bus }) {
                       Assigned: {wo.mechanicName}
                     </div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>

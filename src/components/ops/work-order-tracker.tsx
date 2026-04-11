@@ -7,7 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS } from "@/lib/constants";
-import type { Bus, Severity } from "@/data/types";
+import type { Severity, WorkOrder } from "@/data/types";
 import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
@@ -24,10 +24,10 @@ const SCOPE_SUFFIX: Record<"all" | "north" | "south", string> = {
 };
 
 interface WorkOrderTrackerProps {
-  onSelectBus?: (bus: Bus) => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
 }
 
-export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
+export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = {}) {
   const [filter, setFilter] = useState<Severity | "all">("all");
   const { scope } = useDepot();
 
@@ -261,7 +261,7 @@ export function WorkOrderTracker({ onSelectBus }: WorkOrderTrackerProps = {}) {
             key={wo.id}
             order={wo}
             index={i}
-            onSelectBus={onSelectBus}
+            onSelectWorkOrder={onSelectWorkOrder}
           />
         ))}
       </div>
