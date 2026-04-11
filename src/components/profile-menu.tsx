@@ -99,7 +99,7 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
             <DropdownMenuItem disabled>
               <Settings />
               Account settings
-              <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="ml-auto text-[11px] font-medium text-muted-foreground">
                 Soon
               </span>
             </DropdownMenuItem>
@@ -107,7 +107,7 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
             <DropdownMenuItem disabled>
               <LogOut />
               Sign out
-              <span className="ml-auto text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="ml-auto text-[11px] font-medium text-muted-foreground">
                 Soon
               </span>
             </DropdownMenuItem>

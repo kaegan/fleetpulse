@@ -238,10 +238,9 @@ function PmRow({
           borderRadius: 999,
           background: garageBg,
           color: garageColor,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.03em",
-          textTransform: "uppercase",
+          fontSize: 12,
+          fontWeight: 600,
+          textTransform: "capitalize",
           justifySelf: "start",
         }}
       >
@@ -270,11 +269,9 @@ function PmRow({
         </span>
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 500,
             color: urgencyColor,
-            letterSpacing: "0.03em",
-            textTransform: "uppercase",
           }}
         >
           {urgencyLabel}

@@ -323,7 +323,7 @@ function MiniStat({
 }) {
   return (
     <div>
-      <div className="mb-[3px] text-[10px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
+      <div className="mb-[3px] text-[11px] font-medium text-[#929292]">
         {label}
       </div>
       <div

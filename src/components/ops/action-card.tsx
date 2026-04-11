@@ -211,10 +211,9 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   borderRadius: 999,
                   background: garageBg,
                   color: garageColor,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.03em",
-                  textTransform: "uppercase",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "capitalize",
                   justifySelf: "start",
                 }}
               >
@@ -242,12 +241,10 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   {formatNumber(overdueMiles)}
                 </span>
                 <span
-                  className="text-[10px] sm:text-[11px]"
+                  className="text-[12px] sm:text-[13px]"
                   style={{
-                    fontWeight: 600,
+                    fontWeight: 500,
                     color: "#b4541a",
-                    letterSpacing: "0.03em",
-                    textTransform: "uppercase",
                   }}
                 >
                   mi overdue

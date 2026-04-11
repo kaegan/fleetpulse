@@ -295,13 +295,12 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
             <text
               x={dueX}
               y={layout.bandY - 20}
-              fontSize={10}
-              fontWeight={700}
+              fontSize={11}
+              fontWeight={600}
               fill="#f59e0b"
               textAnchor="middle"
-              letterSpacing="0.05em"
             >
-              PM DUE
+              PM Due
             </text>
 
             {/* Axis line */}

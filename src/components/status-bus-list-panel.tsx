@@ -335,10 +335,9 @@ function BusRow({
               borderRadius: 999,
               background: garageBg,
               color: garageColor,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.03em",
-              textTransform: "uppercase",
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "capitalize",
             }}
           >
             {bus.garage}
@@ -386,11 +385,9 @@ function RightValue({
         </span>
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 700,
+            fontSize: 12,
+            fontWeight: 500,
             color: isOverdue ? "#b4541a" : "#22c55e",
-            letterSpacing: "0.03em",
-            textTransform: "uppercase",
           }}
         >
           {isOverdue ? "mi overdue" : "mi left"}
@@ -472,10 +469,8 @@ function SecondaryLine({
             borderRadius: 999,
             background: sev.bg,
             color: sev.text,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-            textTransform: "uppercase",
+            fontSize: 11,
+            fontWeight: 600,
           }}
         >
           <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>

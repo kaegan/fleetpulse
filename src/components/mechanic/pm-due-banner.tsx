@@ -72,7 +72,7 @@ export function PmDueBanner({
       </span>
 
       <span
-        className="text-[11px] font-bold uppercase tracking-[0.06em] transition-transform group-hover:translate-x-0.5"
+        className="text-[13px] font-semibold transition-transform group-hover:translate-x-0.5"
         style={{ color: "#b4541a", flexShrink: 0 }}
       >
         Review →
