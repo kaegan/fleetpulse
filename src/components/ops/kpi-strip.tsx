@@ -67,8 +67,15 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
 
   const p = KPI_PILLS;
 
+  // Breakpoint rationale: the count column (1fr of [1.2fr_1fr]) must be
+  // wide enough for a 2x2 grid whose cards each fit the "In Maintenance"
+  // pill (~180px min). That requires ~400px of count-column width, which
+  // only materializes around xl (1280px). Below xl we stack primary above
+  // counts so the count grid gets the full content width. And the count
+  // grid itself stays 1-col until sm (640px) so narrow phones don't crush
+  // the pills into two skinny 160px columns.
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-[1.2fr_1fr] md:gap-5">
+    <div className="mb-8 grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr] xl:gap-5">
       <KpiCard
         label={SCOPE_LABEL[scope]}
         value={availRate}
@@ -84,7 +91,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         // depot so the trendline isn't misread as that depot's history.
         sparklineData={scope === "all" ? availabilityHistory : undefined}
       />
-      <div className="grid grid-cols-2 gap-3.5 sm:gap-3.5">
+      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <KpiCard
           label="Running"
           value={counts.running}

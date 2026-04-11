@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm } from "./log-repair-form";
-import { PullInNextCard } from "./pull-in-next-card";
+import { PmDueBanner } from "./pm-due-banner";
+import { PmDueSheet } from "./pm-due-sheet";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -14,6 +15,7 @@ import { buses } from "@/data/buses";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
+import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
 import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
 
 type MineScope = "mine" | "all";
@@ -34,7 +36,10 @@ export function MechanicView() {
     null
   );
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const [isPmSheetOpen, setIsPmSheetOpen] = useState(false);
   const { scope: depotScope } = useDepot();
+  const { overdue: overdueCandidates, comingDue: comingDueCandidates } =
+    useOverdueCandidates();
 
   // Mutually exclusive: opening one right-side sheet clears the other so two
   // sheets are never stacked.
@@ -53,6 +58,13 @@ export function MechanicView() {
   // Sheet close animation is 300ms, plus a small buffer.
   const openBusFromWorkOrder = useCallback((bus: Bus) => {
     setSelectedWorkOrder(null);
+    setTimeout(() => setSelectedBus(bus), 320);
+  }, []);
+  // Same handoff from the PM sheet → individual bus sheet. Close the PM
+  // sheet first and wait for its exit animation before opening the bus
+  // sheet, for the same Radix Presence reason.
+  const openBusFromPmSheet = useCallback((bus: Bus) => {
+    setIsPmSheetOpen(false);
     setTimeout(() => setSelectedBus(bus), 320);
   }, []);
 
@@ -203,10 +215,16 @@ export function MechanicView() {
         </p>
       </div>
 
-      {/* Pull in next — tactical decision surface for M-3: "Which buses
-          should I pull in next for PM?" Lives above the kanban so it's the
-          first thing a mechanic sees when picking up a shift. */}
-      <PullInNextCard onBusClick={setSelectedBus} />
+      {/* Pull In Next discovery banner — tactical surface for M-3 ("which
+          buses should I pull in next for PM?"). Sits above the scope toggle
+          so it's the first thing a mechanic sees when opening the page.
+          Clicking expands the full planning list in a right-side drawer,
+          keeping Service Board otherwise single-concept (the kanban). */}
+      <PmDueBanner
+        overdueCount={overdueCandidates.length}
+        comingDueCount={comingDueCandidates.length}
+        onClick={() => setIsPmSheetOpen(true)}
+      />
 
       {/* Action row: scope toggle + log-new-repair CTA */}
       <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
@@ -241,6 +259,11 @@ export function MechanicView() {
         bus={liveSelectedWorkOrderBus}
         onClose={() => setSelectedWorkOrder(null)}
         onOpenBus={openBusFromWorkOrder}
+      />
+      <PmDueSheet
+        open={isPmSheetOpen}
+        onOpenChange={setIsPmSheetOpen}
+        onBusClick={openBusFromPmSheet}
       />
 
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
