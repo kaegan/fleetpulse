@@ -5,13 +5,42 @@ import { KpiStrip } from "./kpi-strip";
 import { ActionCard } from "./action-card";
 import { FleetHealthChart } from "./fleet-health-chart";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
+import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { SectionPill } from "@/components/section-pill";
-import type { Bus } from "@/data/types";
+import { buses } from "@/data/buses";
+import type { Bus, WorkOrder } from "@/data/types";
 import { IconRadarFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 export function OpsView() {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
+    null
+  );
+
+  // Mutually exclusive: opening one detail panel clears the other so two
+  // right-side sheets are never stacked.
+  const openBus = (bus: Bus) => {
+    setSelectedWorkOrder(null);
+    setSelectedBus(bus);
+  };
+  const openWorkOrder = (wo: WorkOrder) => {
+    setSelectedBus(null);
+    setSelectedWorkOrder(wo);
+  };
+  // Cross-link from WO sheet → bus sheet. Wait for the WO sheet to fully
+  // close and unmount before opening the bus sheet — otherwise Radix's
+  // Presence can get stuck with both sheets stacked in the DOM because the
+  // first sheet's exit animation gets orphaned when the second one opens.
+  // Sheet close animation is 300ms, plus a small buffer.
+  const openBusFromWorkOrder = (bus: Bus) => {
+    setSelectedWorkOrder(null);
+    setTimeout(() => setSelectedBus(bus), 320);
+  };
+
+  const selectedWorkOrderBus = selectedWorkOrder
+    ? buses.find((b) => b.id === selectedWorkOrder.busId) ?? null
+    : null;
 
   return (
     <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
@@ -48,13 +77,20 @@ export function OpsView() {
       </div>
 
       <KpiStrip />
-      <ActionCard onBusClick={setSelectedBus} />
-      <FleetHealthChart onBusClick={setSelectedBus} />
-      <WorkOrderTracker onSelectBus={setSelectedBus} />
+      <ActionCard onBusClick={openBus} />
+      <FleetHealthChart onBusClick={openBus} />
+      <WorkOrderTracker onSelectWorkOrder={openWorkOrder} />
 
       <BusDetailPanel
         bus={selectedBus}
         onClose={() => setSelectedBus(null)}
+        onSelectWorkOrder={openWorkOrder}
+      />
+      <WorkOrderDetailPanel
+        order={selectedWorkOrder}
+        bus={selectedWorkOrderBus}
+        onClose={() => setSelectedWorkOrder(null)}
+        onOpenBus={openBusFromWorkOrder}
       />
     </div>
   );

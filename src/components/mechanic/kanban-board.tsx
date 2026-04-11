@@ -13,20 +13,20 @@ import {
 import { KanbanColumn } from "./kanban-column";
 import { WorkOrderCard } from "./work-order-card";
 import { STAGES } from "@/lib/constants";
-import type { Bus, WorkOrder, WorkOrderStage } from "@/data/types";
+import type { WorkOrder, WorkOrderStage } from "@/data/types";
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[];
   onStageChange: (woId: string, newStage: WorkOrderStage) => void;
   onComplete: (woId: string) => void;
-  onSelectBus?: (bus: Bus) => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
 }
 
 export function KanbanBoard({
   workOrders,
   onStageChange,
   onComplete,
-  onSelectBus,
+  onSelectWorkOrder,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -84,7 +84,7 @@ export function KanbanBoard({
               orders={stageOrders}
               className="w-72 shrink-0 snap-center lg:w-auto lg:min-w-0 lg:shrink"
               onComplete={onComplete}
-              onSelectBus={onSelectBus}
+              onSelectWorkOrder={onSelectWorkOrder}
               onAdvance={(woId) => {
                 if (idx < STAGES.length - 1) {
                   onStageChange(woId, (idx + 1) as WorkOrderStage);

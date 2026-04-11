@@ -1,8 +1,7 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import type { Bus, WorkOrder } from "@/data/types";
-import { buses } from "@/data/buses";
+import type { WorkOrder } from "@/data/types";
 import { SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import {
@@ -27,7 +26,7 @@ const SEVERITY_VARIANT = {
 interface WorkOrderCardProps {
   order: WorkOrder;
   onComplete?: (woId: string) => void;
-  onSelectBus?: (bus: Bus) => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
   onAdvance?: (woId: string) => void;
   /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
   isOverlay?: boolean;
@@ -36,7 +35,7 @@ interface WorkOrderCardProps {
 export function WorkOrderCard({
   order,
   onComplete,
-  onSelectBus,
+  onSelectWorkOrder,
   onAdvance,
   isOverlay = false,
 }: WorkOrderCardProps) {
@@ -49,12 +48,11 @@ export function WorkOrderCard({
   const isRoadReady = order.stage === 4;
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isOverlay || !onSelectBus) return;
+    if (isOverlay || !onSelectWorkOrder) return;
     // @dnd-kit's 5px activation distance means short clicks don't fire a drag.
     // This onClick only runs on an actual click, not a drag release.
     e.stopPropagation();
-    const bus = buses.find((b) => b.id === order.busId);
-    if (bus) onSelectBus(bus);
+    onSelectWorkOrder(order);
   };
 
   return (

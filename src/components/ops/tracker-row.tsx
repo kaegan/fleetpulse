@@ -1,23 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { Bus, WorkOrder } from "@/data/types";
-import { buses } from "@/data/buses";
-import { STAGES, SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
+import type { WorkOrder } from "@/data/types";
+import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import { hoursSince } from "@/lib/utils";
+import { StagePipeline } from "@/components/stage-pipeline";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface TrackerRowProps {
   order: WorkOrder;
   index: number;
-  onSelectBus?: (bus: Bus) => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
 }
 
 // Threshold for "this has been sitting in the same stage for a while".
@@ -53,18 +47,15 @@ const RESTING_SHADOW =
 const HOVER_SHADOW =
   "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.05), 0px 8px 18px rgba(0,0,0,0.05)";
 
-export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
+export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps) {
   const sev = SEVERITY_COLORS[order.severity];
   const agingTag = getAgingTag(order.stageEnteredAt);
 
   const handleClick = () => {
-    if (!onSelectBus) return;
-    const bus = buses.find((b) => b.id === order.busId);
-    if (bus) onSelectBus(bus);
+    onSelectWorkOrder?.(order);
   };
 
   return (
-    <TooltipProvider delayDuration={150}>
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
@@ -82,7 +73,7 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
       className="flex flex-col gap-3 rounded-[16px] bg-card p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
       style={{
         boxShadow: RESTING_SHADOW,
-        cursor: onSelectBus ? "pointer" : "default",
+        cursor: onSelectWorkOrder ? "pointer" : "default",
         transition: "box-shadow 150ms ease, transform 150ms ease",
       }}
     >
@@ -157,80 +148,12 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
 
       {/* Progress pipeline — Domino's Tracker */}
       <div className="flex items-center w-full lg:flex-1">
-        {STAGES.map((stage, idx) => {
-          const isComplete = idx < order.stage;
-          const isCurrent = idx === order.stage;
-
-          return (
-            <div
-              key={stage}
-              style={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {/* Circle */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <motion.div
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{
-                      delay: index * 0.06 + idx * 0.08,
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 25,
-                    }}
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 10,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                      background: isComplete
-                        ? sev.dot
-                        : isCurrent
-                          ? sev.bg
-                          : "#f2f2f2",
-                      border: isCurrent
-                        ? `2px solid ${sev.border}`
-                        : isComplete
-                          ? "none"
-                          : "1px solid rgba(0,0,0,0.08)",
-                      color: isComplete
-                        ? "#ffffff"
-                        : isCurrent
-                          ? sev.dot
-                          : "#b5b5b5",
-                    }}
-                  >
-                    {isComplete ? "✓" : idx + 1}
-                  </motion.div>
-                </TooltipTrigger>
-                <TooltipContent>{stage}</TooltipContent>
-              </Tooltip>
-
-              {/* Connector line */}
-              {idx < STAGES.length - 1 && (
-                <div
-                  style={{
-                    flex: 1,
-                    height: 2,
-                    background: isComplete ? sev.dot : "rgba(0,0,0,0.06)",
-                    marginLeft: 2,
-                    marginRight: 2,
-                    borderRadius: 1,
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
+        <StagePipeline
+          currentStage={order.stage}
+          severity={order.severity}
+          size="sm"
+          staggerDelay={index * 0.06}
+        />
       </div>
 
       {/* Mobile-only bottom: time in stage + aging tag */}
@@ -270,7 +193,6 @@ export function TrackerRow({ order, index, onSelectBus }: TrackerRowProps) {
         {SEVERITY_LABELS[order.severity]}
       </Badge>
     </motion.div>
-    </TooltipProvider>
   );
 }
 

@@ -8,8 +8,10 @@ import { LogRepairForm } from "./log-repair-form";
 import { PullInNextCard } from "./pull-in-next-card";
 import { SectionPill } from "@/components/section-pill";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
+import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { buses } from "@/data/buses";
 import { workOrders as initialWorkOrders } from "@/data/work-orders";
 import { CURRENT_MECHANIC } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
@@ -29,8 +31,31 @@ export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
   const [scope, setScope] = useState<MineScope>("mine");
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
+  const [selectedWorkOrder, setSelectedWorkOrder] = useState<WorkOrder | null>(
+    null
+  );
   const [isLogOpen, setIsLogOpen] = useState(false);
   const { scope: depotScope } = useDepot();
+
+  // Mutually exclusive: opening one right-side sheet clears the other so two
+  // sheets are never stacked.
+  const openBus = useCallback((bus: Bus) => {
+    setSelectedWorkOrder(null);
+    setSelectedBus(bus);
+  }, []);
+  const openWorkOrder = useCallback((wo: WorkOrder) => {
+    setSelectedBus(null);
+    setSelectedWorkOrder(wo);
+  }, []);
+  // Cross-link from WO sheet → bus sheet. Wait for the WO sheet to fully
+  // close and unmount before opening the bus sheet — otherwise Radix's
+  // Presence can get stuck with both sheets stacked in the DOM because the
+  // first sheet's exit animation gets orphaned when the second one opens.
+  // Sheet close animation is 300ms, plus a small buffer.
+  const openBusFromWorkOrder = useCallback((bus: Bus) => {
+    setSelectedWorkOrder(null);
+    setTimeout(() => setSelectedBus(bus), 320);
+  }, []);
 
   // When the user clicks "Log new repair", we need a concrete garage to
   // assign the new WO to. If scope is "all", default to north (the demo
@@ -118,6 +143,24 @@ export function MechanicView() {
       ? garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC)
       : garageOrders;
 
+  // Re-derive the open WO from `orders` state so stage advance / complete
+  // updates the sheet in place. If the WO is completed (removed from orders),
+  // the memo returns null and the sheet closes itself.
+  const liveSelectedWorkOrder = useMemo(
+    () =>
+      selectedWorkOrder
+        ? orders.find((wo) => wo.id === selectedWorkOrder.id) ?? null
+        : null,
+    [selectedWorkOrder, orders]
+  );
+  const liveSelectedWorkOrderBus = useMemo(
+    () =>
+      liveSelectedWorkOrder
+        ? buses.find((b) => b.id === liveSelectedWorkOrder.busId) ?? null
+        : null,
+    [liveSelectedWorkOrder]
+  );
+
   // Most-recently-created unique bus numbers in this garage, for the form's
   // "Recent" chip row.
   const recentBusNumbers = useMemo(() => {
@@ -194,12 +237,19 @@ export function MechanicView() {
         workOrders={visibleOrders}
         onStageChange={handleStageChange}
         onComplete={handleComplete}
-        onSelectBus={setSelectedBus}
+        onSelectWorkOrder={openWorkOrder}
       />
 
       <BusDetailPanel
         bus={selectedBus}
         onClose={() => setSelectedBus(null)}
+        onSelectWorkOrder={openWorkOrder}
+      />
+      <WorkOrderDetailPanel
+        order={liveSelectedWorkOrder}
+        bus={liveSelectedWorkOrderBus}
+        onClose={() => setSelectedWorkOrder(null)}
+        onOpenBus={openBusFromWorkOrder}
       />
 
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>

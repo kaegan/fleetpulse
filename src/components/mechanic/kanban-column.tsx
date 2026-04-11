@@ -6,7 +6,7 @@ import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
-import type { Bus, WorkOrder } from "@/data/types";
+import type { WorkOrder } from "@/data/types";
 import {
   IconClipboardFillDuo18,
   IconMagnifierCheckFillDuo18,
@@ -28,7 +28,7 @@ interface KanbanColumnProps {
   stageName: string;
   orders: WorkOrder[];
   onComplete: (woId: string) => void;
-  onSelectBus?: (bus: Bus) => void;
+  onSelectWorkOrder?: (order: WorkOrder) => void;
   onAdvance: (woId: string) => void;
   /** Responsive layout classes applied by the parent board. */
   className?: string;
@@ -39,7 +39,7 @@ export function KanbanColumn({
   stageName,
   orders,
   onComplete,
-  onSelectBus,
+  onSelectWorkOrder,
   onAdvance,
   className = "",
 }: KanbanColumnProps) {
@@ -83,7 +83,7 @@ export function KanbanColumn({
             key={wo.id}
             order={wo}
             onComplete={onComplete}
-            onSelectBus={onSelectBus}
+            onSelectWorkOrder={onSelectWorkOrder}
             onAdvance={onAdvance}
           />
         ))}
