@@ -19,8 +19,10 @@ export const SEVERITY_ICONS: Record<Severity, ReactNode> = {
 };
 
 /**
- * The six kanban columns, in left-to-right order. "Held" is an off-path
- * detour for WOs blocked on parts / bay / approval.
+ * The six stages in order — canonical for both the mechanic kanban and every
+ * view that renders repair progress (detail panel stepper, Domino's tracker
+ * rows, future surfaces). Any new progress view should derive its state from
+ * `getStageStates`, not re-implement the stage comparison logic inline.
  */
 export const STAGE_ORDER: readonly WorkOrderStage[] = [
   "inbound",
@@ -39,20 +41,6 @@ export const STAGE_LABELS: Record<WorkOrderStage, string> = {
   repairing: "Repairing",
   "road-test": "Road Test",
 };
-
-/**
- * The linear five-stage pipeline used by the Domino's tracker and detail
- * panel progress bar. "Held" is intentionally omitted — it's a waiting
- * state, not a phase. A WO in Held renders as "Diagnosing" with a held
- * indicator on top.
- */
-export const PIPELINE_STAGES: readonly WorkOrderStage[] = [
-  "inbound",
-  "triage",
-  "diagnosing",
-  "repairing",
-  "road-test",
-] as const;
 
 export function stageIndex(stage: WorkOrderStage): number {
   return STAGE_ORDER.indexOf(stage);
@@ -86,13 +74,49 @@ export function isTerminalStage(stage: WorkOrderStage): boolean {
 }
 
 /**
- * Which pipeline dot to highlight when rendering a WO in the 5-stage
- * Domino's tracker. `held` collapses to `diagnosing` since that's where
- * the detour originates. Callers should additionally render a held badge
- * when `stage === "held"`.
+ * The visual state of a single stage dot in any repair-progress view.
+ *
+ * - `complete`      — WO has passed this stage
+ * - `current`       — WO is actively in this stage
+ * - `current-held`  — WO is blocked in this stage (Held column)
+ * - `skipped`       — stage was bypassed (Held when WO went straight through)
+ * - `pending`       — stage not yet reached
  */
-export function pipelineStageFor(stage: WorkOrderStage): WorkOrderStage {
-  return stage === "held" ? "diagnosing" : stage;
+export type StageState =
+  | "complete"
+  | "current"
+  | "current-held"
+  | "skipped"
+  | "pending";
+
+/**
+ * Canonical per-stage state resolver for any view that renders WO progress.
+ * Use this instead of re-deriving state from (currentStage, idx) comparisons
+ * inline — keeps Held semantics, skipped semantics, and future additions
+ * consistent across every surface (detail panel, tracker rows, card widgets…).
+ */
+export function getStageStates(
+  currentStage: WorkOrderStage,
+): Array<{ stage: WorkOrderStage; state: StageState }> {
+  const currentIdx = STAGE_ORDER.indexOf(currentStage);
+  return STAGE_ORDER.map((stage, idx) => {
+    if (idx === currentIdx) {
+      return {
+        stage,
+        state: currentStage === "held" ? "current-held" : "current",
+      };
+    }
+    if (idx < currentIdx) {
+      // Held is skippable — most WOs pass straight from Diagnosing to
+      // Repairing without entering Held. Render as skipped (not complete)
+      // so the dot stays visually muted rather than showing a green check.
+      if (stage === "held") {
+        return { stage, state: "skipped" };
+      }
+      return { stage, state: "complete" };
+    }
+    return { stage, state: "pending" };
+  });
 }
 
 export const STATUS_COLORS: Record<BusStatus, string> = {

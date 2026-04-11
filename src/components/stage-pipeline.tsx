@@ -8,10 +8,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  PIPELINE_STAGES,
+  STAGE_ORDER,
   SEVERITY_COLORS,
   STAGE_LABELS,
-  pipelineStageFor,
+  getStageStates,
 } from "@/lib/constants";
 import type { Severity, WorkOrderStage } from "@/data/types";
 
@@ -29,6 +29,11 @@ interface StagePipelineProps {
   staggerDelay?: number;
 }
 
+// Held palette — warmer slate so it reads as blocked, not just active.
+const HELD_BORDER = "#b4541a";
+const HELD_BG = "#fff4ed";
+const HELD_TEXT = "#b4541a";
+
 export function StagePipeline({
   currentStage,
   severity,
@@ -41,24 +46,71 @@ export function StagePipeline({
   const connectorHeight = size === "lg" ? 3 : 2;
   const showLabels = size === "lg";
 
-  // Held is a detour — collapse it to its originating phase (Diagnosing)
-  // for dot positioning and render a held decoration on that dot.
-  const displayStage = pipelineStageFor(currentStage);
-  const currentIdx = PIPELINE_STAGES.indexOf(displayStage);
-  const isHeld = currentStage === "held";
-  // Warmer slate for the held state so it's visually distinct from active severity color.
-  const heldBorder = "#b4541a";
-  const heldBg = "#fff4ed";
-  const heldDot = "#b4541a";
-  const heldText = "#b4541a";
+  const stageStates = getStageStates(currentStage);
 
   return (
     <TooltipProvider delayDuration={150}>
       <div className="flex w-full items-start">
-        {PIPELINE_STAGES.map((stage, idx) => {
-          const isComplete = idx < currentIdx;
-          const isCurrent = idx === currentIdx;
-          const currentIsHeld = isCurrent && isHeld;
+        {stageStates.map(({ stage, state }, idx) => {
+          const isLast = idx === STAGE_ORDER.length - 1;
+
+          // ── Circle styling ──────────────────────────────────────────────
+          let bg: string;
+          let border: string;
+          let color: string;
+          let glyph: string;
+
+          switch (state) {
+            case "complete":
+              bg = sev.dot;
+              border = "none";
+              color = "#ffffff";
+              glyph = "\u2713";
+              break;
+            case "current":
+              bg = sev.bg;
+              border = `2px solid ${sev.border}`;
+              color = sev.dot;
+              glyph = String(idx + 1);
+              break;
+            case "current-held":
+              bg = HELD_BG;
+              border = `2px dashed ${HELD_BORDER}`;
+              color = HELD_TEXT;
+              glyph = "\u23F8";
+              break;
+            case "skipped":
+            case "pending":
+            default:
+              bg = "#f2f2f2";
+              border = "1px solid rgba(0,0,0,0.08)";
+              color = "#b5b5b5";
+              glyph = String(idx + 1);
+              break;
+          }
+
+          // ── Connector color (leads OUT of this stage to the next) ──
+          // Solid when the WO has left this stage (complete or skipped).
+          // "current" and "current-held" mean the WO is still here, so the
+          // outgoing connector stays muted.
+          const connectorSolid = state === "complete" || state === "skipped";
+
+          // ── Label text & color ─────────────────────────────────────────
+          const labelText =
+            showLabels && state === "current-held" ? "Held" : STAGE_LABELS[stage];
+          const labelColor =
+            state === "current-held"
+              ? HELD_TEXT
+              : state === "current"
+                ? sev.text
+                : state === "complete"
+                  ? "#6a6a6a"
+                  : "#b5b5b5"; // pending + skipped both muted
+
+          const tooltipText =
+            state === "current-held"
+              ? `Held · ${STAGE_LABELS[stage]}`
+              : STAGE_LABELS[stage];
 
           const circle = (
             <motion.div
@@ -84,44 +136,31 @@ export function StagePipeline({
                 fontSize: size === "lg" ? 12 : 10,
                 fontWeight: 700,
                 flexShrink: 0,
-                background: isComplete
-                  ? sev.dot
-                  : currentIsHeld
-                    ? heldBg
-                    : isCurrent
-                      ? sev.bg
-                      : "#f2f2f2",
-                border: currentIsHeld
-                  ? `2px dashed ${heldBorder}`
-                  : isCurrent
-                    ? `2px solid ${sev.border}`
-                    : isComplete
-                      ? "none"
-                      : "1px solid rgba(0,0,0,0.08)",
-                color: isComplete
-                  ? "#ffffff"
-                  : currentIsHeld
-                    ? heldDot
-                    : isCurrent
-                      ? sev.dot
-                      : "#b5b5b5",
+                background: bg,
+                border,
+                color,
               }}
             >
-              {isComplete ? "\u2713" : currentIsHeld ? "\u23F8" : idx + 1}
+              {glyph}
             </motion.div>
           );
-
-          const labelText = showLabels && currentIsHeld ? "Held" : STAGE_LABELS[stage];
-          const tooltipText = currentIsHeld ? `Held · ${STAGE_LABELS[stage]}` : STAGE_LABELS[stage];
 
           return (
             <div
               key={stage}
-              style={{ flex: 1, display: "flex", alignItems: "flex-start" }}
+              style={{
+                // Last item takes only its circle width so there's no
+                // trailing dead space at the right of the row.
+                flex: isLast ? "none" : 1,
+                display: "flex",
+                alignItems: "flex-start",
+              }}
             >
-              {/* Circle column (circle + optional label) */}
+              {/* Circle column — fixed width so label text doesn't push
+                  connectors narrower (the old spacing bug). */}
               <div
                 style={{
+                  width: circleSize,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -142,13 +181,7 @@ export function StagePipeline({
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: currentIsHeld
-                        ? heldText
-                        : isCurrent
-                          ? sev.text
-                          : isComplete
-                            ? "#6a6a6a"
-                            : "#b5b5b5",
+                      color: labelColor,
                       whiteSpace: "nowrap",
                       textAlign: "center",
                     }}
@@ -158,13 +191,13 @@ export function StagePipeline({
                 )}
               </div>
 
-              {/* Connector line — vertically centered on circle */}
-              {idx < PIPELINE_STAGES.length - 1 && (
+              {/* Connector line — not rendered after the last circle */}
+              {!isLast && (
                 <div
                   style={{
                     flex: 1,
                     height: connectorHeight,
-                    background: isComplete ? sev.dot : "rgba(0,0,0,0.06)",
+                    background: connectorSolid ? sev.dot : "rgba(0,0,0,0.06)",
                     marginLeft: 2,
                     marginRight: 2,
                     marginTop: circleSize / 2 - connectorHeight / 2,

@@ -6,7 +6,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import {
-  PIPELINE_STAGES,
   STAGE_LABELS,
   STAGE_ORDER,
   SEVERITY_COLORS,
@@ -219,11 +218,11 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
           Issue
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          {PIPELINE_STAGES.map((stage, idx) => (
+          {STAGE_ORDER.map((stage, idx) => (
             <div
               key={stage}
               style={{
-                flex: 1,
+                flex: idx < STAGE_ORDER.length - 1 ? 1 : "none",
                 display: "flex",
                 alignItems: "center",
               }}
@@ -238,7 +237,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               >
                 {STAGE_LABELS[stage]}
               </span>
-              {idx < PIPELINE_STAGES.length - 1 && <div style={{ flex: 1 }} />}
+              {idx < STAGE_ORDER.length - 1 && <div style={{ flex: 1 }} />}
             </div>
           ))}
         </div>
