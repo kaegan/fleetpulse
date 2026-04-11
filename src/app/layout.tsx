@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -16,15 +17,19 @@ export const metadata: Metadata = {
     "Real-time fleet visibility for Transitland's 300-bus paratransit operation. Role-based views for mechanics and ops managers.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const sidebarState = cookieStore.get("sidebar_state")?.value;
+  const defaultOpen = sidebarState === undefined ? true : sidebarState === "true";
+
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <AppShell>{children}</AppShell>
+        <AppShell defaultOpen={defaultOpen}>{children}</AppShell>
         <Toaster />
       </body>
     </html>

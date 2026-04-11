@@ -48,7 +48,7 @@ export function OpsView() {
       <div style={{ marginBottom: 28 }}>
         <div style={{ marginBottom: 10 }}>
           <SectionPill
-            label="Operations"
+            label="Fleet Overview"
             color="#3b82f6"
             bgColor="#eff6ff"
             icon={<IconRadarFillDuo18 />}

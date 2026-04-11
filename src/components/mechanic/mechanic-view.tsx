@@ -184,7 +184,7 @@ export function MechanicView() {
       <div style={{ marginBottom: 22 }}>
         <div style={{ marginBottom: 10 }}>
           <SectionPill
-            label="Mechanic"
+            label="Service Board"
             color="#8b5cf6"
             bgColor="#f5f3ff"
             icon={<IconWrenchScrewdriverFillDuo18 />}
