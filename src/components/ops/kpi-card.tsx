@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import {
-  motion,
-  useMotionValue,
-  useTransform,
-  animate,
-} from "framer-motion";
+import { useMemo, type ReactNode } from "react";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
 import { AreaChart } from "@/components/ui/area-chart";
 import type { AvailabilityDataPoint } from "@/data/availability-history";
+
+type DeltaDirection = "up-is-good" | "down-is-good";
 
 interface KpiCardProps {
   label: string;
@@ -21,16 +17,79 @@ interface KpiCardProps {
   pillColor: string;
   pillBg: string;
   pillIcon?: ReactNode;
+  /** % forecast for the primary availability card. */
   forecast?: number;
   /** Absolute number of buses available tomorrow — shown alongside the
    *  forecast percent so ops see both the rate and the decision unit. */
   forecastCount?: number;
   sparklineData?: AvailabilityDataPoint[];
+  /** Count card footer: yesterday's value for the delta, tomorrow's
+   *  forecast value, and which direction is "good" for this metric. When
+   *  yesterdayValue is set we render a compact two-row footer instead of
+   *  the primary card's single forecast row. */
+  yesterdayValue?: number;
+  forecastValue?: number;
+  deltaDirection?: DeltaDirection;
+  /** Whole-card click — used to drill into the affected bus list. */
+  onClick?: () => void;
+  /** ARIA label for the clickable card. */
+  ariaLabel?: string;
 }
 
 function formatSparkDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Return green/red/gray for a delta based on which direction is "good". */
+function deltaColor(
+  delta: number,
+  direction: DeltaDirection
+): string {
+  if (delta === 0) return "#929292";
+  const isGood =
+    (delta > 0 && direction === "up-is-good") ||
+    (delta < 0 && direction === "down-is-good");
+  return isGood ? "#16a34a" : "#dc2626";
+}
+
+/** Inline delta chip: "↑2" / "↓2" / "—" with status-aware coloring. */
+function DeltaChip({
+  delta,
+  direction,
+}: {
+  delta: number;
+  direction: DeltaDirection;
+}) {
+  const color = deltaColor(delta, direction);
+  if (delta === 0) {
+    return (
+      <span
+        style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color,
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        —
+      </span>
+    );
+  }
+  const arrow = delta > 0 ? "↑" : "↓";
+  return (
+    <span
+      style={{
+        fontSize: 12,
+        fontWeight: 700,
+        color,
+        fontVariantNumeric: "tabular-nums",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {arrow} {Math.abs(delta)}
+    </span>
+  );
 }
 
 export function KpiCard({
@@ -45,23 +104,13 @@ export function KpiCard({
   forecast,
   forecastCount,
   sparklineData,
+  yesterdayValue,
+  forecastValue,
+  deltaDirection = "down-is-good",
+  onClick,
+  ariaLabel,
 }: KpiCardProps) {
-  const motionValue = useMotionValue(0);
-  const rounded = useTransform(motionValue, (latest) => {
-    if (suffix === "%") return latest.toFixed(1);
-    return Math.round(latest).toString();
-  });
-  const hasAnimated = useRef(false);
-
-  useEffect(() => {
-    if (!hasAnimated.current) {
-      hasAnimated.current = true;
-      animate(motionValue, value, {
-        duration: 0.8,
-        ease: "easeOut",
-      });
-    }
-  }, [motionValue, value]);
+  const displayValue = suffix === "%" ? value.toFixed(1) : Math.round(value).toString();
 
   // Tight Y domain for sparkline: just under the lowest point, just above 95% target.
   const sparkDomain = useMemo<[number, number] | undefined>(() => {
@@ -70,14 +119,29 @@ export function KpiCard({
     return [minVal - 1, 96];
   }, [sparklineData]);
 
-  return (
+  const isClickable = Boolean(onClick);
+  const hasCountFooter = yesterdayValue !== undefined;
+  const yesterdayDelta = hasCountFooter ? value - yesterdayValue! : 0;
+  const forecastDelta =
+    hasCountFooter && forecastValue !== undefined
+      ? forecastValue - value
+      : 0;
+
+  const cardClassName =
+    "rounded-[24px] shadow-card transition-shadow " +
+    (isPrimary
+      ? "p-5 sm:p-6 md:p-[28px_32px]"
+      : "p-4 sm:p-5 md:p-[24px_28px]") +
+    (isClickable
+      ? " cursor-pointer hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      : "");
+
+  const cardInner = (
     <Card
-      className={
-        "rounded-[24px] shadow-card " +
-        (isPrimary
-          ? "p-5 sm:p-6 md:p-[28px_32px]"
-          : "p-4 sm:p-5 md:p-[24px_28px]")
-      }
+      className={cardClassName}
+      // When clickable, the outer <button> handles keyboard + click. We still
+      // keep the Card's visual hover style above for the shadow lift.
+      role={isClickable ? undefined : undefined}
     >
       <div style={{ marginBottom: isPrimary ? 20 : 14 }}>
         <SectionPill
@@ -94,7 +158,7 @@ export function KpiCard({
           gap: 4,
         }}
       >
-        <motion.span
+        <span
           className={
             isPrimary
               ? "text-5xl sm:text-6xl md:text-[72px]"
@@ -107,8 +171,8 @@ export function KpiCard({
             lineHeight: 1,
           }}
         >
-          {rounded}
-        </motion.span>
+          {displayValue}
+        </span>
         {suffix && (
           <span
             className={
@@ -141,7 +205,7 @@ export function KpiCard({
             formatIndex={formatSparkDate}
           />
         </div>
-      ) : suffix === "%" ? (
+      ) : suffix === "%" && !hasCountFooter ? (
         <div
           style={{
             marginTop: 20,
@@ -151,19 +215,19 @@ export function KpiCard({
             overflow: "hidden",
           }}
         >
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${value}%` }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+          <div
             style={{
               height: "100%",
+              width: `${value}%`,
               background: color,
               borderRadius: 999,
             }}
           />
         </div>
       ) : null}
-      {forecast !== undefined && (
+
+      {/* Primary-card forecast row (Fleet Availability only) */}
+      {forecast !== undefined && !hasCountFooter && (
         <div
           style={{
             marginTop: 14,
@@ -209,6 +273,104 @@ export function KpiCard({
           )}
         </div>
       )}
+
+      {/* Count-card footer: Yesterday + Tomorrow rows */}
+      {hasCountFooter && (
+        <div
+          className="mt-5 border-t border-black/[0.06] pt-3"
+          style={{ display: "flex", flexDirection: "column", gap: 6 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 8,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "#929292",
+              }}
+            >
+              Yesterday
+            </span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "#6a6a6a",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {yesterdayValue}
+              </span>
+              <DeltaChip delta={yesterdayDelta} direction={deltaDirection} />
+            </div>
+          </div>
+          {forecastValue !== undefined && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#929292",
+                }}
+              >
+                Tomorrow (est.)
+              </span>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#6a6a6a",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {forecastValue}
+                </span>
+                <DeltaChip delta={forecastDelta} direction={deltaDirection} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </Card>
+  );
+
+  if (!isClickable) return cardInner;
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="block w-full text-left rounded-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
+    >
+      {cardInner}
+    </button>
   );
 }
