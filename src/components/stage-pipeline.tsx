@@ -7,7 +7,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { STAGES, SEVERITY_COLORS } from "@/lib/constants";
+import {
+  PIPELINE_STAGES,
+  SEVERITY_COLORS,
+  STAGE_LABELS,
+  pipelineStageFor,
+} from "@/lib/constants";
 import type { Severity, WorkOrderStage } from "@/data/types";
 
 interface StagePipelineProps {
@@ -36,12 +41,24 @@ export function StagePipeline({
   const connectorHeight = size === "lg" ? 3 : 2;
   const showLabels = size === "lg";
 
+  // Held is a detour — collapse it to its originating phase (Diagnosing)
+  // for dot positioning and render a held decoration on that dot.
+  const displayStage = pipelineStageFor(currentStage);
+  const currentIdx = PIPELINE_STAGES.indexOf(displayStage);
+  const isHeld = currentStage === "held";
+  // Warmer slate for the held state so it's visually distinct from active severity color.
+  const heldBorder = "#b4541a";
+  const heldBg = "#fff4ed";
+  const heldDot = "#b4541a";
+  const heldText = "#b4541a";
+
   return (
     <TooltipProvider delayDuration={150}>
       <div className="flex w-full items-start">
-        {STAGES.map((stage, idx) => {
-          const isComplete = idx < currentStage;
-          const isCurrent = idx === currentStage;
+        {PIPELINE_STAGES.map((stage, idx) => {
+          const isComplete = idx < currentIdx;
+          const isCurrent = idx === currentIdx;
+          const currentIsHeld = isCurrent && isHeld;
 
           const circle = (
             <motion.div
@@ -69,6 +86,13 @@ export function StagePipeline({
                 flexShrink: 0,
                 background: isComplete
                   ? sev.dot
+                  : currentIsHeld
+                    ? heldBg
+                    : isCurrent
+                      ? sev.bg
+                      : "#f2f2f2",
+                border: currentIsHeld
+                  ? `2px dashed ${heldBorder}`
                   : isCurrent
                     ? sev.bg
                     : "var(--color-surface-warm)",
@@ -84,9 +108,12 @@ export function StagePipeline({
                     : "var(--color-text-faint)",
               }}
             >
-              {isComplete ? "\u2713" : idx + 1}
+              {isComplete ? "\u2713" : currentIsHeld ? "\u23F8" : idx + 1}
             </motion.div>
           );
+
+          const labelText = showLabels && currentIsHeld ? "Held" : STAGE_LABELS[stage];
+          const tooltipText = currentIsHeld ? `Held · ${STAGE_LABELS[stage]}` : STAGE_LABELS[stage];
 
           return (
             <div
@@ -104,12 +131,11 @@ export function StagePipeline({
                 }}
               >
                 {showLabels ? (
-                  // Labels provide the name inline, so tooltips would be redundant.
                   circle
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>{circle}</TooltipTrigger>
-                    <TooltipContent>{stage}</TooltipContent>
+                    <TooltipContent>{tooltipText}</TooltipContent>
                   </Tooltip>
                 )}
                 {showLabels && (
@@ -126,13 +152,13 @@ export function StagePipeline({
                       textAlign: "center",
                     }}
                   >
-                    {stage}
+                    {labelText}
                   </span>
                 )}
               </div>
 
               {/* Connector line — vertically centered on circle */}
-              {idx < STAGES.length - 1 && (
+              {idx < PIPELINE_STAGES.length - 1 && (
                 <div
                   style={{
                     flex: 1,

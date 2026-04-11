@@ -267,9 +267,8 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               fontWeight={700}
               style={{ fill: "var(--color-status-pm-due)" }}
               textAnchor="middle"
-              letterSpacing="0.05em"
             >
-              PM DUE
+              PM Due
             </text>
 
             {/* Axis line */}

@@ -4,10 +4,32 @@ export type Garage = "north" | "south";
 
 export type Severity = "critical" | "high" | "routine";
 
-/** 0 = Intake, 1 = Diagnosing, 2 = Parts Ready, 3 = In Repair, 4 = Road Ready */
-export type WorkOrderStage = 0 | 1 | 2 | 3 | 4;
+/**
+ * Six-stage work order lifecycle aligned with real bus depot workflows:
+ *  - inbound   : WO exists, bus not yet in the depot (driver defect, road call, scheduled PM)
+ *  - triage    : bus arrived, not yet assigned to a mechanic
+ *  - diagnosing: mechanic identifying root cause
+ *  - held      : blocked on parts/bay/approval — detour, not a linear step
+ *  - repairing : parts kitted, actively wrenching
+ *  - road-test : verifying repair before release to dispatch
+ */
+export type WorkOrderStage =
+  | "inbound"
+  | "triage"
+  | "diagnosing"
+  | "held"
+  | "repairing"
+  | "road-test";
 
-export type PartsStatus = "available" | "ordered" | "n/a";
+export type PartsStatus = "not-needed" | "in-stock" | "needed" | "ordered";
+
+export type BlockReason =
+  | "parts-ordered"
+  | "parts-needed"
+  | "awaiting-bay"
+  | "awaiting-approval"
+  | "awaiting-customer"
+  | "other";
 
 export interface Bus {
   id: number;
@@ -35,6 +57,12 @@ export interface WorkOrder {
   partsStatus: PartsStatus;
   createdAt: string; // ISO datetime
   stageEnteredAt: string; // ISO datetime — for time-in-status calc
+  /** Reason the WO is parked in Held. Only set when stage === "held". */
+  blockReason?: BlockReason;
+  /** ETA when the blocker is expected to clear (e.g. parts arrival). ISO datetime. */
+  blockEta?: string;
+  /** ETA when the bus will physically arrive at the depot. Only meaningful while stage === "inbound". */
+  arrivalEta?: string;
 }
 
 /**

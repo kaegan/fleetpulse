@@ -1,36 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { workOrders } from "@/data/work-orders";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
-  KPI_PILLS,
   SEVERITY_COLORS,
   SEVERITY_ICONS,
   SEVERITY_LABELS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
   formatTimeInStatus,
   milesUntilPm,
 } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconBoltSpeedFillDuo18,
-  IconWrenchFillDuo18,
-  IconGearsFillDuo18,
-  IconSirenFillDuo18,
-  IconTriangleWarningFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 // The panel covers the four real BusStatus values plus a derived "overdue"
 // view that matches ActionCard's actionable set (past-due AND not in an
@@ -44,13 +35,10 @@ interface StatusBusListPanelProps {
 }
 
 interface StatusMeta {
+  // Short label reused as the back-button copy when drilling from this
+  // panel into a bus detail. The visual SectionPill is gone, but
+  // ops-view still wires this through usePanelNav.
   pillLabel: string;
-  // Inline pill colors override — used when the pill doesn't map to a
-  // KPI strip slot (e.g. "overdue" borrows the ActionCard's coral treatment).
-  pillColor?: string;
-  pillBg?: string;
-  pillKey?: keyof typeof KPI_PILLS;
-  icon: ReactNode;
   heading: string;
   // One-liner shown under the heading — framed around the operator's JTBD,
   // not just a restatement of the count.
@@ -61,8 +49,6 @@ interface StatusMeta {
 const META: Record<BusListKind, StatusMeta> = {
   running: {
     pillLabel: "Running",
-    pillKey: "Running",
-    icon: <IconBoltSpeedFillDuo18 />,
     heading: "On the road",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} running right now. Nothing here needs your attention.`,
@@ -70,26 +56,20 @@ const META: Record<BusListKind, StatusMeta> = {
   },
   "pm-due": {
     pillLabel: "PM Due",
-    pillKey: "PM Due",
-    icon: <IconWrenchFillDuo18 />,
     heading: "Due for preventive maintenance",
-    subtitle: (n) =>
+    subtitle: () =>
       `Sorted by miles overdue. Pull these in before they break down on route.`,
     emptyMessage: "Nothing overdue right now.",
   },
   "in-maintenance": {
     pillLabel: "In Maintenance",
-    pillKey: "In Maintenance",
-    icon: <IconGearsFillDuo18 />,
     heading: "In the shop",
-    subtitle: (n) =>
+    subtitle: () =>
       `Sorted by dwell time. Longest-open jobs first so you can escalate what's stuck.`,
     emptyMessage: "No buses in the shop right now.",
   },
   "road-call": {
     pillLabel: "Road Calls",
-    pillKey: "Road Calls",
-    icon: <IconSirenFillDuo18 />,
     heading: "Road-called today",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
@@ -341,7 +321,7 @@ function RightValue({
     return (
       <span className="text-xs font-bold tabular-nums text-text-secondary">
         {formatTimeInStatus(workOrder.stageEnteredAt)} in{" "}
-        {STAGES[workOrder.stage]}
+        {STAGE_LABELS[workOrder.stage]}
       </span>
     );
   }

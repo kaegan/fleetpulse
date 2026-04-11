@@ -2,13 +2,18 @@
 
 import { useMemo, useState } from "react";
 import { TrackerRow } from "./tracker-row";
-import { SectionPill } from "@/components/section-pill";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { STAGES, SEVERITY_COLORS, BRAND_COLOR } from "@/lib/constants";
+import {
+  PIPELINE_STAGES,
+  STAGE_LABELS,
+  STAGE_ORDER,
+  SEVERITY_COLORS,
+  BRAND_COLOR,
+  stageIndex,
+} from "@/lib/constants";
 import type { Severity, WorkOrder } from "@/data/types";
-import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "All", value: "all" },
@@ -45,13 +50,13 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   const sorted = [...filtered].sort((a, b) => {
     const sevDiff = severityOrder[a.severity] - severityOrder[b.severity];
     if (sevDiff !== 0) return sevDiff;
-    return b.stage - a.stage; // further along first
+    return stageIndex(b.stage) - stageIndex(a.stage); // further along first
   });
 
-  // Stage counts for bottleneck bar — also scoped, so the bottleneck reflects
-  // the same depot the user is looking at.
-  const stageCounts = STAGES.map(
-    (_, i) => scopedOrders.filter((wo) => wo.stage === i).length
+  // Stage counts for the bottleneck bar — also scoped, so the bottleneck
+  // reflects the same depot the user is looking at.
+  const stageCounts = STAGE_ORDER.map(
+    (stage) => scopedOrders.filter((wo) => wo.stage === stage).length
   );
   // A "peak" only exists when one stage is strictly ahead of the rest.
   // When counts are tied (e.g. 2/2/2/2/2), nothing should glow — the whole
@@ -139,7 +144,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                     color: isPeak ? BRAND_COLOR : "var(--color-text-muted)",
                   }}
                 >
-                  {stage}
+                  {STAGE_LABELS[stage]}
                 </span>
                 <span
                   className="text-xs font-bold"

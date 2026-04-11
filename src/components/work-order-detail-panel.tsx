@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 import {
-  STAGES,
+  STAGE_LABELS,
+  PARTS_STATUS_LABELS,
+  BLOCK_REASON_LABELS,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
+  OUTCOME_STYLES,
   PM_INTERVAL_MILES,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { InfoRow, InfoGrid, MiniStat } from "@/components/ui/info-row";
@@ -23,15 +25,16 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconClipboardListFillDuo18,
-  IconWrenchScrewdriverFillDuo18,
-  IconClockRotateAnticlockwiseFillDuo18,
-  IconBusFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 interface WorkOrderDetailPanelProps {
   order: WorkOrder | null;
+  /**
+   * Completed historical service entry. When provided (and `order` is null),
+   * the panel renders in historical mode: outcome badge in the header,
+   * Service Details grid, and an optional handoff note callout. No stage
+   * pipeline or parts/bay/timeline UI.
+   */
+  historyEntry: BusHistoryEntry | null;
   bus: Bus | null;
   onClose: () => void;
   onOpenBus: (bus: Bus) => void;
@@ -43,40 +46,57 @@ interface WorkOrderDetailPanelProps {
 
 export function WorkOrderDetailPanel({
   order,
+  historyEntry,
   bus,
   onClose,
   onOpenBus,
   backLabel,
   onBack,
 }: WorkOrderDetailPanelProps) {
-  // Snapshot the last non-null order so the sheet keeps rendering its contents
-  // through the close animation after the parent clears `order` (mirrors the
-  // BusDetailPanel pattern).
+  // Snapshot the last non-null record so the sheet keeps rendering its
+  // contents through the close animation after the parent clears the props.
+  // Only one of displayOrder/displayHistoryEntry is non-null at a time —
+  // when a new record arrives, we clear the other so the branch picks the
+  // right body. We do NOT clear on double-null so the outgoing content
+  // stays visible during the 320ms swap handoff.
   const [displayOrder, setDisplayOrder] = useState<WorkOrder | null>(order);
+  const [displayHistoryEntry, setDisplayHistoryEntry] =
+    useState<BusHistoryEntry | null>(historyEntry);
   const [displayBus, setDisplayBus] = useState<Bus | null>(bus);
   useEffect(() => {
-    if (order) setDisplayOrder(order);
+    if (order) {
+      setDisplayOrder(order);
+      setDisplayHistoryEntry(null);
+    } else if (historyEntry) {
+      setDisplayHistoryEntry(historyEntry);
+      setDisplayOrder(null);
+    }
     if (bus) setDisplayBus(bus);
-  }, [order, bus]);
+  }, [order, historyEntry, bus]);
+
+  const titleText = displayOrder
+    ? `Work order ${displayOrder.id} details`
+    : displayHistoryEntry
+      ? `Service history ${displayHistoryEntry.id} details`
+      : "Work order details";
 
   return (
     <ResponsiveSheet
-      open={Boolean(order)}
+      open={Boolean(order || historyEntry)}
       onOpenChange={(open) => !open && onClose()}
     >
       <ResponsiveSheetContent side="right" className="p-0">
         <ResponsiveSheetTitle className="sr-only">
-          {displayOrder
-            ? `Work order ${displayOrder.id} details`
-            : "Work order details"}
+          {titleText}
         </ResponsiveSheetTitle>
         <ResponsiveSheetDescription className="sr-only">
           Issue, stage progress, assignment, timeline, and the bus this work
           order is attached to.
         </ResponsiveSheetDescription>
-        {displayOrder && (
+        {(displayOrder || displayHistoryEntry) && (
           <PanelContent
             order={displayOrder}
+            historyEntry={displayHistoryEntry}
             bus={displayBus}
             onOpenBus={onOpenBus}
             backLabel={backLabel}
@@ -90,18 +110,28 @@ export function WorkOrderDetailPanel({
 
 function PanelContent({
   order,
+  historyEntry,
   bus,
   onOpenBus,
   backLabel,
   onBack,
 }: {
-  order: WorkOrder;
+  order: WorkOrder | null;
+  historyEntry: BusHistoryEntry | null;
   bus: Bus | null;
   onOpenBus: (bus: Bus) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
-  const sev = SEVERITY_COLORS[order.severity];
+  // Exactly one of order / historyEntry is non-null (enforced by the
+  // wrapper's snapshot effect). Pull a few shared header fields off
+  // whichever record is active.
+  const record = order ?? historyEntry!;
+  const sev = SEVERITY_COLORS[record.severity];
+  // History entries don't carry a busNumber, so fall back to the bus
+  // context (always passed in alongside the entry by the drill caller).
+  const busNumber = order ? order.busNumber : bus?.busNumber ?? "—";
+  const outcome = historyEntry ? OUTCOME_STYLES[historyEntry.outcome] : null;
 
   return (
     <div className="p-5 sm:p-7">
@@ -118,7 +148,7 @@ function PanelContent({
         </span>
         <span className="text-xs text-text-faint">&middot;</span>
         <Badge variant="outline" className="px-2.5 py-[3px]">
-          Bus #{order.busNumber}
+          Bus #{busNumber}
         </Badge>
         <Badge
           className="px-2.5 py-[3px] gap-1"
@@ -128,10 +158,18 @@ function PanelContent({
             className="flex h-3.5 w-3.5"
             style={{ color: sev.dot }}
           >
-            {SEVERITY_ICONS[order.severity]}
+            {SEVERITY_ICONS[record.severity]}
           </span>
-          {SEVERITY_LABELS[order.severity]}
+          {SEVERITY_LABELS[record.severity]}
         </Badge>
+        {outcome && (
+          <Badge
+            className="px-2.5 py-[3px]"
+            style={{ color: outcome.color, background: outcome.bg }}
+          >
+            {outcome.label}
+          </Badge>
+        )}
       </div>
 
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
@@ -272,6 +310,53 @@ function formatOpenedDate(iso: string): string {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+// Used by HistoryEntryBody. Mirrors the formatter in bus-detail-panel.tsx
+// (kept inline rather than shared — three lines, two callers, one would
+// import the other otherwise).
+function formatHistoryDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+// Compact ETA formatter for header/timeline hints. Drops the year since
+// everything shown here is within the next few days.
+function formatEta(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  if (sameDay) return time;
+  return `${d.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  })} ${time}`;
+}
+
+function partsColor(status: WorkOrder["partsStatus"]): string | undefined {
+  switch (status) {
+    case "in-stock":
+      return "#166534";
+    case "ordered":
+      return "#92400e";
+    case "needed":
+      return "#991b1b";
+    case "not-needed":
+    default:
+      return undefined;
+  }
 }
 
 function formatPmStatus(bus: Bus): string {

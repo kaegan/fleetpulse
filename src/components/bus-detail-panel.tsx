@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 import { workOrders } from "@/data/work-orders";
 import { getBusHistory } from "@/data/bus-history";
 import {
+  OUTCOME_STYLES,
   STATUS_COLORS,
   STATUS_LABELS,
   PM_INTERVAL_MILES,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
@@ -19,7 +20,6 @@ import {
   daysBetween,
   getCrossGarageCallout,
 } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import { InfoRow, InfoGrid } from "@/components/ui/info-row";
 import {
@@ -28,17 +28,12 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconBusFillDuo18,
-  IconGaugeFillDuo18,
-  IconClipboardListFillDuo18,
-  IconClockRotateAnticlockwiseFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 interface BusDetailPanelProps {
   bus: Bus | null;
   onClose: () => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   // Drill-down back affordance. Present only when this panel was opened
   // from another panel (e.g. the PM Due list) — see usePanelNav.
   backLabel?: string;
@@ -49,6 +44,7 @@ export function BusDetailPanel({
   bus,
   onClose,
   onSelectWorkOrder,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: BusDetailPanelProps) {
@@ -76,6 +72,7 @@ export function BusDetailPanel({
           <PanelContent
             bus={displayBus}
             onSelectWorkOrder={onSelectWorkOrder}
+            onSelectHistoryEntry={onSelectHistoryEntry}
             backLabel={backLabel}
             onBack={onBack}
           />
@@ -88,11 +85,13 @@ export function BusDetailPanel({
 function PanelContent({
   bus,
   onSelectWorkOrder,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: {
   bus: Bus;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
@@ -275,7 +274,7 @@ function PanelContent({
                     }}
                   >
                     <span style={{ fontFamily: "monospace" }}>{wo.id}</span>
-                    <span>{STAGES[wo.stage]}</span>
+                    <span>{STAGE_LABELS[wo.stage]}</span>
                   </div>
                   {wo.mechanicName && (
                     <div
@@ -316,7 +315,11 @@ function PanelContent({
       )}
 
       {/* Service History */}
-      <ServiceHistorySection bus={bus} history={history} />
+      <ServiceHistorySection
+        bus={bus}
+        history={history}
+        onSelectEntry={onSelectHistoryEntry}
+      />
     </div>
   );
 }
@@ -328,9 +331,11 @@ function PanelContent({
 function ServiceHistorySection({
   bus,
   history,
+  onSelectEntry,
 }: {
   bus: Bus;
   history: BusHistoryEntry[];
+  onSelectEntry?: (entry: BusHistoryEntry) => void;
 }) {
   // Cross-garage callout: show when the most recent history entry is from the
   // *other* garage and within the last 14 days. This is the JTBD hero moment.
@@ -360,6 +365,7 @@ function ServiceHistorySection({
               key={entry.id}
               entry={entry}
               currentGarage={bus.garage}
+              onClick={onSelectEntry}
             />
           ))}
         </div>
@@ -410,13 +416,16 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
 function HistoryEntryRow({
   entry,
   currentGarage,
+  onClick,
 }: {
   entry: BusHistoryEntry;
   currentGarage: Bus["garage"];
+  onClick?: (entry: BusHistoryEntry) => void;
 }) {
   const isOtherGarage = entry.garage !== currentGarage;
   const garageLabel = entry.garage === "north" ? "North" : "South";
   const outcome = OUTCOME_STYLES[entry.outcome];
+  const isInteractive = Boolean(onClick);
 
   return (
     <div className="rounded-[14px] border border-border bg-card-hover p-3.5">
@@ -465,7 +474,7 @@ function HistoryEntryRow({
           &ldquo;{entry.note}&rdquo;
         </div>
       )}
-    </div>
+    </button>
   );
 }
 

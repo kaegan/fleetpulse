@@ -12,10 +12,7 @@ import { Card } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
 import { useOverdueCandidates } from "@/hooks/use-overdue-candidates";
 import type { Bus } from "@/data/types";
-import {
-  IconWrenchFillDuo18,
-  IconClockFillDuo18,
-} from "nucleo-ui-fill-duo-18";
+import { IconWrenchFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface PmDueSheetProps {
   open: boolean;
@@ -141,24 +138,18 @@ function overdueCountLine(overdue: number, comingDue: number): string {
 
 function Section({
   label,
-  color,
-  bgColor,
-  icon,
   helperText,
   children,
 }: {
   label: string;
-  color: string;
-  bgColor: string;
-  icon: ReactNode;
   helperText: string;
   children: ReactNode;
 }) {
   return (
     <div style={{ marginBottom: 22 }}>
-      <div style={{ marginBottom: 8 }}>
-        <SectionPill label={label} color={color} bgColor={bgColor} icon={icon} />
-      </div>
+      <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">
+        {label}
+      </h3>
       <p
         style={{
           fontSize: 12,
@@ -238,10 +229,9 @@ function PmRow({
           borderRadius: 999,
           background: garageBg,
           color: garageColor,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: "0.03em",
-          textTransform: "uppercase",
+          fontSize: 12,
+          fontWeight: 600,
+          textTransform: "capitalize",
           justifySelf: "start",
         }}
       >
@@ -270,11 +260,9 @@ function PmRow({
         </span>
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 600,
+            fontSize: 12,
+            fontWeight: 500,
             color: urgencyColor,
-            letterSpacing: "0.03em",
-            textTransform: "uppercase",
           }}
         >
           {urgencyLabel}

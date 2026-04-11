@@ -47,7 +47,7 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
         <div className="px-7 pt-7 pb-6">
           {/* Header */}
           <div className="mb-5">
-            <Badge className={CATEGORY_CLASSES.feature + " uppercase tracking-wide"} size="default">
+            <Badge className={CATEGORY_CLASSES.feature} size="default">
               What&apos;s new
             </Badge>
             <DialogTitle className="mt-2.5 text-[22px] font-bold tracking-[-0.03em] text-foreground">
@@ -70,7 +70,7 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
                 >
                   <div className="mb-2 flex items-center gap-2.5">
                     <Badge
-                      className={CATEGORY_CLASSES[entry.category] + " uppercase tracking-wide"}
+                      className={CATEGORY_CLASSES[entry.category]}
                       size="sm"
                     >
                       {CATEGORY_LABEL[entry.category]}
