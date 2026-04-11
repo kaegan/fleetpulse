@@ -41,8 +41,20 @@ const recordItems = [
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const { state, toggleSidebar } = useSidebar();
+  const { state, toggleSidebar, isMobile, setOpenMobile } = useSidebar();
   const [whatsNewOpen, setWhatsNewOpen] = React.useState(false);
+
+  // On mobile, collapse the slide-out sheet whenever the route changes so
+  // tapping a nav link actually reveals the new page. Also fire onClick for
+  // same-route taps where pathname won't change.
+  React.useEffect(() => {
+    if (isMobile) setOpenMobile(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  const handleNavClick = React.useCallback(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [isMobile, setOpenMobile]);
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -94,7 +106,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     tooltip={item.label}
                     className="text-[15px] font-medium [&>svg]:!size-6 group-data-[collapsible=icon]:justify-center"
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href} onClick={handleNavClick}>
                       <item.icon weight={isActive ? "fill" : "duotone"} />
                       <span className="group-data-[collapsible=icon]:hidden">
                         {item.label}
