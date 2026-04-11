@@ -70,7 +70,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               <div
                 className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg"
                 style={{
-                  background: "#d4654a",
+                  background: "var(--color-brand)",
                   boxShadow: "0 0 12px rgba(212,101,74,0.4)",
                 }}
                 aria-hidden

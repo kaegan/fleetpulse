@@ -2,13 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { TrackerRow } from "./tracker-row";
-import { SectionPill } from "@/components/section-pill";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { STAGES, SEVERITY_COLORS, BRAND_COLOR } from "@/lib/constants";
+import {
+  STAGE_LABELS,
+  STAGE_ORDER,
+  SEVERITY_COLORS,
+  BRAND_COLOR,
+  stageIndex,
+} from "@/lib/constants";
 import type { Severity, WorkOrder } from "@/data/types";
-import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "All", value: "all" },
@@ -46,13 +50,13 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   const sorted = [...filtered].sort((a, b) => {
     const sevDiff = severityOrder[a.severity] - severityOrder[b.severity];
     if (sevDiff !== 0) return sevDiff;
-    return b.stage - a.stage; // further along first
+    return stageIndex(b.stage) - stageIndex(a.stage); // further along first
   });
 
-  // Stage counts for bottleneck bar — also scoped, so the bottleneck reflects
-  // the same depot the user is looking at.
-  const stageCounts = STAGES.map(
-    (_, i) => scopedOrders.filter((wo) => wo.stage === i).length
+  // Stage counts for the bottleneck bar — also scoped, so the bottleneck
+  // reflects the same depot the user is looking at.
+  const stageCounts = STAGE_ORDER.map(
+    (stage) => scopedOrders.filter((wo) => wo.stage === stage).length
   );
   // A "peak" only exists when one stage is strictly ahead of the rest.
   // When counts are tied (e.g. 2/2/2/2/2), nothing should glow — the whole
@@ -65,14 +69,6 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
     <div>
       {/* Section header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ marginBottom: 10 }}>
-          <SectionPill
-            label="Work Orders"
-            color="#d4654a"
-            bgColor="#fdf0ed"
-            icon={<IconClipboardListFillDuo18 />}
-          />
-        </div>
         <h2
           style={{
             fontSize: 18,
@@ -138,11 +134,9 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
       <div style={{ marginBottom: 20 }}>
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#b5b5b5",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#929292",
             marginBottom: 8,
           }}
         >
@@ -155,7 +149,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
             flexWrap: "wrap",
           }}
         >
-          {STAGES.map((stage, i) => {
+          {STAGE_ORDER.map((stage, i) => {
             const count = stageCounts[i];
             const isPeak = hasPeak && count === maxCount;
             return (
@@ -177,7 +171,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                     color: isPeak ? BRAND_COLOR : "#929292",
                   }}
                 >
-                  {stage}
+                  {STAGE_LABELS[stage]}
                 </span>
                 <span
                   style={{
@@ -225,11 +219,11 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
           Issue
         </div>
         <div style={{ flex: 1, display: "flex", alignItems: "center" }}>
-          {STAGES.map((stage, idx) => (
+          {STAGE_ORDER.map((stage, idx) => (
             <div
               key={stage}
               style={{
-                flex: 1,
+                flex: idx < STAGE_ORDER.length - 1 ? 1 : "none",
                 display: "flex",
                 alignItems: "center",
               }}
@@ -242,9 +236,9 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                   whiteSpace: "nowrap",
                 }}
               >
-                {stage}
+                {STAGE_LABELS[stage]}
               </span>
-              {idx < STAGES.length - 1 && <div style={{ flex: 1 }} />}
+              {idx < STAGE_ORDER.length - 1 && <div style={{ flex: 1 }} />}
             </div>
           ))}
         </div>

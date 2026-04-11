@@ -11,10 +11,55 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
-import { CURRENT_MECHANIC } from "@/lib/constants";
+import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { usePanelNav } from "@/hooks/use-panel-nav";
-import type { Bus, Garage, Severity, WorkOrder, WorkOrderStage } from "@/data/types";
+import type {
+  BlockReason,
+  Bus,
+  BusHistoryEntry,
+  Garage,
+  PartsStatus,
+  Severity,
+  WorkOrder,
+  WorkOrderStage,
+} from "@/data/types";
+
+/**
+ * Resolve a requested stage transition against the parts gate.
+ *
+ * Forward-only gate: dragging a WO into Repairing while parts are unresolved
+ * auto-routes to Held with the matching blocker reason. Backward drags always
+ * succeed — mechanics need to correct their own mistakes without admin help
+ * (per PRODUCT_SPEC.md §2). Held → Repairing still has to pass through the
+ * parts gate like any other forward move.
+ */
+function resolveStageTransition(
+  wo: WorkOrder,
+  requested: WorkOrderStage
+): { stage: WorkOrderStage; blockReason?: BlockReason; notice?: string } {
+  const isForward = stageIndex(requested) > stageIndex(wo.stage);
+  if (!isForward) return { stage: requested };
+
+  if (requested === "repairing") {
+    if (wo.partsStatus === "needed") {
+      return {
+        stage: "held",
+        blockReason: "parts-needed",
+        notice: "Parts haven't been ordered — parked in Held.",
+      };
+    }
+    if (wo.partsStatus === "ordered") {
+      return {
+        stage: "held",
+        blockReason: "parts-ordered",
+        notice: "Parts on order — parked in Held until the kit arrives.",
+      };
+    }
+  }
+
+  return { stage: requested };
+}
 
 type MineScope = "mine" | "all";
 
@@ -26,15 +71,16 @@ const SUBTITLE: Record<"all" | "north" | "south", string> = {
   south: "active work orders in garage",
 };
 
-// Panels on Service Board: kanban → WO, WO ↔ bus drill-downs. PM
-// scheduling now lives on ops — see ops-view.tsx's handleSchedulePm —
-// so the mechanic no longer has a pm queue surface.
+// Panels on Service Board: kanban → WO, WO ↔ bus drill-downs, bus →
+// history entry. PM scheduling lives on ops — see ops-view.tsx's
+// handleSchedulePm — so the mechanic no longer has a PM queue surface.
 type MechanicPanelEntry =
   | { kind: "bus"; label: string; bus: Bus }
-  | { kind: "workOrder"; label: string; workOrder: WorkOrder };
+  | { kind: "workOrder"; label: string; workOrder: WorkOrder }
+  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function MechanicView() {
-  const { workOrders: orders, addWorkOrder, updateStage, completeWorkOrder } =
+  const { workOrders: orders, addWorkOrder, updateWorkOrder, completeWorkOrder } =
     useWorkOrders();
   const [scope, setScope] = useState<MineScope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
@@ -67,6 +113,11 @@ export function MechanicView() {
     (wo: WorkOrder) => nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo }),
     [nav]
   );
+  const drillToHistoryEntry = useCallback(
+    (entry: BusHistoryEntry, bus: Bus) =>
+      nav.drill({ kind: "historyEntry", label: entry.id, entry, bus }),
+    [nav]
+  );
 
   // When the user clicks "Log new repair", we need a concrete garage to
   // assign the new WO to. If scope is "all", default to north (the demo
@@ -75,9 +126,39 @@ export function MechanicView() {
 
   const handleStageChange = useCallback(
     (woId: string, newStage: WorkOrderStage) => {
-      updateStage(woId, newStage);
+      const wo = orders.find((o) => o.id === woId);
+      if (!wo) return;
+
+      const { stage, blockReason, notice } = resolveStageTransition(
+        wo,
+        newStage
+      );
+
+      // Always surface the notice — even when the card doesn't actually
+      // move (e.g. clicking advance on a blocked Held card). Otherwise
+      // the mechanic clicks the button and nothing happens.
+      if (notice) toast(notice);
+
+      if (stage === wo.stage) return;
+
+      const now = new Date().toISOString();
+      updateWorkOrder(woId, {
+        stage,
+        stageEnteredAt: now,
+        // Preserve blockReason when landing in Held, clear it otherwise.
+        blockReason:
+          stage === "held" ? blockReason ?? wo.blockReason : undefined,
+        blockEta: stage === "held" ? wo.blockEta : undefined,
+      });
     },
-    [updateStage]
+    [orders, updateWorkOrder]
+  );
+
+  const handleUpdateParts = useCallback(
+    (woId: string, partsStatus: PartsStatus) => {
+      updateWorkOrder(woId, { partsStatus });
+    },
+    [updateWorkOrder]
   );
 
   const handleComplete = useCallback(
@@ -100,11 +181,13 @@ export function MechanicView() {
         busNumber: draft.busNumber,
         issue: draft.issue,
         severity: draft.severity,
-        stage: 0,
+        // New WOs land in Triage — the mechanic has the bus in the yard
+        // and still needs to do the walk-around before Diagnosing.
+        stage: "triage",
         bayNumber: null,
         garage: newRepairGarage,
         mechanicName: draft.assignedTo,
-        partsStatus: "n/a",
+        partsStatus: "not-needed",
       });
 
       setIsLogOpen(false);
@@ -159,6 +242,13 @@ export function MechanicView() {
         : null,
     [liveSelectedWorkOrder]
   );
+  // History entries are immutable, so they bypass the live re-lookup
+  // pattern used for active WOs. The bus is carried inside the entry.
+  const currentHistoryEntry =
+    current?.kind === "historyEntry" ? current.entry : null;
+  const currentHistoryEntryBus =
+    current?.kind === "historyEntry" ? current.bus : null;
+
   // Most-recently-created unique bus numbers in this garage, for the form's
   // "Recent" chip row.
   const recentBusNumbers = useMemo(() => {
@@ -223,22 +313,35 @@ export function MechanicView() {
         onStageChange={handleStageChange}
         onComplete={handleComplete}
         onSelectWorkOrder={openWorkOrderRoot}
+        onUpdateParts={handleUpdateParts}
       />
 
       <BusDetailPanel
         bus={currentBus}
         onClose={nav.close}
         onSelectWorkOrder={drillToWorkOrder}
+        onSelectHistoryEntry={(entry) =>
+          drillToHistoryEntry(entry, currentBus!)
+        }
         backLabel={currentBus ? nav.backButton?.label : undefined}
         onBack={currentBus ? nav.backButton?.onBack : undefined}
       />
       <WorkOrderDetailPanel
         order={liveSelectedWorkOrder}
-        bus={liveSelectedWorkOrderBus}
+        historyEntry={currentHistoryEntry}
+        bus={liveSelectedWorkOrderBus ?? currentHistoryEntryBus}
         onClose={nav.close}
         onOpenBus={drillToBus}
-        backLabel={liveSelectedWorkOrder ? nav.backButton?.label : undefined}
-        onBack={liveSelectedWorkOrder ? nav.backButton?.onBack : undefined}
+        backLabel={
+          liveSelectedWorkOrder || currentHistoryEntry
+            ? nav.backButton?.label
+            : undefined
+        }
+        onBack={
+          liveSelectedWorkOrder || currentHistoryEntry
+            ? nav.backButton?.onBack
+            : undefined
+        }
       />
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
         <DialogContent

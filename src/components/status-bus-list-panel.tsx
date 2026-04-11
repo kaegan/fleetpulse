@@ -1,36 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
-  KPI_PILLS,
   SEVERITY_COLORS,
   SEVERITY_ICONS,
   SEVERITY_LABELS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
   formatTimeInStatus,
   milesUntilPm,
 } from "@/lib/utils";
-import { SectionPill } from "@/components/section-pill";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconBoltSpeedFillDuo18,
-  IconWrenchFillDuo18,
-  IconGearsFillDuo18,
-  IconSirenFillDuo18,
-  IconTriangleWarningFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 // The panel covers the four real BusStatus values plus a derived "overdue"
 // view that matches ActionCard's actionable set (past-due AND not in an
@@ -44,13 +35,10 @@ interface StatusBusListPanelProps {
 }
 
 interface StatusMeta {
+  // Short label reused as the back-button copy when drilling from this
+  // panel into a bus detail. The visual SectionPill is gone, but
+  // ops-view still wires this through usePanelNav.
   pillLabel: string;
-  // Inline pill colors override — used when the pill doesn't map to a
-  // KPI strip slot (e.g. "overdue" borrows the ActionCard's coral treatment).
-  pillColor?: string;
-  pillBg?: string;
-  pillKey?: keyof typeof KPI_PILLS;
-  icon: ReactNode;
   heading: string;
   // One-liner shown under the heading — framed around the operator's JTBD,
   // not just a restatement of the count.
@@ -61,8 +49,6 @@ interface StatusMeta {
 const META: Record<BusListKind, StatusMeta> = {
   running: {
     pillLabel: "Running",
-    pillKey: "Running",
-    icon: <IconBoltSpeedFillDuo18 />,
     heading: "On the road",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} running right now. Nothing here needs your attention.`,
@@ -70,26 +56,20 @@ const META: Record<BusListKind, StatusMeta> = {
   },
   "pm-due": {
     pillLabel: "PM Due",
-    pillKey: "PM Due",
-    icon: <IconWrenchFillDuo18 />,
     heading: "Due for preventive maintenance",
-    subtitle: (n) =>
+    subtitle: () =>
       `Sorted by miles overdue. Pull these in before they break down on route.`,
     emptyMessage: "Nothing overdue right now.",
   },
   "in-maintenance": {
     pillLabel: "In Maintenance",
-    pillKey: "In Maintenance",
-    icon: <IconGearsFillDuo18 />,
     heading: "In the shop",
-    subtitle: (n) =>
+    subtitle: () =>
       `Sorted by dwell time. Longest-open jobs first so you can escalate what's stuck.`,
     emptyMessage: "No buses in the shop right now.",
   },
   "road-call": {
     pillLabel: "Road Calls",
-    pillKey: "Road Calls",
-    icon: <IconSirenFillDuo18 />,
     heading: "Road-called today",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
@@ -97,11 +77,6 @@ const META: Record<BusListKind, StatusMeta> = {
   },
   overdue: {
     pillLabel: "Action Needed",
-    // Borrow the ActionCard's coral treatment — this list is the "todo"
-    // view, not the "PM Due" health view.
-    pillColor: "#b4541a",
-    pillBg: "#fff4ed",
-    icon: <IconTriangleWarningFillDuo18 />,
     heading: "Overdue for service",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} past due and not yet in the shop. Schedule before they break down on route.`,
@@ -163,9 +138,6 @@ function PanelContent({
   const { scope } = useDepot();
   const { workOrders } = useWorkOrders();
   const meta = META[kind];
-  // Resolve pill colors: either from a KPI slot or an inline override.
-  const pillColor = meta.pillColor ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].color : "#6a6a6a");
-  const pillBg = meta.pillBg ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].bg : "#f4f4f4");
 
   // WOs indexed by busId for fast lookup in row renderers.
   const worksByBus = useMemo(() => {
@@ -218,14 +190,6 @@ function PanelContent({
     <div className="flex h-full flex-col p-5 pb-6 sm:p-7">
       {/* Header */}
       <div className="mb-5">
-        <div className="mb-2">
-          <SectionPill
-            label={meta.pillLabel}
-            color={pillColor}
-            bgColor={pillBg}
-            icon={meta.icon}
-          />
-        </div>
         <h2
           style={{
             fontSize: 24,
@@ -233,7 +197,6 @@ function PanelContent({
             color: "#222222",
             letterSpacing: "-0.03em",
             marginBottom: 4,
-            marginTop: 6,
           }}
         >
           {meta.heading}
@@ -336,10 +299,9 @@ function BusRow({
               borderRadius: 999,
               background: garageBg,
               color: garageColor,
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.03em",
-              textTransform: "uppercase",
+              fontSize: 11,
+              fontWeight: 600,
+              textTransform: "capitalize",
             }}
           >
             {bus.garage}
@@ -387,11 +349,9 @@ function RightValue({
         </span>
         <span
           style={{
-            fontSize: 10,
-            fontWeight: 700,
+            fontSize: 12,
+            fontWeight: 500,
             color: isOverdue ? "#b4541a" : "#22c55e",
-            letterSpacing: "0.03em",
-            textTransform: "uppercase",
           }}
         >
           {isOverdue ? "mi overdue" : "mi left"}
@@ -411,7 +371,7 @@ function RightValue({
         }}
       >
         {formatTimeInStatus(workOrder.stageEnteredAt)} in{" "}
-        {STAGES[workOrder.stage]}
+        {STAGE_LABELS[workOrder.stage]}
       </span>
     );
   }
@@ -473,10 +433,8 @@ function SecondaryLine({
             borderRadius: 999,
             background: sev.bg,
             color: sev.text,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.02em",
-            textTransform: "uppercase",
+            fontSize: 11,
+            fontWeight: 600,
           }}
         >
           <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>

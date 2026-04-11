@@ -45,9 +45,9 @@ const PARTS_ORDERED_PENALTY = -30;
 const READY_TO_START_BOOST = 10;
 
 export function scoreWorkOrder(wo: WorkOrder, now: Date = new Date()): number {
-  // Stage 3 (In Repair) and 4 (Road Ready) are already in or past a bay —
-  // there's nothing to "pull forward".
-  if (wo.stage === 3 || wo.stage === 4) return -Infinity;
+  // Repairing and Road Test are already in or past a bay — nothing to
+  // "pull forward".
+  if (wo.stage === "repairing" || wo.stage === "road-test") return -Infinity;
 
   const severity = SEVERITY_SCORE[wo.severity];
 
@@ -55,13 +55,17 @@ export function scoreWorkOrder(wo: WorkOrder, now: Date = new Date()): number {
   const age = Math.min(hoursInStage * AGE_PER_HOUR, AGE_CAP);
 
   const parts =
-    wo.partsStatus === "available"
+    wo.partsStatus === "in-stock"
       ? PARTS_AVAILABLE_BOOST
       : wo.partsStatus === "ordered"
         ? PARTS_ORDERED_PENALTY
         : 0;
 
-  const readyToStart = wo.stage === 2 ? READY_TO_START_BOOST : 0;
+  // Diagnosing with parts in hand can start the moment a bay opens.
+  const readyToStart =
+    wo.stage === "diagnosing" && wo.partsStatus === "in-stock"
+      ? READY_TO_START_BOOST
+      : 0;
 
   return severity + age + parts + readyToStart;
 }

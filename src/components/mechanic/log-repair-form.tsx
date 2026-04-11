@@ -202,7 +202,7 @@ export function LogRepairForm({
 
         {recentBuses.length > 0 && !selectedBus && (
           <div className="mb-2.5 hidden flex-wrap items-center gap-1.5 sm:flex">
-            <span className="mr-0.5 self-center text-[11px] font-semibold uppercase tracking-[0.04em] text-[#b5b5b5]">
+            <span className="mr-0.5 self-center text-[12px] font-medium text-[#929292]">
               Recent
             </span>
             {recentBuses.map((b) => (
@@ -504,8 +504,8 @@ function CrossGarageInlineWarning({
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className="text-[10px] font-bold uppercase tracking-[0.04em]"
-          style={{ color: "#d4654a", marginBottom: 2 }}
+          className="text-[12px] font-bold"
+          style={{ color: "#d4654a", marginBottom: 2, letterSpacing: "-0.01em" }}
         >
           Arrived from {otherGarageLabel} · {whenLabel}
         </div>
@@ -547,7 +547,7 @@ function SimilarIssuesPeek({
       style={{ background: "#fafaf9" }}
     >
       <div
-        className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.04em]"
+        className="mb-1.5 text-[12px] font-semibold"
         style={{ color: "#6a6a6a" }}
       >
         {matches.length} similar{" "}
@@ -576,7 +576,7 @@ function SimilarIssuesPeek({
                 {m.entry.issue}
               </span>
               <span
-                className="flex-shrink-0 rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase tracking-[0.02em]"
+                className="flex-shrink-0 rounded-full px-2 py-[2px] text-[11px] font-semibold"
                 style={{ background: outcomeTag.bg, color: outcomeTag.color }}
               >
                 {outcomeTag.label}

@@ -5,13 +5,14 @@ import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/typ
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { getBusHistory } from "@/data/bus-history";
 import {
+  OUTCOME_STYLES,
   STATUS_COLORS,
   STATUS_LABELS,
   PM_INTERVAL_MILES,
   SEVERITY_COLORS,
   SEVERITY_LABELS,
   SEVERITY_ICONS,
-  STAGES,
+  STAGE_LABELS,
 } from "@/lib/constants";
 import {
   formatNumber,
@@ -20,7 +21,6 @@ import {
   getCrossGarageCallout,
 } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { SectionPill } from "@/components/section-pill";
 import { BackButton } from "@/components/back-button";
 import {
   ResponsiveSheet,
@@ -28,12 +28,6 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import {
-  IconBusFillDuo18,
-  IconGaugeFillDuo18,
-  IconClipboardListFillDuo18,
-  IconClockRotateAnticlockwiseFillDuo18,
-} from "nucleo-ui-fill-duo-18";
 
 interface BusDetailPanelProps {
   bus: Bus | null;
@@ -44,6 +38,7 @@ interface BusDetailPanelProps {
   // hides the CTA — role scoping without conditional logic inside the
   // panel itself.
   onSchedulePm?: (bus: Bus) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   // Drill-down back affordance. Present only when this panel was opened
   // from another panel (e.g. the PM Due list) — see usePanelNav.
   backLabel?: string;
@@ -55,6 +50,7 @@ export function BusDetailPanel({
   onClose,
   onSelectWorkOrder,
   onSchedulePm,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: BusDetailPanelProps) {
@@ -83,6 +79,7 @@ export function BusDetailPanel({
             bus={displayBus}
             onSelectWorkOrder={onSelectWorkOrder}
             onSchedulePm={onSchedulePm}
+            onSelectHistoryEntry={onSelectHistoryEntry}
             backLabel={backLabel}
             onBack={onBack}
           />
@@ -96,12 +93,14 @@ function PanelContent({
   bus,
   onSelectWorkOrder,
   onSchedulePm,
+  onSelectHistoryEntry,
   backLabel,
   onBack,
 }: {
   bus: Bus;
   onSelectWorkOrder?: (order: WorkOrder) => void;
   onSchedulePm?: (bus: Bus) => void;
+  onSelectHistoryEntry?: (entry: BusHistoryEntry) => void;
   backLabel?: string;
   onBack?: () => void;
 }) {
@@ -155,9 +154,7 @@ function PanelContent({
       </div>
 
       {/* Vehicle info */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Vehicle Info" color="#3b82f6" bgColor="#eff6ff" icon={<IconBusFillDuo18 />} />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Vehicle Info</h3>
       <InfoGrid>
         <InfoRow label="Model" value={bus.model} />
         <InfoRow label="Year" value={String(bus.year)} />
@@ -165,9 +162,7 @@ function PanelContent({
       </InfoGrid>
 
       {/* PM Status */}
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill label="Preventive Maintenance" color="#f59e0b" bgColor="#fffbeb" icon={<IconGaugeFillDuo18 />} />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Preventive Maintenance</h3>
       <div className="mb-6 rounded-md border border-black/[0.04] bg-[#fafaf9] p-4">
         <div className="mb-2.5 flex justify-between">
           <span className="text-[13px] font-medium text-[#6a6a6a]">
@@ -220,9 +215,7 @@ function PanelContent({
       {/* Active Work Orders */}
       {busWorkOrders.length > 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Active Work Orders" color="#ef4444" bgColor="#fef2f2" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Active Work Orders</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
@@ -286,7 +279,7 @@ function PanelContent({
                     }}
                   >
                     <span style={{ fontFamily: "monospace" }}>{wo.id}</span>
-                    <span>{STAGES[wo.stage]}</span>
+                    <span>{STAGE_LABELS[wo.stage]}</span>
                   </div>
                   {wo.mechanicName && (
                     <div
@@ -309,9 +302,7 @@ function PanelContent({
 
       {busWorkOrders.length === 0 && (
         <>
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill label="Work Orders" color="#929292" bgColor="#f5f5f5" icon={<IconClipboardListFillDuo18 />} />
-          </div>
+          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Work Orders</h3>
           <p
             style={{
               fontSize: 13,
@@ -327,7 +318,11 @@ function PanelContent({
       )}
 
       {/* Service History */}
-      <ServiceHistorySection bus={bus} history={history} />
+      <ServiceHistorySection
+        bus={bus}
+        history={history}
+        onSelectEntry={onSelectHistoryEntry}
+      />
     </div>
   );
 }
@@ -339,9 +334,11 @@ function PanelContent({
 function ServiceHistorySection({
   bus,
   history,
+  onSelectEntry,
 }: {
   bus: Bus;
   history: BusHistoryEntry[];
+  onSelectEntry?: (entry: BusHistoryEntry) => void;
 }) {
   // Cross-garage callout: show when the most recent history entry is from the
   // *other* garage and within the last 14 days. This is the JTBD hero moment.
@@ -351,14 +348,7 @@ function ServiceHistorySection({
     <>
       {callout && <CrossGarageCallout entry={callout.entry} />}
 
-      <div style={{ marginBottom: 10 }}>
-        <SectionPill
-          label="Service History"
-          color="#64748b"
-          bgColor="#f1f5f9"
-          icon={<IconClockRotateAnticlockwiseFillDuo18 />}
-        />
-      </div>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Service History</h3>
 
       {history.length === 0 ? (
         <p
@@ -378,6 +368,7 @@ function ServiceHistorySection({
               key={entry.id}
               entry={entry}
               currentGarage={bus.garage}
+              onClick={onSelectEntry}
             />
           ))}
         </div>
@@ -427,11 +418,10 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
       <div style={{ flex: 1 }}>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             color: "#d4654a",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
+            letterSpacing: "-0.01em",
             marginBottom: 4,
           }}
         >
@@ -464,22 +454,27 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
 function HistoryEntryRow({
   entry,
   currentGarage,
+  onClick,
 }: {
   entry: BusHistoryEntry;
   currentGarage: Bus["garage"];
+  onClick?: (entry: BusHistoryEntry) => void;
 }) {
   const isOtherGarage = entry.garage !== currentGarage;
   const garageLabel = entry.garage === "north" ? "North" : "South";
   const outcome = OUTCOME_STYLES[entry.outcome];
+  const isInteractive = Boolean(onClick);
 
   return (
-    <div
-      style={{
-        background: "#fafaf9",
-        borderRadius: 14,
-        padding: 14,
-        border: "1px solid rgba(0,0,0,0.06)",
-      }}
+    <button
+      type="button"
+      onClick={onClick ? () => onClick(entry) : undefined}
+      disabled={!isInteractive}
+      className={
+        isInteractive
+          ? "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
+          : "w-full text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[14px]"
+      }
     >
       {/* Top row: date + garage + outcome */}
       <div
@@ -574,15 +569,9 @@ function HistoryEntryRow({
           &ldquo;{entry.note}&rdquo;
         </div>
       )}
-    </div>
+    </button>
   );
 }
-
-const OUTCOME_STYLES: Record<HistoryOutcome, { label: string; color: string; bg: string }> = {
-  completed: { label: "Completed", color: "#166534", bg: "#f0fdf4" },
-  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
-  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
-};
 
 function formatHistoryDate(isoDate: string): string {
   const d = new Date(isoDate);

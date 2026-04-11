@@ -8,7 +8,6 @@ import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
-import { IconTriangleWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface ActionCardProps {
   onBusClick: (bus: Bus) => void;
@@ -96,14 +95,6 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
           }}
           aria-label={`View all ${actionable.length} overdue buses`}
         >
-          <div style={{ marginBottom: 10 }}>
-            <SectionPill
-              label="Action Needed Today"
-              color="#b4541a"
-              bgColor="#fff4ed"
-              icon={<IconTriangleWarningFillDuo18 />}
-            />
-          </div>
           <h2
             style={{
               fontSize: 20,
@@ -212,10 +203,9 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   borderRadius: 999,
                   background: garageBg,
                   color: garageColor,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: "0.03em",
-                  textTransform: "uppercase",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textTransform: "capitalize",
                   justifySelf: "start",
                 }}
               >
@@ -243,12 +233,10 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
                   {formatNumber(overdueMiles)}
                 </span>
                 <span
-                  className="text-[10px] sm:text-[11px]"
+                  className="text-[12px] sm:text-[13px]"
                   style={{
-                    fontWeight: 600,
+                    fontWeight: 500,
                     color: "#b4541a",
-                    letterSpacing: "0.03em",
-                    textTransform: "uppercase",
                   }}
                 >
                   mi overdue

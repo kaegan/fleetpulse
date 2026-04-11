@@ -15,7 +15,7 @@ export function BackButton({ label, onClick }: BackButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className="mb-4 -mx-1 inline-flex cursor-pointer items-center gap-1.5 rounded px-1 py-1.5 text-[13px] font-medium text-[#6a6a6a] transition-colors hover:text-[#222222] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      className="mb-4 -mx-1 inline-flex cursor-pointer items-center gap-1.5 rounded px-1 py-1.5 text-[13px] font-medium text-text-secondary transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
     >
       <span aria-hidden>←</span> {label}
     </button>

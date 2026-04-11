@@ -12,14 +12,19 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./kanban-column";
 import { WorkOrderCard } from "./work-order-card";
-import { STAGES } from "@/lib/constants";
-import type { WorkOrder, WorkOrderStage } from "@/data/types";
+import { STAGE_ORDER, STAGE_LABELS, nextStage } from "@/lib/constants";
+import type {
+  PartsStatus,
+  WorkOrder,
+  WorkOrderStage,
+} from "@/data/types";
 
 interface KanbanBoardProps {
   workOrders: WorkOrder[];
   onStageChange: (woId: string, newStage: WorkOrderStage) => void;
   onComplete: (woId: string) => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
+  onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
 }
 
 export function KanbanBoard({
@@ -27,6 +32,7 @@ export function KanbanBoard({
   onStageChange,
   onComplete,
   onSelectWorkOrder,
+  onUpdateParts,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -49,7 +55,8 @@ export function KanbanBoard({
     if (!over) return;
 
     const woId = String(active.id);
-    const targetStage = Number(String(over.id).replace("stage-", "")) as WorkOrderStage;
+    const targetStage = String(over.id).replace("stage-", "") as WorkOrderStage;
+    if (!STAGE_ORDER.includes(targetStage)) return;
     const order = workOrders.find((wo) => wo.id === woId);
     if (!order || order.stage === targetStage) return;
 
@@ -70,25 +77,24 @@ export function KanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div
-        className={`-mx-4 flex gap-2 overflow-x-auto scroll-smooth px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 lg:mx-0 lg:grid lg:grid-cols-5 lg:gap-2 lg:overflow-visible lg:px-0 xl:gap-3 ${snapClass}`}
+        className={`-mx-4 flex gap-2 overflow-x-auto scroll-smooth px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 xl:mx-0 xl:grid xl:grid-cols-6 xl:gap-3 xl:overflow-visible xl:px-0 ${snapClass}`}
       >
-        {STAGES.map((stage, idx) => {
-          const stageOrders = workOrders.filter(
-            (wo) => wo.stage === (idx as WorkOrderStage)
-          );
+        {STAGE_ORDER.map((stage) => {
+          const stageOrders = workOrders.filter((wo) => wo.stage === stage);
+          const next = nextStage(stage);
           return (
             <KanbanColumn
               key={stage}
-              stageId={`stage-${idx}`}
-              stageName={stage}
+              stageId={`stage-${stage}`}
+              stage={stage}
+              stageName={STAGE_LABELS[stage]}
               orders={stageOrders}
-              className="w-72 shrink-0 snap-center lg:w-auto lg:min-w-0 lg:shrink"
+              className="w-72 shrink-0 snap-center xl:w-auto xl:min-w-0 xl:shrink"
               onComplete={onComplete}
               onSelectWorkOrder={onSelectWorkOrder}
+              onUpdateParts={onUpdateParts}
               onAdvance={(woId) => {
-                if (idx < STAGES.length - 1) {
-                  onStageChange(woId, (idx + 1) as WorkOrderStage);
-                }
+                if (next) onStageChange(woId, next);
               }}
             />
           );
