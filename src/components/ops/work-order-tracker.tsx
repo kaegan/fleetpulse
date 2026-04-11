@@ -6,7 +6,7 @@ import { SectionPill } from "@/components/section-pill";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workOrders } from "@/data/work-orders";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { STAGES, KANBAN_STAGE_PILLS, SEVERITY_COLORS } from "@/lib/constants";
+import { STAGES, SEVERITY_COLORS, BRAND_COLOR } from "@/lib/constants";
 import type { Severity, WorkOrder } from "@/data/types";
 import { IconClipboardListFillDuo18 } from "nucleo-ui-fill-duo-18";
 
@@ -53,7 +53,12 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   const stageCounts = STAGES.map(
     (_, i) => scopedOrders.filter((wo) => wo.stage === i).length
   );
+  // A "peak" only exists when one stage is strictly ahead of the rest.
+  // When counts are tied (e.g. 2/2/2/2/2), nothing should glow — the whole
+  // point of the bar is to surface an actual pile-up, not to decorate.
   const maxCount = Math.max(...stageCounts);
+  const secondMax = [...stageCounts].sort((a, b) => b - a)[1] ?? 0;
+  const hasPeak = maxCount > 0 && maxCount > secondMax;
 
   return (
     <div>
@@ -126,55 +131,66 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         </ToggleGroup>
       </div>
 
-      {/* Stage pipeline counts */}
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          marginBottom: 20,
-          flexWrap: "wrap",
-        }}
-      >
-        {STAGES.map((stage, i) => {
-          const count = stageCounts[i];
-          const isBottleneck = count === maxCount && count > 0;
-          const pill = KANBAN_STAGE_PILLS[stage];
-          return (
-            <div
-              key={stage}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "5px 12px",
-                borderRadius: 999,
-                background: isBottleneck ? pill.bg : "#f7f7f7",
-                border: isBottleneck
-                  ? `1.5px solid ${pill.color}`
-                  : "1.5px solid transparent",
-              }}
-            >
-              <span
+      {/* Queue-by-stage bar — informational, not a filter. Only the peak
+          stage (if there is one) lights up in brand coral. In evenly
+          distributed states, the whole row stays quiet. */}
+      <div style={{ marginBottom: 20 }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#b5b5b5",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            marginBottom: 8,
+          }}
+        >
+          Queue by stage
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 6,
+            flexWrap: "wrap",
+          }}
+        >
+          {STAGES.map((stage, i) => {
+            const count = stageCounts[i];
+            const isPeak = hasPeak && count === maxCount;
+            return (
+              <div
+                key={stage}
                 style={{
-                  fontSize: 12,
-                  fontWeight: 500,
-                  color: isBottleneck ? pill.color : "#929292",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "3px 10px",
+                  borderRadius: 999,
+                  background: isPeak ? "#fdf0ed" : "#f7f7f7",
                 }}
               >
-                {stage}
-              </span>
-              <span
-                style={{
-                  fontSize: 13,
-                  fontWeight: 700,
-                  color: isBottleneck ? pill.color : "#6a6a6a",
-                }}
-              >
-                {count}
-              </span>
-            </div>
-          );
-        })}
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: isPeak ? BRAND_COLOR : "#929292",
+                  }}
+                >
+                  {stage}
+                </span>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isPeak ? BRAND_COLOR : "#6a6a6a",
+                  }}
+                >
+                  {count}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Column headers — desktop table layout only */}
