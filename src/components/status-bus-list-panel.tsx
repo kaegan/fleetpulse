@@ -29,17 +29,27 @@ import {
   IconWrenchFillDuo18,
   IconGearsFillDuo18,
   IconSirenFillDuo18,
+  IconTriangleWarningFillDuo18,
 } from "nucleo-ui-fill-duo-18";
 
+// The panel covers the four real BusStatus values plus a derived "overdue"
+// view that matches ActionCard's actionable set (past-due AND not in an
+// active WO). Hoisted so props, meta, and row helpers all share it.
+export type BusListKind = BusStatus | "overdue";
+
 interface StatusBusListPanelProps {
-  status: BusStatus | null;
+  kind: BusListKind | null;
   onClose: () => void;
   onSelectBus: (bus: Bus) => void;
 }
 
 interface StatusMeta {
   pillLabel: string;
-  pillKey: keyof typeof KPI_PILLS;
+  // Inline pill colors override — used when the pill doesn't map to a
+  // KPI strip slot (e.g. "overdue" borrows the ActionCard's coral treatment).
+  pillColor?: string;
+  pillBg?: string;
+  pillKey?: keyof typeof KPI_PILLS;
   icon: ReactNode;
   heading: string;
   // One-liner shown under the heading — framed around the operator's JTBD,
@@ -48,7 +58,7 @@ interface StatusMeta {
   emptyMessage: string;
 }
 
-const META: Record<BusStatus, StatusMeta> = {
+const META: Record<BusListKind, StatusMeta> = {
   running: {
     pillLabel: "Running",
     pillKey: "Running",
@@ -85,31 +95,49 @@ const META: Record<BusStatus, StatusMeta> = {
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
     emptyMessage: "No road calls in this depot today.",
   },
+  overdue: {
+    pillLabel: "Action Needed Today",
+    // Borrow the ActionCard's coral treatment — this list is the "todo"
+    // view, not the "PM Due" health view.
+    pillColor: "#b4541a",
+    pillBg: "#fff4ed",
+    icon: <IconTriangleWarningFillDuo18 />,
+    heading: "Overdue for service",
+    subtitle: (n) =>
+      `${n} bus${n === 1 ? "" : "es"} past due and not yet in the shop. Schedule before they break down on route.`,
+    emptyMessage: "Nothing overdue right now.",
+  },
 };
 
+// Rows use the same "miles overdue in coral" styling for both pm-due (a seed
+// flag) and overdue (a derived set). Helper keeps the condition readable.
+function isPmStyled(kind: BusListKind): boolean {
+  return kind === "pm-due" || kind === "overdue";
+}
+
 export function StatusBusListPanel({
-  status,
+  kind,
   onClose,
   onSelectBus,
 }: StatusBusListPanelProps) {
-  // Snapshot the last non-null status so the sheet keeps its contents during
+  // Snapshot the last non-null kind so the sheet keeps its contents during
   // the close animation — same trick as BusDetailPanel.
-  const [displayStatus, setDisplayStatus] = useState<BusStatus | null>(status);
+  const [displayKind, setDisplayKind] = useState<BusListKind | null>(kind);
   useEffect(() => {
-    if (status) setDisplayStatus(status);
-  }, [status]);
+    if (kind) setDisplayKind(kind);
+  }, [kind]);
 
   return (
-    <Sheet open={Boolean(status)} onOpenChange={(open) => !open && onClose()}>
+    <Sheet open={Boolean(kind)} onOpenChange={(open) => !open && onClose()}>
       <SheetContent side="right" className="p-0">
         <SheetTitle className="sr-only">
-          {displayStatus ? META[displayStatus].heading : "Bus list"}
+          {displayKind ? META[displayKind].heading : "Bus list"}
         </SheetTitle>
         <SheetDescription className="sr-only">
           Filtered list of buses matching the selected fleet status.
         </SheetDescription>
-        {displayStatus && (
-          <PanelContent status={displayStatus} onSelectBus={onSelectBus} />
+        {displayKind && (
+          <PanelContent kind={displayKind} onSelectBus={onSelectBus} />
         )}
       </SheetContent>
     </Sheet>
@@ -117,15 +145,17 @@ export function StatusBusListPanel({
 }
 
 function PanelContent({
-  status,
+  kind,
   onSelectBus,
 }: {
-  status: BusStatus;
+  kind: BusListKind;
   onSelectBus: (bus: Bus) => void;
 }) {
   const { scope } = useDepot();
-  const meta = META[status];
-  const pill = KPI_PILLS[meta.pillKey];
+  const meta = META[kind];
+  // Resolve pill colors: either from a KPI slot or an inline override.
+  const pillColor = meta.pillColor ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].color : "#6a6a6a");
+  const pillBg = meta.pillBg ?? (meta.pillKey ? KPI_PILLS[meta.pillKey].bg : "#f4f4f4");
 
   // WOs indexed by busId for fast lookup in row renderers.
   const worksByBus = useMemo(() => {
@@ -135,13 +165,25 @@ function PanelContent({
   }, []);
 
   const rows = useMemo(() => {
+    // "Overdue" is a derived set that mirrors ActionCard exactly: buses that
+    // are past due AND not already in an active WO. This is the todo-list
+    // view — the existing "pm-due" kind is the seed-flag health view.
+    if (kind === "overdue") {
+      const busesWithActiveWO = new Set(workOrders.map((wo) => wo.busId));
+      return filterByDepot(buses, scope)
+        .filter(
+          (bus) => milesUntilPm(bus) < 0 && !busesWithActiveWO.has(bus.id)
+        )
+        .sort((a, b) => milesUntilPm(a) - milesUntilPm(b));
+    }
+
     const filtered = filterByDepot(
-      buses.filter((b) => b.status === status),
+      buses.filter((b) => b.status === kind),
       scope
     );
 
     // Sort per status so the most urgent item is always at the top.
-    switch (status) {
+    switch (kind) {
       case "pm-due":
         // Most overdue first
         return [...filtered].sort((a, b) => milesUntilPm(a) - milesUntilPm(b));
@@ -160,7 +202,7 @@ function PanelContent({
       default:
         return [...filtered].sort((a, b) => a.id - b.id);
     }
-  }, [status, scope, worksByBus]);
+  }, [kind, scope, worksByBus]);
 
   return (
     <div className="flex h-full flex-col p-5 pb-6 sm:p-7">
@@ -169,8 +211,8 @@ function PanelContent({
         <div className="mb-2">
           <SectionPill
             label={meta.pillLabel}
-            color={pill.color}
-            bgColor={pill.bg}
+            color={pillColor}
+            bgColor={pillBg}
             icon={meta.icon}
           />
         </div>
@@ -223,7 +265,7 @@ function PanelContent({
             <BusRow
               key={bus.id}
               bus={bus}
-              status={status}
+              kind={kind}
               workOrder={worksByBus.get(bus.id) ?? null}
               onClick={() => onSelectBus(bus)}
             />
@@ -238,12 +280,12 @@ function PanelContent({
 
 function BusRow({
   bus,
-  status,
+  kind,
   workOrder,
   onClick,
 }: {
   bus: Bus;
-  status: BusStatus;
+  kind: BusListKind;
   workOrder: WorkOrder | null;
   onClick: () => void;
 }) {
@@ -256,7 +298,7 @@ function BusRow({
       onClick={onClick}
       className="text-left rounded-[14px] border border-black/[0.06] bg-[#fafaf9] p-[12px_14px] transition-colors hover:bg-[#f5f5f4] hover:border-black/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 cursor-pointer"
     >
-      {/* Top row: bus # + garage + status-specific right value */}
+      {/* Top row: bus # + garage + kind-specific right value */}
       <div
         style={{
           display: "flex",
@@ -293,25 +335,25 @@ function BusRow({
             {bus.garage}
           </span>
         </div>
-        <RightValue bus={bus} status={status} workOrder={workOrder} />
+        <RightValue bus={bus} kind={kind} workOrder={workOrder} />
       </div>
 
-      {/* Second row: status-specific context */}
-      <SecondaryLine bus={bus} status={status} workOrder={workOrder} />
+      {/* Second row: kind-specific context */}
+      <SecondaryLine bus={bus} kind={kind} workOrder={workOrder} />
     </button>
   );
 }
 
 function RightValue({
   bus,
-  status,
+  kind,
   workOrder,
 }: {
   bus: Bus;
-  status: BusStatus;
+  kind: BusListKind;
   workOrder: WorkOrder | null;
 }) {
-  if (status === "pm-due") {
+  if (isPmStyled(kind)) {
     const overdueMiles = -milesUntilPm(bus);
     const isOverdue = overdueMiles > 0;
     return (
@@ -348,7 +390,7 @@ function RightValue({
     );
   }
 
-  if (status === "in-maintenance" && workOrder) {
+  if (kind === "in-maintenance" && workOrder) {
     return (
       <span
         style={{
@@ -381,14 +423,14 @@ function RightValue({
 
 function SecondaryLine({
   bus,
-  status,
+  kind,
   workOrder,
 }: {
   bus: Bus;
-  status: BusStatus;
+  kind: BusListKind;
   workOrder: WorkOrder | null;
 }) {
-  if (status === "in-maintenance") {
+  if (kind === "in-maintenance") {
     if (!workOrder) {
       return (
         <div
@@ -447,7 +489,7 @@ function SecondaryLine({
     );
   }
 
-  if (status === "pm-due") {
+  if (isPmStyled(kind)) {
     return (
       <div
         style={{
@@ -462,7 +504,7 @@ function SecondaryLine({
     );
   }
 
-  if (status === "road-call") {
+  if (kind === "road-call") {
     return (
       <div
         style={{
