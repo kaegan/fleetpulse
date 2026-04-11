@@ -3,12 +3,26 @@
 import { useDraggable } from "@dnd-kit/core";
 import type { Bus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
-import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
+import { SEVERITY_LABELS, SEVERITY_ICONS, STAGES } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
+
+const SEVERITY_VARIANT = {
+  critical: "destructive",
+  high: "warning",
+  routine: "success",
+} as const;
 
 interface WorkOrderCardProps {
   order: WorkOrder;
@@ -26,8 +40,6 @@ export function WorkOrderCard({
   onAdvance,
   isOverlay = false,
 }: WorkOrderCardProps) {
-  const sev = SEVERITY_COLORS[order.severity];
-
   // Hooks must be called unconditionally; pass a disabled flag for overlay renders.
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: order.id,
@@ -51,109 +63,93 @@ export function WorkOrderCard({
       {...(isOverlay ? {} : listeners)}
       {...(isOverlay ? {} : attributes)}
       onClick={handleClick}
-      className={cn(
-        "touch-none select-none rounded-2xl border border-black/[0.06] p-4 transition-all duration-150",
+      className={
         isOverlay
-          ? "cursor-grabbing shadow-panel"
-          : "cursor-grab shadow-card hover:-translate-y-px hover:shadow-card-hover"
-      )}
-      style={{
-        opacity: isDragging && !isOverlay ? 0 : 1,
-      }}
+          ? "touch-none select-none cursor-grabbing border border-black/[0.06] shadow-panel"
+          : "touch-none select-none cursor-grab border border-black/[0.06] shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
+      }
+      style={{ opacity: isDragging && !isOverlay ? 0 : 1 }}
     >
-      {/* Top row: bus number + time in stage */}
-      <div className="mb-2 flex items-center justify-between">
-        <span className="text-[15px] font-bold tracking-tight text-foreground">
-          Bus #{order.busNumber}
-        </span>
-        <span className="text-xs font-medium text-text-muted">
-          <TimeDisplay isoDate={order.stageEnteredAt} />
-        </span>
-      </div>
-
-      {/* Issue description */}
-      <div className="mb-2.5 text-[13px] font-medium leading-snug text-muted-foreground">
-        {order.issue}
-      </div>
-
-      {/* Parts status */}
-      {order.partsStatus !== "n/a" && (
-        <div className="mb-2.5">
-          <Badge
-            className="px-2 py-[2px]"
-            style={{
-              color: order.partsStatus === "available" ? "#166534" : "#92400e",
-              background: order.partsStatus === "available" ? "#f0fdf4" : "#fffbeb",
-            }}
-          >
-            {order.partsStatus === "available"
-              ? "\u2713 Parts ready"
-              : "\u23F3 Parts ordered"}
-          </Badge>
+      <CardHeader className="px-4 pb-3 pt-4">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="whitespace-nowrap text-[15px] tracking-tight">
+            Bus #{order.busNumber}
+          </CardTitle>
+          <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+            <TimeDisplay isoDate={order.stageEnteredAt} />
+          </span>
         </div>
-      )}
+        <CardDescription className="text-[13px] leading-snug">
+          {order.issue}
+        </CardDescription>
+      </CardHeader>
 
-      {/* Bottom row: WO ID + bay + severity. flex-wrap so the badge cluster
-          drops to a second line when the column gets tight. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
-        <span className="font-mono text-[11px] font-medium text-text-faint">
-          {order.id}
-        </span>
-        <div className="flex shrink-0 items-center gap-1.5">
-          {order.bayNumber && (
-            <Badge variant="muted" className="px-2 py-[2px]">
-              Bay {order.bayNumber}
-            </Badge>
-          )}
+      <Separator />
+
+      <CardContent className="px-4 py-3">
+        <div className="flex flex-wrap items-center gap-1.5">
           <Badge
-            className="gap-1 px-2 py-[2px]"
-            style={{ color: sev.text, background: sev.bg }}
+            variant={SEVERITY_VARIANT[order.severity]}
+            size="sm"
+            className="gap-1"
           >
-            <span className="flex h-3.5 w-3.5" style={{ color: sev.dot }}>
+            <span className="flex h-3 w-3">
               {SEVERITY_ICONS[order.severity]}
             </span>
             {SEVERITY_LABELS[order.severity]}
           </Badge>
+          {order.partsStatus !== "n/a" && (
+            <Badge
+              variant={order.partsStatus === "available" ? "success" : "warning"}
+              size="sm"
+            >
+              {order.partsStatus === "available" ? "Ready" : "Ordered"}
+            </Badge>
+          )}
         </div>
-      </div>
-
-      {/* Mechanic name if assigned */}
-      {order.mechanicName && (
-        <div className="mt-2 border-t border-black/[0.04] pt-2 text-xs font-medium text-text-muted">
-          {order.mechanicName}
+        <div className="mt-2 text-xs text-muted-foreground">
+          <span className="font-mono">{order.id}</span>
+          {order.bayNumber && <span> · Bay {order.bayNumber}</span>}
+          {order.mechanicName && <span> · {order.mechanicName}</span>}
         </div>
-      )}
+      </CardContent>
 
-      {/* Advance action — shown on stages 0–3. Large tap target for dirty-hands tablet use. */}
-      {!isRoadReady && onAdvance && !isOverlay && (
-        <button
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdvance(order.id);
-          }}
-          className="mt-2.5 inline-flex w-full min-h-11 items-center justify-center gap-1.5 rounded-[10px] border border-transparent bg-[#f4f4f4] py-2.5 text-[13px] font-semibold text-[#444444] transition-colors hover:bg-[#ebebeb] cursor-pointer"
-        >
-          Move to {STAGES[order.stage + 1]} →
-        </button>
-      )}
-
-      {/* Terminal Complete action — only on stage 4 (Road Ready). Subtle text link, not a CTA. */}
-      {isRoadReady && onComplete && !isOverlay && (
-        <button
-          // Stop drag listeners from hijacking the click.
-          onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => {
-            e.stopPropagation();
-            onComplete(order.id);
-          }}
-          className="mt-2.5 inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[#bbf7d0] bg-transparent py-1.5 text-xs font-semibold text-[#166534] transition-colors hover:border-solid hover:bg-[#f0fdf4] cursor-pointer"
-        >
-          <span className="flex h-3.5 w-3.5">
-            <IconCheckFillDuo18 />
-          </span>
-          Mark complete
-        </button>
+      {!isOverlay && (
+        <>
+          <Separator />
+          <CardFooter className="justify-end px-4 py-2">
+            {!isRoadReady && onAdvance && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAdvance(order.id);
+                }}
+              >
+                {STAGES[order.stage + 1]} →
+              </Button>
+            )}
+            {isRoadReady && onComplete && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-severity-routine hover:bg-severity-routine-bg hover:text-severity-routine"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onComplete(order.id);
+                }}
+              >
+                <span className="flex h-3.5 w-3.5">
+                  <IconCheckFillDuo18 />
+                </span>
+                Mark complete
+              </Button>
+            )}
+          </CardFooter>
+        </>
       )}
     </Card>
   );
