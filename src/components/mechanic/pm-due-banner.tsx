@@ -41,32 +41,34 @@ export function PmDueBanner({
       type="button"
       onClick={onClick}
       aria-label={`Review ${overdueCount + comingDueCount} buses needing preventive maintenance`}
-      className="group mb-[18px] flex w-full cursor-pointer items-center gap-3 rounded-2xl px-5 py-[14px] text-left transition-all hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      className="group mb-[18px] flex w-full cursor-pointer flex-col items-start gap-2 rounded-2xl px-5 py-[14px] text-left transition-all hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 sm:flex-row sm:items-center sm:gap-3"
       style={{
         background: "#fff4ed",
       }}
     >
-      <span
-        aria-hidden
-        style={{
-          display: "flex",
-          width: 20,
-          height: 20,
-          color: "#b4541a",
-          flexShrink: 0,
-        }}
-      >
-        <IconWrenchFillDuo18 />
-      </span>
+      <span className="flex items-center gap-3 sm:contents">
+        <span
+          aria-hidden
+          style={{
+            display: "flex",
+            width: 20,
+            height: 20,
+            color: "#b4541a",
+            flexShrink: 0,
+          }}
+        >
+          <IconWrenchFillDuo18 />
+        </span>
 
-      <span
-        className="flex-1 text-[14px] leading-tight"
-        style={{ color: "#b4541a" }}
-      >
-        <span style={{ fontWeight: 700 }}>{primaryCopy}</span>
-        {secondaryCopy && (
-          <span style={{ fontWeight: 500, opacity: 0.72 }}>{secondaryCopy}</span>
-        )}
+        <span
+          className="min-w-0 flex-1 text-[14px] leading-tight"
+          style={{ color: "#b4541a" }}
+        >
+          <span style={{ fontWeight: 700 }}>{primaryCopy}</span>
+          {secondaryCopy && (
+            <span style={{ fontWeight: 500, opacity: 0.72 }}>{secondaryCopy}</span>
+          )}
+        </span>
       </span>
 
       <span

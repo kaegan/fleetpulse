@@ -227,14 +227,14 @@ export function MechanicView() {
       />
 
       {/* Action row: scope toggle + log-new-repair CTA */}
-      <div className="mb-[18px] flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-[18px] flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <ScopeToggle
           scope={scope}
           onChange={setScope}
           mineCount={mineCount}
           allCount={garageOrders.length}
         />
-        <Button onClick={() => setIsLogOpen(true)} className="px-5">
+        <Button onClick={() => setIsLogOpen(true)} className="w-full px-5 sm:w-auto">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
