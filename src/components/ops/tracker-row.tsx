@@ -203,7 +203,7 @@ function AgingTag({
 }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-1.5 py-[1px] text-[10px] font-bold uppercase leading-none tracking-[0.02em] whitespace-nowrap"
+      className="inline-flex items-center rounded-full px-2 py-[2px] text-[11px] font-semibold leading-none whitespace-nowrap"
       style={{ color: tag.color, background: tag.bg }}
     >
       {tag.label}

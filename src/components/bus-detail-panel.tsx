@@ -382,11 +382,10 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
       <div style={{ flex: 1 }}>
         <div
           style={{
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 700,
             color: "#d4654a",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
+            letterSpacing: "-0.01em",
             marginBottom: 4,
           }}
         >

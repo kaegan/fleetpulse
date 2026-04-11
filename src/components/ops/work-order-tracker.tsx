@@ -134,11 +134,9 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
       <div style={{ marginBottom: 20 }}>
         <div
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#b5b5b5",
-            textTransform: "uppercase",
-            letterSpacing: "0.04em",
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#929292",
             marginBottom: 8,
           }}
         >
