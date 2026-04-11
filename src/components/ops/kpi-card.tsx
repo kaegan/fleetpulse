@@ -274,7 +274,7 @@ export function KpiCard({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="block w-full min-w-0 text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
+      className="block w-full min-w-0 cursor-pointer text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
     >
       {cardInner}
     </button>
