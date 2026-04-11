@@ -43,7 +43,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   // Positive empty state — still worth rendering the card so the layout stays stable.
   if (actionable.length === 0) {
     return (
-      <Card className="mb-6 flex flex-col items-start gap-3 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:gap-4 sm:p-6">
+      <Card className="mb-6 flex flex-col items-start gap-3 rounded-[24px] p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <SectionPill
           label="Fleet On Schedule"
           color="#22c55e"
@@ -64,7 +64,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
   }
 
   return (
-    <Card className="mb-6 rounded-[24px] p-5 shadow-[0px_0px_0px_1px_rgba(0,0,0,0.02),0px_2px_6px_rgba(0,0,0,0.03),0px_4px_8px_rgba(0,0,0,0.04)] sm:p-6">
+    <Card className="mb-6 rounded-[24px] p-5 shadow-card sm:p-6">
       {/* Header */}
       <div
         style={{
@@ -113,13 +113,7 @@ export function ActionCard({ onBusClick }: ActionCardProps) {
       </div>
 
       {/* Action rows */}
-      <div
-        style={{
-          border: "1px solid #f0f0f0",
-          borderRadius: 14,
-          overflow: "hidden",
-        }}
-      >
+      <div>
         {topRows.map(({ bus, overdueMiles }, idx) => {
           const isHovered = hoveredId === bus.id;
           const isLast = idx === topRows.length - 1;
