@@ -75,7 +75,7 @@ export function DepotSwitcher() {
         aria-label="Garage scope"
         aria-haspopup="menu"
         aria-expanded={open}
-        className="hidden md:inline-flex"
+        className="inline-flex"
         style={{
           alignItems: "center",
           gap: 8,
