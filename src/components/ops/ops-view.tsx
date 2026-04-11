@@ -13,16 +13,18 @@ import {
 import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
 import { usePanelNav } from "@/hooks/use-panel-nav";
-import type { Bus, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 
 // Panels on Fleet Overview form a drill-down graph (list → bus → WO,
-// WO → bus, etc.). Each entry carries a short destination label that
-// the next panel in the chain renders as `Back to {label}`. See
-// src/hooks/use-panel-nav.ts for the stack machinery.
+// bus → history entry, WO → bus, etc.). Each entry carries a short
+// destination label that the next panel in the chain renders as
+// `Back to {label}`. See src/hooks/use-panel-nav.ts for the stack
+// machinery.
 type OpsPanelEntry =
   | { kind: "busList"; label: string; busListKind: BusListKind }
   | { kind: "bus"; label: string; bus: Bus }
-  | { kind: "workOrder"; label: string; workOrder: WorkOrder };
+  | { kind: "workOrder"; label: string; workOrder: WorkOrder }
+  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
@@ -51,6 +53,8 @@ export function OpsView() {
     nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
   const drillToWorkOrder = (wo: WorkOrder) =>
     nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo });
+  const drillToHistoryEntry = (entry: BusHistoryEntry, bus: Bus) =>
+    nav.drill({ kind: "historyEntry", label: entry.id, entry, bus });
 
   // Derive props for each panel from `current`. A panel is "open" only
   // when `current` matches its kind — everything else reads null and
@@ -61,6 +65,10 @@ export function OpsView() {
   const currentWorkOrderBus = currentWorkOrder
     ? buses.find((b) => b.id === currentWorkOrder.busId) ?? null
     : null;
+  const currentHistoryEntry =
+    current?.kind === "historyEntry" ? current.entry : null;
+  const currentHistoryEntryBus =
+    current?.kind === "historyEntry" ? current.bus : null;
   const currentBusListKind =
     current?.kind === "busList" ? current.busListKind : null;
 
@@ -102,16 +110,28 @@ export function OpsView() {
         bus={currentBus}
         onClose={nav.close}
         onSelectWorkOrder={drillToWorkOrder}
+        onSelectHistoryEntry={(entry) =>
+          drillToHistoryEntry(entry, currentBus!)
+        }
         backLabel={currentBus ? nav.backButton?.label : undefined}
         onBack={currentBus ? nav.backButton?.onBack : undefined}
       />
       <WorkOrderDetailPanel
         order={currentWorkOrder}
-        bus={currentWorkOrderBus}
+        historyEntry={currentHistoryEntry}
+        bus={currentWorkOrderBus ?? currentHistoryEntryBus}
         onClose={nav.close}
         onOpenBus={drillToBus}
-        backLabel={currentWorkOrder ? nav.backButton?.label : undefined}
-        onBack={currentWorkOrder ? nav.backButton?.onBack : undefined}
+        backLabel={
+          currentWorkOrder || currentHistoryEntry
+            ? nav.backButton?.label
+            : undefined
+        }
+        onBack={
+          currentWorkOrder || currentHistoryEntry
+            ? nav.backButton?.onBack
+            : undefined
+        }
       />
       <StatusBusListPanel
         kind={currentBusListKind}

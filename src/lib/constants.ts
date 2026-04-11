@@ -1,6 +1,7 @@
 import type {
   BlockReason,
   BusStatus,
+  HistoryOutcome,
   PartsStatus,
   Severity,
   WorkOrderStage,
@@ -144,6 +145,20 @@ export const SEVERITY_LABELS: Record<Severity, string> = {
   critical: "Critical",
   high: "High",
   routine: "Routine",
+};
+
+/**
+ * Outcome label + colors for completed service history entries.
+ * Used by both the history list inside BusDetailPanel and the historical
+ * mode of WorkOrderDetailPanel.
+ */
+export const OUTCOME_STYLES: Record<
+  HistoryOutcome,
+  { label: string; color: string; bg: string }
+> = {
+  completed: { label: "Completed", color: "#166534", bg: "#f0fdf4" },
+  deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
+  recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
 };
 
 export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles

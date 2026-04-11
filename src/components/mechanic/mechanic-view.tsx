@@ -20,6 +20,7 @@ import { usePanelNav } from "@/hooks/use-panel-nav";
 import type {
   BlockReason,
   Bus,
+  BusHistoryEntry,
   Garage,
   PartsStatus,
   Severity,
@@ -74,13 +75,15 @@ const SUBTITLE: Record<"all" | "north" | "south", string> = {
 };
 
 // Panels on Service Board: kanban → WO, banner → PM sheet → bus, WO ↔
-// bus drill-downs. The PmDueSheet joins the nav stack so clicking a
-// bus inside it gets an automatic `Back to Pull In Next` back button.
-// See src/hooks/use-panel-nav.ts for the stack machinery.
+// bus drill-downs, bus → history entry. The PmDueSheet joins the nav
+// stack so clicking a bus inside it gets an automatic `Back to Pull In
+// Next` back button. See src/hooks/use-panel-nav.ts for the stack
+// machinery.
 type MechanicPanelEntry =
   | { kind: "pmDue"; label: string }
   | { kind: "bus"; label: string; bus: Bus }
-  | { kind: "workOrder"; label: string; workOrder: WorkOrder };
+  | { kind: "workOrder"; label: string; workOrder: WorkOrder }
+  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function MechanicView() {
   const [orders, setOrders] = useState<WorkOrder[]>(initialWorkOrders);
@@ -119,6 +122,11 @@ export function MechanicView() {
   );
   const drillToWorkOrder = useCallback(
     (wo: WorkOrder) => nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo }),
+    [nav]
+  );
+  const drillToHistoryEntry = useCallback(
+    (entry: BusHistoryEntry, bus: Bus) =>
+      nav.drill({ kind: "historyEntry", label: entry.id, entry, bus }),
     [nav]
   );
 
@@ -265,6 +273,12 @@ export function MechanicView() {
         : null,
     [liveSelectedWorkOrder]
   );
+  // History entries are immutable, so they bypass the live re-lookup
+  // pattern used for active WOs. The bus is carried inside the entry.
+  const currentHistoryEntry =
+    current?.kind === "historyEntry" ? current.entry : null;
+  const currentHistoryEntryBus =
+    current?.kind === "historyEntry" ? current.bus : null;
   const isPmSheetOpen = current?.kind === "pmDue";
 
   // Most-recently-created unique bus numbers in this garage, for the form's
@@ -349,16 +363,28 @@ export function MechanicView() {
         bus={currentBus}
         onClose={nav.close}
         onSelectWorkOrder={drillToWorkOrder}
+        onSelectHistoryEntry={(entry) =>
+          drillToHistoryEntry(entry, currentBus!)
+        }
         backLabel={currentBus ? nav.backButton?.label : undefined}
         onBack={currentBus ? nav.backButton?.onBack : undefined}
       />
       <WorkOrderDetailPanel
         order={liveSelectedWorkOrder}
-        bus={liveSelectedWorkOrderBus}
+        historyEntry={currentHistoryEntry}
+        bus={liveSelectedWorkOrderBus ?? currentHistoryEntryBus}
         onClose={nav.close}
         onOpenBus={drillToBus}
-        backLabel={liveSelectedWorkOrder ? nav.backButton?.label : undefined}
-        onBack={liveSelectedWorkOrder ? nav.backButton?.onBack : undefined}
+        backLabel={
+          liveSelectedWorkOrder || currentHistoryEntry
+            ? nav.backButton?.label
+            : undefined
+        }
+        onBack={
+          liveSelectedWorkOrder || currentHistoryEntry
+            ? nav.backButton?.onBack
+            : undefined
+        }
       />
       <PmDueSheet
         open={isPmSheetOpen}
