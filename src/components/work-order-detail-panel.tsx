@@ -109,7 +109,7 @@ export function WorkOrderDetailPanel({
           order is attached to.
         </ResponsiveSheetDescription>
         {(renderOrder || renderHistoryEntry) && (
-          <PanelContent
+          <WorkOrderPanelContent
             order={renderOrder}
             historyEntry={renderHistoryEntry}
             bus={renderBus}
@@ -124,7 +124,7 @@ export function WorkOrderDetailPanel({
   );
 }
 
-function PanelContent({
+export function WorkOrderPanelContent({
   order,
   historyEntry,
   bus,

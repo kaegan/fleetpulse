@@ -1,12 +1,18 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
 import { LogRepairForm, type LogRepairFormSnapshot } from "./log-repair-form";
-import { BusDetailPanel } from "@/components/bus-detail-panel";
-import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
+import { BusPanelContent } from "@/components/bus-detail-panel";
+import { WorkOrderPanelContent } from "@/components/work-order-detail-panel";
+import {
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { buses } from "@/data/buses";
@@ -91,6 +97,7 @@ export function MechanicView() {
 
   const nav = usePanelNav<MechanicPanelEntry>();
   const current = nav.current;
+  const navClose = nav.close;
 
   // Root-entry opens come from the page (kanban, intake form). These
   // reset the stack so no back button is shown on the target.
@@ -253,29 +260,34 @@ export function MechanicView() {
       ? garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC)
       : garageOrders;
 
-  // Derive per-panel props from `current`. Each panel opens only when
-  // `current` matches its kind; everything else reads null and stays
-  // closed. The WO is re-looked-up in `orders` so stage-advance /
-  // complete updates the sheet in place, and the sheet auto-closes
-  // if the WO is completed (removed from orders).
-  const currentBus = current?.kind === "bus" ? current.bus : null;
-  const liveSelectedWorkOrder = useMemo(() => {
-    if (current?.kind !== "workOrder") return null;
-    return orders.find((wo) => wo.id === current.workOrder.id) ?? null;
-  }, [current, orders]);
-  const liveSelectedWorkOrderBus = useMemo(
-    () =>
-      liveSelectedWorkOrder
-        ? buses.find((b) => b.id === liveSelectedWorkOrder.busId) ?? null
-        : null,
-    [liveSelectedWorkOrder]
+  // Snapshot the last non-null entry so the sheet keeps rendering its
+  // content through the close animation after the user dismisses.
+  const lastEntryRef = useRef<MechanicPanelEntry | null>(null);
+  if (current !== null) lastEntryRef.current = current;
+  const renderEntry = current ?? lastEntryRef.current;
+
+  // Live WO lookup — stays reactive to stage/parts changes while the
+  // panel is open. History entries are immutable so they skip this.
+  const liveWo = useMemo(() => {
+    if (renderEntry?.kind !== "workOrder") return null;
+    return orders.find((wo) => wo.id === renderEntry.workOrder.id) ?? null;
+  }, [renderEntry, orders]);
+
+  const liveWoBus = useMemo(
+    () => (liveWo ? buses.find((b) => b.id === liveWo.busId) ?? null : null),
+    [liveWo]
   );
-  // History entries are immutable, so they bypass the live re-lookup
-  // pattern used for active WOs. The bus is carried inside the entry.
-  const currentHistoryEntry =
-    current?.kind === "historyEntry" ? current.entry : null;
-  const currentHistoryEntryBus =
-    current?.kind === "historyEntry" ? current.bus : null;
+
+  // Auto-close when a WO is completed and removed from orders. This
+  // preserves the existing behavior where completing a card closes the
+  // panel automatically.
+  useEffect(() => {
+    if (current?.kind === "workOrder") {
+      if (!orders.find((wo) => wo.id === current.workOrder.id)) {
+        navClose();
+      }
+    }
+  }, [current, orders, navClose]);
 
   // Most-recently-created unique bus numbers in this garage, for the form's
   // "Recent" chip row.
@@ -344,34 +356,69 @@ export function MechanicView() {
         onUpdateParts={handleUpdateParts}
       />
 
-      <BusDetailPanel
-        bus={currentBus}
-        onClose={nav.close}
-        onSelectWorkOrder={drillToWorkOrder}
-        onSelectHistoryEntry={(entry) =>
-          drillToHistoryEntry(entry, currentBus!)
-        }
-        backLabel={currentBus ? nav.backButton?.label : undefined}
-        onBack={currentBus ? nav.backButton?.onBack : undefined}
-      />
-      <WorkOrderDetailPanel
-        order={liveSelectedWorkOrder}
-        historyEntry={currentHistoryEntry}
-        bus={liveSelectedWorkOrderBus ?? currentHistoryEntryBus}
-        onClose={nav.close}
-        onOpenBus={drillToBus}
-        backLabel={
-          liveSelectedWorkOrder || currentHistoryEntry
-            ? nav.backButton?.label
-            : undefined
-        }
-        onBack={
-          liveSelectedWorkOrder || currentHistoryEntry
-            ? nav.backButton?.onBack
-            : undefined
-        }
-        onUpdateParts={handleUpdatePartsList}
-      />
+      {/* Single sheet — stays open throughout navigation so content
+          transitions in-place instead of closing and reopening. */}
+      <ResponsiveSheet
+        open={current !== null}
+        onOpenChange={(open) => !open && nav.close()}
+      >
+        <ResponsiveSheetContent side="right" className="p-0">
+          <ResponsiveSheetTitle className="sr-only">
+            {renderEntry?.kind === "bus"
+              ? `Bus #${renderEntry.bus.busNumber} details`
+              : renderEntry?.kind === "workOrder"
+                ? `Work order ${renderEntry.workOrder.id} details`
+                : renderEntry?.kind === "historyEntry"
+                  ? `Service history ${renderEntry.entry.id} details`
+                  : "Panel"}
+          </ResponsiveSheetTitle>
+          <ResponsiveSheetDescription className="sr-only">
+            {renderEntry?.kind === "bus"
+              ? "Vehicle info, preventive maintenance status, active work orders, and service history."
+              : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
+          </ResponsiveSheetDescription>
+          {renderEntry && (
+            <div
+              key={`${renderEntry.kind}:${renderEntry.label}`}
+              className="animate-in fade-in duration-150 h-full"
+            >
+              {renderEntry.kind === "bus" && (
+                <BusPanelContent
+                  bus={renderEntry.bus}
+                  onSelectWorkOrder={drillToWorkOrder}
+                  onSelectHistoryEntry={(entry) =>
+                    drillToHistoryEntry(entry, renderEntry.bus)
+                  }
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
+                />
+              )}
+              {(renderEntry.kind === "workOrder" ||
+                renderEntry.kind === "historyEntry") && (
+                <WorkOrderPanelContent
+                  order={
+                    renderEntry.kind === "workOrder" ? liveWo : null
+                  }
+                  historyEntry={
+                    renderEntry.kind === "historyEntry"
+                      ? renderEntry.entry
+                      : null
+                  }
+                  bus={
+                    renderEntry.kind === "workOrder"
+                      ? liveWoBus
+                      : renderEntry.bus
+                  }
+                  onOpenBus={drillToBus}
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
+                  onUpdateParts={handleUpdatePartsList}
+                />
+              )}
+            </div>
+          )}
+        </ResponsiveSheetContent>
+      </ResponsiveSheet>
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
         <DialogContent
           showCloseButton={false}
