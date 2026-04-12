@@ -152,9 +152,6 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           yesterdayValue={
             showCountFooter ? getYesterdayCount("road-call") : undefined
           }
-          forecastValue={
-            showCountFooter ? forecastCounts["road-call"] : undefined
-          }
           deltaDirection="down-is-good"
           onClick={() => onOpenStatusList("road-call")}
           ariaLabel={`Show ${counts["road-call"]} buses on road call`}

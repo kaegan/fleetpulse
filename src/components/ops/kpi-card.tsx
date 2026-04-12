@@ -53,36 +53,6 @@ function deltaColor(
   return isGood ? "#16a34a" : "#dc2626";
 }
 
-/** Inline delta chip: "↑2" / "↓2" / "—" with status-aware coloring. */
-function DeltaChip({
-  delta,
-  direction,
-}: {
-  delta: number;
-  direction: DeltaDirection;
-}) {
-  const color = deltaColor(delta, direction);
-  if (delta === 0) {
-    return (
-      <span
-        className="text-xs font-semibold tabular-nums"
-        style={{ color }}
-      >
-        —
-      </span>
-    );
-  }
-  const arrow = delta > 0 ? "↑" : "↓";
-  return (
-    <span
-      className="text-xs font-bold tabular-nums whitespace-nowrap"
-      style={{ color }}
-    >
-      {arrow} {Math.abs(delta)}
-    </span>
-  );
-}
-
 export function KpiCard({
   label,
   value,
@@ -117,6 +87,19 @@ export function KpiCard({
     hasCountFooter && forecastValue !== undefined
       ? forecastValue - value
       : 0;
+
+  // Footer delta: prefer tomorrow forecast; fall back to yesterday-only
+  // for cards without a forecastValue (Road Calls). Omit entirely when
+  // Road Calls delta is 0 — unplanned breakdowns aren't forecastable so
+  // "steady" isn't meaningful. For other cards, show "→ steady".
+  const footerDelta = (() => {
+    if (!hasCountFooter) return null;
+    const useForecast = forecastValue !== undefined;
+    const delta = useForecast ? forecastDelta : yesterdayDelta;
+    const timeLabel = useForecast ? "tomorrow" : "since yesterday";
+    if (!useForecast && delta === 0) return null;
+    return { delta, timeLabel };
+  })();
 
   const cardClassName =
     "min-w-0 rounded-lg shadow-card transition-shadow " +
@@ -235,32 +218,20 @@ export function KpiCard({
         </div>
       )}
 
-      {/* Count-card footer: Yesterday + Tomorrow rows */}
-      {hasCountFooter && (
-        <div className="mt-5 flex flex-col gap-1.5 border-t border-black/[0.06] pt-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
-              Yesterday
+      {/* Count-card footer: single directional delta */}
+      {footerDelta !== null && (
+        <div className="mt-5 border-t border-black/[0.06] pt-3">
+          {footerDelta.delta === 0 ? (
+            <span className="text-[13px] font-medium text-[#929292]">
+              → steady
             </span>
-            <div className="flex shrink-0 items-baseline gap-2">
-              <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
-                {yesterdayValue}
-              </span>
-              <DeltaChip delta={yesterdayDelta} direction={deltaDirection} />
-            </div>
-          </div>
-          {forecastValue !== undefined && (
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="min-w-0 truncate text-xs font-medium text-[#929292]">
-                Tomorrow (est.)
-              </span>
-              <div className="flex shrink-0 items-baseline gap-2">
-                <span className="text-[13px] font-semibold text-[#6a6a6a] tabular-nums">
-                  {forecastValue}
-                </span>
-                <DeltaChip delta={forecastDelta} direction={deltaDirection} />
-              </div>
-            </div>
+          ) : (
+            <span
+              className="text-[13px] font-bold tabular-nums"
+              style={{ color: deltaColor(footerDelta.delta, deltaDirection) }}
+            >
+              {footerDelta.delta > 0 ? "↑" : "↓"}{Math.abs(footerDelta.delta)} {footerDelta.timeLabel}
+            </span>
           )}
         </div>
       )}
