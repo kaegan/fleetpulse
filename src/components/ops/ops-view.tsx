@@ -102,7 +102,7 @@ export function OpsView() {
     current?.kind === "busList" ? current.busListKind : null;
 
   return (
-    <div className="px-4 py-6 sm:px-6 sm:py-7 lg:px-10 lg:py-8">
+    <div className="px-4 py-6 sm:px-6 lg:px-10">
       {/* Section header */}
       <div style={{ marginBottom: 28 }}>
         <h1
@@ -128,11 +128,13 @@ export function OpsView() {
       </div>
 
       <KpiStrip onOpenStatusList={openBusList} />
-      <ActionCard
-        onBusClick={openBusRoot}
-        onViewAll={() => openBusList("overdue")}
-      />
-      <FleetHealthChart onBusClick={openBusRoot} />
+      <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-[5fr_7fr] xl:gap-6">
+        <ActionCard
+          onBusClick={openBusRoot}
+          onViewAll={() => openBusList("overdue")}
+        />
+        <FleetHealthChart onBusClick={openBusRoot} />
+      </div>
       <TriagePanel onSelectWorkOrder={openWorkOrderRoot} />
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
