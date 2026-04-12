@@ -1,4 +1,4 @@
-import type { WorkOrder } from "./types";
+import type { PartRequirement, WorkOrder } from "./types";
 
 /**
  * 10 hand-authored work orders exercising the six-stage pipeline.
@@ -50,6 +50,7 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: null,
     partsStatus: "needed",
+    parts: [{ partId: "air-brake-compressor", partName: "Air Brake Compressor", qty: 1 }],
     createdAt: todayAt(6, 15),
     stageEnteredAt: todayAt(6, 15),
     arrivalEta: todayAt(14, 30),
@@ -67,6 +68,7 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: null,
     partsStatus: "not-needed",
+    parts: [],
     createdAt: todayAt(5, 0),
     stageEnteredAt: todayAt(7, 40),
   },
@@ -83,6 +85,7 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Torres, M.",
     partsStatus: "in-stock",
+    parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
     createdAt: todayAt(3, 0),
     stageEnteredAt: todayAt(5, 0),
   },
@@ -99,6 +102,7 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: "Chen, R.",
     partsStatus: "needed",
+    parts: [{ partId: "transmission-fluid", partName: "Transmission Fluid (gal)", qty: 3 }],
     createdAt: daysAgoAt(2, 7, 0),
     stageEnteredAt: daysAgoAt(1, 14, 0),
   },
@@ -115,6 +119,7 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: "Chen, R.",
     partsStatus: "ordered",
+    parts: [{ partId: "alternator", partName: "Alternator Assembly", qty: 1 }],
     createdAt: yesterdayAt(0, 30),
     stageEnteredAt: yesterdayAt(11, 0),
     blockReason: "parts-ordered",
@@ -133,6 +138,10 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: null,
     partsStatus: "in-stock",
+    parts: [
+      { partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 4 },
+      { partId: "coolant-hose", partName: "Coolant Hose Assembly", qty: 1 },
+    ],
     createdAt: yesterdayAt(6, 0),
     stageEnteredAt: todayAt(6, 30),
     blockReason: "awaiting-bay",
@@ -150,6 +159,10 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Torres, M.",
     partsStatus: "in-stock",
+    parts: [
+      { partId: "brake-pads", partName: "Brake Pads (set)", qty: 2 },
+      { partId: "brake-rotors", partName: "Brake Rotors (pair)", qty: 1 },
+    ],
     createdAt: yesterdayAt(5, 30),
     stageEnteredAt: todayAt(6, 15),
   },
@@ -166,6 +179,7 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Vasquez, D.",
     partsStatus: "in-stock",
+    parts: [{ partId: "oil-filter", partName: "Oil Filter", qty: 1 }],
     createdAt: todayAt(2, 0),
     stageEnteredAt: todayAt(7, 0),
   },
@@ -182,6 +196,10 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Okafor, E.",
     partsStatus: "in-stock",
+    parts: [
+      { partId: "hvac-compressor", partName: "HVAC Compressor", qty: 1 },
+      { partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 },
+    ],
     createdAt: yesterdayAt(2, 0),
     stageEnteredAt: todayAt(7, 15),
   },
@@ -198,6 +216,7 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
+    parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 2 }],
     createdAt: daysAgoAt(2, 4, 0),
     stageEnteredAt: todayAt(7, 0),
   },
@@ -216,6 +235,10 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: null,
     partsStatus: "not-needed",
+    parts: [
+      { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
+      { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
+    ],
     createdAt: todayAt(6, 45),
     stageEnteredAt: todayAt(6, 45),
   },
@@ -230,6 +253,10 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: null,
     partsStatus: "not-needed",
+    parts: [
+      { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
+      { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
+    ],
     createdAt: todayAt(7, 10),
     stageEnteredAt: todayAt(7, 10),
   },

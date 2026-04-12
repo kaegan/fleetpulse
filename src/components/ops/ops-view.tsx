@@ -11,6 +11,7 @@ import {
   getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
+import { PartsRiskPanel } from "./parts-risk-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
@@ -133,6 +134,9 @@ export function OpsView() {
           onViewAll={() => openBusList("overdue")}
         />
         <FleetHealthChart onBusClick={openBusRoot} />
+      </div>
+      <div className="mb-6">
+        <PartsRiskPanel />
       </div>
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 

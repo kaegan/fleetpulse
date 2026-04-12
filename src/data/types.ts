@@ -63,6 +63,8 @@ export interface WorkOrder {
   blockEta?: string;
   /** ETA when the bus will physically arrive at the depot. Only meaningful while stage === "inbound". */
   arrivalEta?: string;
+  /** Specific parts needed for this work order. */
+  parts?: PartRequirement[];
 }
 
 /**
@@ -71,6 +73,23 @@ export interface WorkOrder {
  * — especially work performed at the *other* garage.
  */
 export type HistoryOutcome = "completed" | "deferred" | "recurring";
+
+export interface Part {
+  id: string;
+  name: string;
+  category: string;
+  stockNorth: number;
+  stockSouth: number;
+  reorderPoint: number;
+  monthlyUsageRate: number;
+  leadTimeDays: number;
+}
+
+export interface PartRequirement {
+  partId: string;
+  partName: string;
+  qty: number;
+}
 
 export interface BusHistoryEntry {
   id: string; // "WO-1198" format — historical WO number
