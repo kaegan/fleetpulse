@@ -75,7 +75,7 @@ export function PartsRiskPanel() {
       <Card className="flex flex-col items-start gap-3 rounded-lg p-5 shadow-card sm:flex-row sm:items-center sm:gap-4 sm:p-6">
         <span
           className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-[5px] text-[13px] font-bold leading-none tracking-[0.01em]"
-          style={{ background: "#f0fdf4", color: "#22c55e" }}
+          style={{ background: "#f5f5f5", color: "#6a6a6a" }}
         >
           Parts Stocked
         </span>

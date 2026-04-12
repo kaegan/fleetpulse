@@ -242,8 +242,8 @@ function BusRow({
   workOrder: WorkOrder | null;
   onClick: () => void;
 }) {
-  const garageColor = bus.garage === "north" ? "#3b82f6" : "#7c3aed";
-  const garageBg = bus.garage === "north" ? "#eff6ff" : "#f5f3ff";
+  const garageColor = "#6a6a6a";
+  const garageBg = "#f5f5f5";
 
   return (
     <button
