@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder } from "@/data/types";
 import { parts as partsCatalog } from "@/data/parts";
 import {
@@ -135,6 +135,16 @@ function PanelContent({
   onBack?: () => void;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
 }) {
+  // Scroll the sheet back to top when content swaps in place (same panel
+  // type, different record). Without this the user would land mid-scroll
+  // in the new card's content.
+  const topRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    topRef.current
+      ?.closest('[data-slot="sheet-content"]')
+      ?.scrollTo(0, 0);
+  }, [order?.id, historyEntry?.id]);
+
   // Exactly one of order / historyEntry is non-null (enforced by the
   // wrapper's snapshot effect). Pull a few shared header fields off
   // whichever record is active.
@@ -146,7 +156,7 @@ function PanelContent({
   const outcome = historyEntry ? OUTCOME_STYLES[historyEntry.outcome] : null;
 
   return (
-    <div className="p-5 sm:p-7">
+    <div ref={topRef} className="p-5 sm:p-7">
       {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* ── Header: issue + meta row ───────────────────────────────────── */}
