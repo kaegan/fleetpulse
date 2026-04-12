@@ -43,17 +43,16 @@ const DrawerContent = React.forwardRef<
       )}
       {...props}
     >
-      {/* Drag-dismiss strip — sits outside the scrollable body so vaul never
-       * has to disambiguate scroll vs drag. With `handleOnly` on the Root
-       * (set in responsive-sheet.tsx) vaul only listens for drag gestures
-       * on this <Handle>, so the body content scrolls freely without ever
-       * triggering vaul's scrollLockTimeout cooldown.
+      {/* Drag handle strip — a dedicated drag target that works regardless
+       * of scroll position. The full sheet body is also draggable (vaul
+       * disambiguates scroll vs drag based on scrollTop), but the handle
+       * gives users a clear affordance and works even when the list is
+       * scrolled partway down.
        *
        * The Handle div is full-width and 36px tall (transparent) so the
-       * entire top strip is the hit area — users can grab anywhere along
-       * the top of the sheet, not just within a 48px-wide window. The
-       * visible grabber bar is a sibling with `pointer-events-none` so it
-       * paints over the Handle without intercepting touches. */}
+       * entire top strip is the hit area. The visible grabber bar is a
+       * sibling with `pointer-events-none` so it paints over the Handle
+       * without intercepting touches. */}
       <div className="relative shrink-0">
         <DrawerPrimitive.Handle
           preventCycle
