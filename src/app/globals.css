@@ -153,6 +153,7 @@ body {
   background: var(--color-surface-warm);
   color: var(--color-text-primary);
   font-family: var(--font-sans), -apple-system, system-ui, sans-serif;
+  letter-spacing: -0.31px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
