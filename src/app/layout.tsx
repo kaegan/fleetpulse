@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppShell } from "@/components/app-shell";
+import { PHProvider } from "@/providers/posthog";
+import { PostHogPageView } from "@/components/posthog-page-view";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,8 +36,13 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <AppShell defaultOpen={defaultOpen}>{children}</AppShell>
-        <Toaster />
+        <PHProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          <AppShell defaultOpen={defaultOpen}>{children}</AppShell>
+          <Toaster />
+        </PHProvider>
       </body>
     </html>
   );
