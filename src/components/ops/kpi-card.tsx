@@ -110,7 +110,7 @@ export function KpiCard({
   })();
 
   const cardClassName =
-    "min-w-0 rounded-lg shadow-card transition-shadow " +
+    "min-w-0 h-full rounded-lg shadow-card transition-shadow " +
     (isPrimary
       ? "p-5 sm:p-6 md:p-[28px_32px]"
       : "p-4 sm:p-5 md:p-[24px_28px]") +
@@ -258,7 +258,7 @@ export function KpiCard({
       type="button"
       onClick={onClick}
       aria-label={ariaLabel}
-      className="block w-full min-w-0 cursor-pointer text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
+      className="block w-full h-full min-w-0 cursor-pointer text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 transition-transform active:scale-[0.995]"
     >
       {cardInner}
     </button>
