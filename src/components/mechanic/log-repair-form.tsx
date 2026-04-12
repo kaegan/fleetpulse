@@ -35,14 +35,28 @@ interface LogRepairDraft {
   assignedTo: string | null;
 }
 
+/** In-progress form state, saved when the mechanic navigates away (e.g. to
+ *  peek at a similar bus) so it can be restored when they come back. */
+export interface LogRepairFormSnapshot {
+  busId: number | null;
+  busQuery: string;
+  issue: string;
+  severity: Severity | null;
+  assignedTo: string | null;
+}
+
 interface LogRepairFormProps {
   garage: Garage;
   recentBusNumbers: string[];
+  /** Restore a previously saved form snapshot (e.g. after returning from a
+   *  similar-bus detail drill-down). */
+  initialSnapshot?: LogRepairFormSnapshot | null;
   onCancel: () => void;
   onSubmit: (draft: LogRepairDraft) => void;
   /** Called when the mechanic taps into a related bus from the similarity
-   *  peek. Parent should close the form and open the bus detail panel. */
-  onViewBus?: (bus: Bus) => void;
+   *  peek. Parent should close the form and open the bus detail panel.
+   *  The snapshot contains the current form state so it can be restored. */
+  onViewBus?: (bus: Bus, snapshot: LogRepairFormSnapshot) => void;
 }
 
 const SEVERITY_ORDER: Severity[] = ["critical", "high", "routine"];
@@ -50,15 +64,16 @@ const SEVERITY_ORDER: Severity[] = ["critical", "high", "routine"];
 export function LogRepairForm({
   garage,
   recentBusNumbers,
+  initialSnapshot,
   onCancel,
   onSubmit,
   onViewBus,
 }: LogRepairFormProps) {
-  const [busId, setBusId] = useState<number | null>(null);
-  const [busQuery, setBusQuery] = useState("");
-  const [issue, setIssue] = useState("");
-  const [severity, setSeverity] = useState<Severity | null>(null);
-  const [assignedTo, setAssignedTo] = useState<string | null>(CURRENT_MECHANIC);
+  const [busId, setBusId] = useState<number | null>(initialSnapshot?.busId ?? null);
+  const [busQuery, setBusQuery] = useState(initialSnapshot?.busQuery ?? "");
+  const [issue, setIssue] = useState(initialSnapshot?.issue ?? "");
+  const [severity, setSeverity] = useState<Severity | null>(initialSnapshot?.severity ?? null);
+  const [assignedTo, setAssignedTo] = useState<string | null>(initialSnapshot?.assignedTo ?? CURRENT_MECHANIC);
 
   const issueInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,7 +114,7 @@ export function LogRepairForm({
   const handleOpenSimilarBus = (matchBusId: number) => {
     if (!onViewBus) return;
     const bus = buses.find((b) => b.id === matchBusId);
-    if (bus) onViewBus(bus);
+    if (bus) onViewBus(bus, { busId, busQuery, issue, severity, assignedTo });
   };
 
   const recentBuses = useMemo(() => {
@@ -116,7 +131,7 @@ export function LogRepairForm({
     const q = busQuery.trim();
     if (!q) return [];
     return garageBuses
-      .filter((b) => b.busNumber.startsWith(q.padStart(Math.min(q.length, 3), "0")) || b.busNumber.startsWith(q))
+      .filter((b) => b.busNumber.startsWith(q.padStart(3, "0")) || b.busNumber.startsWith(q))
       .slice(0, 12);
   }, [busQuery, selectedBus, garageBuses]);
 

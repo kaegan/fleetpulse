@@ -4,7 +4,10 @@ import { useMemo } from "react";
 import { KpiCard } from "./kpi-card";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
-import { availabilityHistory } from "@/data/availability-history";
+import {
+  availabilityHistory,
+  depotAvailabilityHistory,
+} from "@/data/availability-history";
 import { getYesterdayCount } from "@/data/status-history";
 import type { BusStatus } from "@/data/types";
 import {
@@ -61,10 +64,16 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
     [scopedBuses, scopedWorkOrders]
   );
 
-  // Yesterday values come from the 30-day status history which is pinned to
-  // the unfiltered fleet. When scoped to a single depot we skip the delta/
-  // forecast footer rather than fabricate a per-depot history.
-  const showCountFooter = scope === "all";
+  // Depot-aware sparkline: fleet-wide when "all", per-depot otherwise.
+  const sparkline =
+    scope === "all"
+      ? availabilityHistory
+      : depotAvailabilityHistory[scope];
+
+  // Yesterday helper: passes the garage when scoped so we pull from the
+  // per-depot status history series.
+  const yesterday = (status: BusStatus) =>
+    getYesterdayCount(status, scope === "all" ? undefined : scope);
 
   const p = KPI_PILLS;
 
@@ -88,9 +97,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         pillIcon={<IconGaugeFillDuo18 />}
         forecast={forecastRate}
         forecastCount={forecastCount}
-        // Sparkline reflects fleet-wide history; hide it when scoped to one
-        // depot so the trendline isn't misread as that depot's history.
-        sparklineData={scope === "all" ? availabilityHistory : undefined}
+        sparklineData={sparkline}
       />
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <KpiCard
@@ -100,10 +107,8 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           pillColor={p.Running.color}
           pillBg={p.Running.bg}
           pillIcon={<IconBoltSpeedFillDuo18 />}
-          yesterdayValue={
-            showCountFooter ? getYesterdayCount("running") : undefined
-          }
-          forecastValue={showCountFooter ? forecastCounts.running : undefined}
+          yesterdayValue={yesterday("running")}
+          forecastValue={forecastCounts.running}
           deltaDirection="up-is-good"
           onClick={() => onOpenStatusList("running")}
           ariaLabel={`Show ${counts.running} running buses`}
@@ -115,12 +120,8 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           pillColor={p["Preventive Maintenance Due"].color}
           pillBg={p["Preventive Maintenance Due"].bg}
           pillIcon={<IconWrenchFillDuo18 />}
-          yesterdayValue={
-            showCountFooter ? getYesterdayCount("pm-due") : undefined
-          }
-          forecastValue={
-            showCountFooter ? forecastCounts["pm-due"] : undefined
-          }
+          yesterdayValue={yesterday("pm-due")}
+          forecastValue={forecastCounts["pm-due"]}
           deltaDirection="down-is-good"
           onClick={() => onOpenStatusList("pm-due")}
           ariaLabel={`Show ${counts["pm-due"]} buses due for preventive maintenance`}
@@ -132,12 +133,8 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           pillColor={p["In Maintenance"].color}
           pillBg={p["In Maintenance"].bg}
           pillIcon={<IconGearsFillDuo18 />}
-          yesterdayValue={
-            showCountFooter ? getYesterdayCount("in-maintenance") : undefined
-          }
-          forecastValue={
-            showCountFooter ? forecastCounts["in-maintenance"] : undefined
-          }
+          yesterdayValue={yesterday("in-maintenance")}
+          forecastValue={forecastCounts["in-maintenance"]}
           deltaDirection="down-is-good"
           onClick={() => onOpenStatusList("in-maintenance")}
           ariaLabel={`Show ${counts["in-maintenance"]} buses in maintenance`}
@@ -149,9 +146,8 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           pillColor={p["Road Calls"].color}
           pillBg={p["Road Calls"].bg}
           pillIcon={<IconSirenFillDuo18 />}
-          yesterdayValue={
-            showCountFooter ? getYesterdayCount("road-call") : undefined
-          }
+          yesterdayValue={yesterday("road-call")}
+          forecastValue={forecastCounts["road-call"]}
           deltaDirection="down-is-good"
           onClick={() => onOpenStatusList("road-call")}
           ariaLabel={`Show ${counts["road-call"]} buses on road call`}
