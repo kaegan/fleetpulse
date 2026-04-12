@@ -67,12 +67,13 @@ function ResponsiveSheet({
   if (isMobile) {
     return (
       <ResponsiveSheetContext.Provider value={value}>
-        {/* handleOnly: only the <Drawer.Handle> drags, body scrolls freely.
-         * Without this, vaul's scrollLockTimeout (500ms) means after scrolling
-         * the body, you have to wait half a second before drag-dismiss works
-         * again — which feels broken. With handleOnly, the body and the
-         * handle are completely independent: scroll any time, drag any time. */}
-        <Drawer open={open} onOpenChange={onOpenChange} handleOnly>
+        {/* Google Maps-style drag: swipe down from anywhere on the sheet to
+         * dismiss, not just the handle strip. vaul natively disambiguates
+         * scroll vs drag — when the scrollable body is at the top, a
+         * downward swipe starts the dismiss gesture; when scrolled down,
+         * it scrolls normally. The handle still works as a dedicated drag
+         * area regardless of scroll position. */}
+        <Drawer open={open} onOpenChange={onOpenChange}>
           {children}
         </Drawer>
       </ResponsiveSheetContext.Provider>
