@@ -1,6 +1,134 @@
 {
   "entries": [
     {
+      "id": "2026-04-12-pm-compliance-mttr",
+      "date": "2026-04-12",
+      "title": "PM compliance rate and MTTR now on the dashboard",
+      "body": "Ops now sees Preventive Maintenance compliance rate and mean time to repair alongside fleet availability — the two numbers fleet managers track most.",
+      "category": "feature",
+      "prNumber": 66
+    },
+    {
+      "id": "2026-04-12-kpi-deltas",
+      "date": "2026-04-12",
+      "title": "KPI cards show whether things are trending up or down",
+      "body": "Every KPI on the Ops dashboard now shows a directional delta so you can tell at a glance whether availability, repair time, and compliance are improving or slipping.",
+      "category": "improvement",
+      "prNumber": 60
+    },
+    {
+      "id": "2026-04-12-schedule-pm-sticky",
+      "date": "2026-04-12",
+      "title": "\"Schedule PM service\" stays in reach as you scroll",
+      "body": "The button to schedule a preventive maintenance no longer disappears when you scroll through an overdue bus's detail panel — it sticks to the bottom of the drawer.",
+      "category": "improvement",
+      "prNumber": 64
+    },
+    {
+      "id": "2026-04-12-interaction-bugs",
+      "date": "2026-04-12",
+      "title": "Fixed: search, stale panels, and depot predictions",
+      "body": "Squashed four bugs: bus ID search not matching, forms remembering stale values, side panels not refreshing on new selections, and depot predictions falling out of sync.",
+      "category": "fix",
+      "prNumber": 62
+    },
+    {
+      "id": "2026-04-11-parts-visibility",
+      "date": "2026-04-11",
+      "title": "See parts risk before a job stalls",
+      "body": "Ops gets a stockout risk flag on any part that might run dry before a job completes. Mechanics see a line-by-line parts list directly on each work order card.",
+      "category": "feature",
+      "prNumber": 58
+    },
+    {
+      "id": "2026-04-11-six-stage-kanban",
+      "date": "2026-04-11",
+      "title": "Mechanic board now mirrors your real shop stages",
+      "body": "The Service Board swim lanes match the six stages mechanics actually use — Intake, Diagnosis, Parts, In Repair, QC, and Complete — with a parts gate that flags jobs waiting on stock.",
+      "category": "improvement",
+      "prNumber": 47
+    },
+    {
+      "id": "2026-04-11-held-stage",
+      "date": "2026-04-11",
+      "title": "\"Held\" is now a real pipeline stage",
+      "body": "Work orders waiting on outside factors — insurance sign-off, inspections, or parts on order — move to a dedicated Held column instead of lingering in a limbo stage.",
+      "category": "improvement",
+      "prNumber": 52
+    },
+    {
+      "id": "2026-04-11-pm-scheduling-ops",
+      "date": "2026-04-11",
+      "title": "Scheduling a PM is now an Ops call",
+      "body": "\"Schedule PM service\" moved from the mechanic board to the Ops view, where the people who decide when to pull a bus out of service can act on it directly.",
+      "category": "improvement",
+      "prNumber": 53
+    },
+    {
+      "id": "2026-04-11-pm-chart-pairing",
+      "date": "2026-04-11",
+      "title": "Overdue PMs and fleet health trend now side by side",
+      "body": "Fleet Overview now puts the 30-day health trend chart next to the list of buses due for preventive maintenance, so you can see what deferring each one costs you.",
+      "category": "improvement",
+      "prNumber": 54
+    },
+    {
+      "id": "2026-04-11-service-history-drill",
+      "date": "2026-04-11",
+      "title": "Tap any service history entry to see the original work order",
+      "body": "Clicking a past repair in a bus's service history now opens the full historical work order — what was done, who did it, and what parts were used.",
+      "category": "feature",
+      "prNumber": 50
+    },
+    {
+      "id": "2026-04-11-mobile-fixes",
+      "date": "2026-04-11",
+      "title": "Mobile polish: depot switcher, bottom sheets, and layout fixes",
+      "body": "Fixed the mobile depot switcher overlapping content, bottom-sheet dismiss breaking after a scroll, Service Board layout clipping on small screens, and the sidebar staying open after tapping a nav link.",
+      "category": "fix",
+      "prNumber": 40
+    },
+    {
+      "id": "2026-04-10-wo-detail-panel",
+      "date": "2026-04-10",
+      "title": "Click any work order to drill into a full detail panel",
+      "body": "Tapping a work order anywhere in the app now opens a side panel with the full job — severity, stage, assigned mechanic, parts, and notes — without leaving your current view.",
+      "category": "feature",
+      "prNumber": 23
+    },
+    {
+      "id": "2026-04-10-kpi-drilldown",
+      "date": "2026-04-10",
+      "title": "KPI cards show yesterday's numbers and drill to the buses behind them",
+      "body": "Each Ops KPI now shows a comparison to yesterday so drift is visible at a glance, and clicking the number opens the list of buses that make up that count.",
+      "category": "improvement",
+      "prNumber": 24
+    },
+    {
+      "id": "2026-04-10-cross-garage-jtbd",
+      "date": "2026-04-10",
+      "title": "Cross-garage visibility, aging tags, and a pull-in-next prompt",
+      "body": "Bus detail panels now show repairs from both garages so teams stop duplicating work. Work orders past their SLA grow an aging tag. Ops gets a prompt to pull in the next available bus when availability dips.",
+      "category": "feature",
+      "prNumber": 22
+    },
+    {
+      "id": "2026-04-10-depot-persistence",
+      "date": "2026-04-10",
+      "title": "Pick your depot once — both views remember it",
+      "body": "Selecting North or South garage in the depot switcher now applies to Fleet Overview and Service Board simultaneously, so you stop re-filtering when you switch views.",
+      "category": "improvement",
+      "prNumber": 17
+    },
+    {
+      "id": "2026-04-10-linear-sidebar",
+      "date": "2026-04-10",
+      "title": "New sidebar with cleaner navigation",
+      "body": "The nav rail is now a Linear-style sidebar with labelled icons for Fleet Overview, Service Board, and settings — easier to read and a faster way to switch between your two main views.",
+      "category": "improvement",
+      "prNumber": 25
+    },
+    {
       "id": "2026-04-10-whats-new-profile-stub",
       "date": "2026-04-10",
       "title": "See what just shipped from your profile menu",
