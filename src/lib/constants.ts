@@ -136,7 +136,7 @@ export const STATUS_BG: Record<BusStatus, string> = {
 
 export const STATUS_LABELS: Record<BusStatus, string> = {
   running: "Running",
-  "pm-due": "PM Due",
+  "pm-due": "Preventive Maintenance Due",
   "in-maintenance": "In Maintenance",
   "road-call": "Road Call",
 };
@@ -197,7 +197,7 @@ export const BRAND_COLOR_HOVER = "#be5840";
 export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
   "Fleet Availability": { color: "#7c3aed", bg: "#f5f3ff" },
   Running: { color: "#22c55e", bg: "#f0fdf4" },
-  "PM Due": { color: "#f59e0b", bg: "#fffbeb" },
+  "Preventive Maintenance Due": { color: "#f59e0b", bg: "#fffbeb" },
   "In Maintenance": { color: "#ef4444", bg: "#fef2f2" },
   "Road Calls": { color: "#64748b", bg: "#f1f5f9" },
 };

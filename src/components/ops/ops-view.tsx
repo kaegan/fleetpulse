@@ -42,7 +42,7 @@ export function OpsView() {
     const created = addWorkOrder({
       busId: bus.id,
       busNumber: bus.busNumber,
-      issue: "PM-A service",
+      issue: "Preventive maintenance — A service",
       severity: "routine",
       stage: "triage",
       bayNumber: null,

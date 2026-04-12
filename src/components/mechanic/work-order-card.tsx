@@ -111,7 +111,7 @@ export function WorkOrderCard({
     }
     const parts: string[] = [];
     if (order.bayNumber) parts.push(`Bay ${order.bayNumber}`);
-    if (order.mechanicName) parts.push(order.mechanicName);
+    if (order.mechanicName) parts.push(`Mechanic: ${order.mechanicName}`);
     return parts.join(" · ");
   })();
 
