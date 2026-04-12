@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { buses } from "@/data/buses";
-import { busHistory, getBusHistory } from "@/data/bus-history";
+import { getBusHistory } from "@/data/bus-history";
 import { MECHANICS } from "@/data/mechanics";
 import type {
   Bus,
@@ -96,26 +96,19 @@ export function LogRepairForm({
     return getCrossGarageCallout(selectedBus, getBusHistory(selectedBus.id));
   }, [selectedBus]);
 
-  // M-4: once a symptom has been entered, look across all service history for
-  // recent jobs on *other* buses at the other garage matching the same
-  // keyword. Surfaces "has anyone else seen this?" without the mechanic having
-  // to go hunt.
+  // M-4: once a bus is selected and a symptom entered, look at that bus's own
+  // service history for recent jobs matching the same keyword. Surfaces "did
+  // this bus just have this work done?" before the mechanic commits.
   const similarIssues = useMemo<SimilarIssueMatch[]>(() => {
+    if (!selectedBus) return [];
     const trimmed = issue.trim();
     if (trimmed.length < 3) return [];
-    return getSimilarRecentIssues(trimmed, busHistory, {
+    const busOnlyHistory = { [selectedBus.id]: getBusHistory(selectedBus.id) };
+    return getSimilarRecentIssues(trimmed, busOnlyHistory, {
       withinDays: 30,
-      excludeBusId: selectedBus?.id,
-      excludeGarage: garage,
-      onlyOtherGarage: true,
     }).slice(0, 3);
-  }, [issue, selectedBus, garage]);
+  }, [issue, selectedBus]);
 
-  const handleOpenSimilarBus = (matchBusId: number) => {
-    if (!onViewBus) return;
-    const bus = buses.find((b) => b.id === matchBusId);
-    if (bus) onViewBus(bus, { busId, busQuery, issue, severity, assignedTo });
-  };
 
   const recentBuses = useMemo(() => {
     if (recentBusNumbers.length === 0) return [];
@@ -339,7 +332,6 @@ export function LogRepairForm({
           <SimilarIssuesPeek
             matches={similarIssues}
             currentGarage={garage}
-            onPickBus={onViewBus ? handleOpenSimilarBus : undefined}
           />
         )}
       </div>
@@ -543,19 +535,16 @@ function CrossGarageInlineWarning({
   );
 }
 
-// M-4: when the mechanic enters an issue, show up to 3 related jobs at the
-// other garage. Each row is tappable — opens the referenced bus's detail
-// panel so the mechanic can compare notes before committing.
+// M-4: when the mechanic has selected a bus and entered an issue, show recent
+// service history on *that same bus* matching the keyword. Surfaces "was this
+// just done?" before committing to a new ticket.
 function SimilarIssuesPeek({
   matches,
-  currentGarage,
-  onPickBus,
 }: {
   matches: SimilarIssueMatch[];
   currentGarage: Garage;
   onPickBus?: (busId: number) => void;
 }) {
-  const otherGarageLabel = currentGarage === "north" ? "South" : "North";
   return (
     <div
       className="mt-2 rounded-[12px] border border-[#e5e5e5] p-2.5"
@@ -565,13 +554,11 @@ function SimilarIssuesPeek({
         className="mb-1.5 text-[12px] font-semibold"
         style={{ color: "#6a6a6a" }}
       >
-        {matches.length} similar{" "}
-        {matches.length === 1 ? "job" : "jobs"} at {otherGarageLabel} Garage in
-        the last 30 days
+        This bus had {matches.length} similar{" "}
+        {matches.length === 1 ? "job" : "jobs"} in the last 30 days
       </div>
       <div className="flex flex-col gap-1">
         {matches.map((m) => {
-          const busNumber = String(m.busId).padStart(3, "0");
           const whenLabel =
             m.daysAgo === 0
               ? "today"
@@ -579,11 +566,8 @@ function SimilarIssuesPeek({
                 ? "yesterday"
                 : `${m.daysAgo}d ago`;
           const outcomeTag = OUTCOME_MINI[m.entry.outcome];
-          const body = (
-            <div className="flex w-full items-center gap-2 text-[12px]">
-              <span className="font-bold text-[#222222]">
-                #{busNumber}
-              </span>
+          return (
+            <div key={m.entry.id} className="flex w-full items-center gap-2 px-1 py-0.5 text-[12px]">
               <span
                 className="truncate font-medium text-[#6a6a6a]"
                 style={{ flex: 1, minWidth: 0 }}
@@ -603,24 +587,6 @@ function SimilarIssuesPeek({
                 {whenLabel}
               </span>
             </div>
-          );
-
-          if (!onPickBus) {
-            return (
-              <div key={m.entry.id} className="px-1 py-0.5">
-                {body}
-              </div>
-            );
-          }
-          return (
-            <button
-              key={m.entry.id}
-              type="button"
-              onClick={() => onPickBus(m.busId)}
-              className="rounded-[8px] px-1.5 py-1 text-left transition-colors hover:bg-[#f2f2f2] cursor-pointer"
-            >
-              {body}
-            </button>
           );
         })}
       </div>

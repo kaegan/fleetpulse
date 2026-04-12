@@ -388,7 +388,7 @@ function PartsRequiredSection({
   return (
     <>
       <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">
-        Parts Required
+        Assigned Parts
       </h3>
       <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9]">
         {parts.length > 0 ? (
