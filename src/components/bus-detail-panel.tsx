@@ -81,7 +81,7 @@ export function BusDetailPanel({
           service history.
         </ResponsiveSheetDescription>
         {renderBus && (
-          <PanelContent
+          <BusPanelContent
             bus={renderBus}
             onSelectWorkOrder={onSelectWorkOrder}
             onSchedulePm={onSchedulePm}
@@ -95,7 +95,7 @@ export function BusDetailPanel({
   );
 }
 
-function PanelContent({
+export function BusPanelContent({
   bus,
   onSelectWorkOrder,
   onSchedulePm,

@@ -1,17 +1,24 @@
 "use client";
 
+import { useRef } from "react";
 import { toast } from "sonner";
 import { KpiStrip } from "./kpi-strip";
 import { FleetHealthChart } from "./fleet-health-chart";
-import { BusDetailPanel } from "@/components/bus-detail-panel";
-import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
+import { BusPanelContent } from "@/components/bus-detail-panel";
+import { WorkOrderPanelContent } from "@/components/work-order-detail-panel";
 import {
-  StatusBusListPanel,
+  BusListPanelContent,
   getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
 import { PartsRiskPanel } from "./parts-risk-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
+import {
+  ResponsiveSheet,
+  ResponsiveSheetContent,
+  ResponsiveSheetTitle,
+  ResponsiveSheetDescription,
+} from "@/components/ui/responsive-sheet";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { usePanelNav } from "@/hooks/use-panel-nav";
@@ -33,9 +40,15 @@ export function OpsView() {
   const current = nav.current;
   const { addWorkOrder } = useWorkOrders();
 
+  // Snapshot the last non-null entry so the sheet keeps rendering its
+  // content through the close animation after the user dismisses.
+  const lastEntryRef = useRef<OpsPanelEntry | null>(null);
+  if (current !== null) lastEntryRef.current = current;
+  const renderEntry = current ?? lastEntryRef.current;
+
   // Ops-side action: scheduling a PM pulls a bus off the road and into
   // the mechanic's Intake column as a routine WO. Mechanic view leaves
-  // `onSchedulePm` undefined on BusDetailPanel so the CTA hides itself
+  // `onSchedulePm` undefined on BusPanelContent so the CTA hides itself
   // there — scheduling is an ops decision, not a wrench-turning decision.
   const handleSchedulePm = (bus: Bus) => {
     const created = addWorkOrder({
@@ -73,32 +86,15 @@ export function OpsView() {
   const openWorkOrderRoot = (wo: WorkOrder) =>
     nav.open({ kind: "workOrder", label: wo.id, workOrder: wo });
 
-  // Drill-down callbacks: the click originates from inside an already-
-  // open panel, so we `drill` to push a new entry on top. The hook
-  // handles the 320ms Radix Presence handoff and wires the back button
-  // for the new panel automatically.
+  // Drill-down callbacks: the click originates from inside the open
+  // panel, so we `drill` to push a new entry on top. The hook handles
+  // stack management and wires the back button automatically.
   const drillToBus = (bus: Bus) =>
     nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
   const drillToWorkOrder = (wo: WorkOrder) =>
     nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo });
   const drillToHistoryEntry = (entry: BusHistoryEntry, bus: Bus) =>
     nav.drill({ kind: "historyEntry", label: entry.id, entry, bus });
-
-  // Derive props for each panel from `current`. A panel is "open" only
-  // when `current` matches its kind — everything else reads null and
-  // stays closed.
-  const currentBus = current?.kind === "bus" ? current.bus : null;
-  const currentWorkOrder =
-    current?.kind === "workOrder" ? current.workOrder : null;
-  const currentWorkOrderBus = currentWorkOrder
-    ? buses.find((b) => b.id === currentWorkOrder.busId) ?? null
-    : null;
-  const currentHistoryEntry =
-    current?.kind === "historyEntry" ? current.entry : null;
-  const currentHistoryEntryBus =
-    current?.kind === "historyEntry" ? current.bus : null;
-  const currentBusListKind =
-    current?.kind === "busList" ? current.busListKind : null;
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-10">
@@ -135,39 +131,85 @@ export function OpsView() {
       </div>
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
-      <BusDetailPanel
-        bus={currentBus}
-        onClose={nav.close}
-        onSelectWorkOrder={drillToWorkOrder}
-        onSchedulePm={handleSchedulePm}
-        onSelectHistoryEntry={(entry) =>
-          drillToHistoryEntry(entry, currentBus!)
-        }
-        backLabel={currentBus ? nav.backButton?.label : undefined}
-        onBack={currentBus ? nav.backButton?.onBack : undefined}
-      />
-      <WorkOrderDetailPanel
-        order={currentWorkOrder}
-        historyEntry={currentHistoryEntry}
-        bus={currentWorkOrderBus ?? currentHistoryEntryBus}
-        onClose={nav.close}
-        onOpenBus={drillToBus}
-        backLabel={
-          currentWorkOrder || currentHistoryEntry
-            ? nav.backButton?.label
-            : undefined
-        }
-        onBack={
-          currentWorkOrder || currentHistoryEntry
-            ? nav.backButton?.onBack
-            : undefined
-        }
-      />
-      <StatusBusListPanel
-        kind={currentBusListKind}
-        onClose={nav.close}
-        onSelectBus={drillToBus}
-      />
+      {/* Single sheet — stays open throughout navigation so content
+          transitions in-place instead of closing and reopening. The
+          key on the inner div triggers a fade-in whenever the entry
+          changes (kind or record). */}
+      <ResponsiveSheet
+        open={current !== null}
+        onOpenChange={(open) => !open && nav.close()}
+      >
+        <ResponsiveSheetContent side="right" className="p-0">
+          <ResponsiveSheetTitle className="sr-only">
+            {renderEntry?.kind === "busList"
+              ? "Bus list"
+              : renderEntry?.kind === "bus"
+                ? `Bus #${renderEntry.bus.busNumber} details`
+                : renderEntry?.kind === "workOrder"
+                  ? `Work order ${renderEntry.workOrder.id} details`
+                  : renderEntry?.kind === "historyEntry"
+                    ? `Service history ${renderEntry.entry.id} details`
+                    : "Panel"}
+          </ResponsiveSheetTitle>
+          <ResponsiveSheetDescription className="sr-only">
+            {renderEntry?.kind === "busList"
+              ? "Filtered list of buses matching the selected fleet status."
+              : renderEntry?.kind === "bus"
+                ? "Vehicle info, preventive maintenance status, active work orders, and service history."
+                : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
+          </ResponsiveSheetDescription>
+          {renderEntry && (
+            <div
+              key={`${renderEntry.kind}:${renderEntry.label}`}
+              className="animate-in fade-in duration-150 h-full"
+            >
+              {renderEntry.kind === "busList" && (
+                <BusListPanelContent
+                  kind={renderEntry.busListKind}
+                  onSelectBus={drillToBus}
+                />
+              )}
+              {renderEntry.kind === "bus" && (
+                <BusPanelContent
+                  bus={renderEntry.bus}
+                  onSelectWorkOrder={drillToWorkOrder}
+                  onSchedulePm={handleSchedulePm}
+                  onSelectHistoryEntry={(entry) =>
+                    drillToHistoryEntry(entry, renderEntry.bus)
+                  }
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
+                />
+              )}
+              {(renderEntry.kind === "workOrder" ||
+                renderEntry.kind === "historyEntry") && (
+                <WorkOrderPanelContent
+                  order={
+                    renderEntry.kind === "workOrder"
+                      ? renderEntry.workOrder
+                      : null
+                  }
+                  historyEntry={
+                    renderEntry.kind === "historyEntry"
+                      ? renderEntry.entry
+                      : null
+                  }
+                  bus={
+                    renderEntry.kind === "workOrder"
+                      ? (buses.find(
+                          (b) => b.id === renderEntry.workOrder.busId
+                        ) ?? null)
+                      : renderEntry.bus
+                  }
+                  onOpenBus={drillToBus}
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
+                />
+              )}
+            </div>
+          )}
+        </ResponsiveSheetContent>
+      </ResponsiveSheet>
     </div>
   );
 }

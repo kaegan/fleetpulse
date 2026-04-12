@@ -106,14 +106,14 @@ export function StatusBusListPanel({
           Filtered list of buses matching the selected fleet status.
         </ResponsiveSheetDescription>
         {displayKind && (
-          <PanelContent kind={displayKind} onSelectBus={onSelectBus} />
+          <BusListPanelContent kind={displayKind} onSelectBus={onSelectBus} />
         )}
       </ResponsiveSheetContent>
     </ResponsiveSheet>
   );
 }
 
-function PanelContent({
+export function BusListPanelContent({
   kind,
   onSelectBus,
 }: {
