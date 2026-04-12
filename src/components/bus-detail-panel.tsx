@@ -108,12 +108,10 @@ function PanelContent({
   backLabel?: string;
   onBack?: () => void;
 }) {
-  // Scroll the sheet back to top when content swaps in place.
+  // Scroll the panel back to top when content swaps in place.
   const topRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    topRef.current
-      ?.closest('[data-slot="sheet-content"]')
-      ?.scrollTo(0, 0);
+    topRef.current?.scrollTo(0, 0);
   }, [bus.id]);
 
   const { workOrders } = useWorkOrders();
@@ -129,8 +127,9 @@ function PanelContent({
   const history = getBusHistory(bus.id);
 
   return (
-    <div ref={topRef} className="p-5 sm:p-7">
-      {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
+    <div className="flex h-full flex-col">
+      <div ref={topRef} className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-7">
+        {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* Bus number */}
       <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-[#222222]">
@@ -213,15 +212,6 @@ function PanelContent({
           <span>Due: {formatNumber(bus.nextPmDueMileage)} mi</span>
         </div>
 
-        {canSchedulePm && (
-          <Button
-            type="button"
-            onClick={() => onSchedulePm?.(bus)}
-            className="mt-4 w-full"
-          >
-            Schedule preventive maintenance
-          </Button>
-        )}
       </div>
 
       {/* Active Work Orders */}
@@ -335,6 +325,19 @@ function PanelContent({
         history={history}
         onSelectEntry={onSelectHistoryEntry}
       />
+      </div>
+
+      {canSchedulePm && (
+        <div className="shrink-0 border-t border-black/[0.06] px-5 py-4 sm:px-7">
+          <Button
+            type="button"
+            onClick={() => onSchedulePm?.(bus)}
+            className="w-full"
+          >
+            {formatNumber(Math.abs(milesLeft))} mi overdue — Schedule PM service
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
