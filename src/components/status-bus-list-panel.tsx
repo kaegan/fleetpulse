@@ -23,10 +23,7 @@ import {
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
 
-// The panel covers the four real BusStatus values plus a derived "overdue"
-// view that matches ActionCard's actionable set (past-due AND not in an
-// active WO). Hoisted so props, meta, and row helpers all share it.
-export type BusListKind = BusStatus | "overdue";
+export type BusListKind = BusStatus;
 
 interface StatusBusListPanelProps {
   kind: BusListKind | null;
@@ -75,13 +72,6 @@ const META: Record<BusListKind, StatusMeta> = {
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
     emptyMessage: "No road calls in this depot today.",
   },
-  overdue: {
-    pillLabel: "Action Needed",
-    heading: "Overdue for service",
-    subtitle: (n) =>
-      `${n} bus${n === 1 ? "" : "es"} past due and not yet in the shop. Schedule before they break down on route.`,
-    emptyMessage: "Nothing overdue right now.",
-  },
 };
 
 // Helper for back-button labels when drilling from this panel into a bus
@@ -90,11 +80,6 @@ export function getBusListPillLabel(kind: BusListKind): string {
   return META[kind].pillLabel;
 }
 
-// Rows use the same "miles overdue in coral" styling for both pm-due (a seed
-// flag) and overdue (a derived set). Helper keeps the condition readable.
-function isPmStyled(kind: BusListKind): boolean {
-  return kind === "pm-due" || kind === "overdue";
-}
 
 export function StatusBusListPanel({
   kind,
@@ -147,18 +132,6 @@ function PanelContent({
   }, [workOrders]);
 
   const rows = useMemo(() => {
-    // "Overdue" is a derived set that mirrors ActionCard exactly: buses that
-    // are past due AND not already in an active WO. This is the todo-list
-    // view — the existing "pm-due" kind is the seed-flag health view.
-    if (kind === "overdue") {
-      const busesWithActiveWO = new Set(workOrders.map((wo) => wo.busId));
-      return filterByDepot(buses, scope)
-        .filter(
-          (bus) => milesUntilPm(bus) < 0 && !busesWithActiveWO.has(bus.id)
-        )
-        .sort((a, b) => milesUntilPm(a) - milesUntilPm(b));
-    }
-
     const filtered = filterByDepot(
       buses.filter((b) => b.status === kind),
       scope
@@ -325,7 +298,7 @@ function RightValue({
   kind: BusListKind;
   workOrder: WorkOrder | null;
 }) {
-  if (isPmStyled(kind)) {
+  if (kind === "pm-due") {
     const overdueMiles = -milesUntilPm(bus);
     const isOverdue = overdueMiles > 0;
     return (
@@ -457,17 +430,37 @@ function SecondaryLine({
     );
   }
 
-  if (isPmStyled(kind)) {
+  if (kind === "pm-due") {
     return (
       <div
         style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
           fontSize: 12,
           fontWeight: 500,
           color: "#929292",
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {formatNumber(bus.mileage)} mi total · {bus.model}
+        <span>{formatNumber(bus.mileage)} mi total · {bus.model}</span>
+        {!workOrder && (
+          <span
+            style={{
+              display: "inline-flex",
+              padding: "1px 6px",
+              borderRadius: 999,
+              background: "#fff7ed",
+              color: "#b4541a",
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: "0.01em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            No active WO
+          </span>
+        )}
       </div>
     );
   }

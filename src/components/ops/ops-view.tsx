@@ -2,7 +2,6 @@
 
 import { toast } from "sonner";
 import { KpiStrip } from "./kpi-strip";
-import { ActionCard } from "./action-card";
 import { FleetHealthChart } from "./fleet-health-chart";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
@@ -128,11 +127,7 @@ export function OpsView() {
       </div>
 
       <KpiStrip onOpenStatusList={openBusList} />
-      <div className="mb-6 grid grid-cols-1 gap-5 xl:grid-cols-[5fr_7fr] xl:gap-6">
-        <ActionCard
-          onBusClick={openBusRoot}
-          onViewAll={() => openBusList("overdue")}
-        />
+      <div className="mb-6">
         <FleetHealthChart onBusClick={openBusRoot} />
       </div>
       <div className="mb-6">
