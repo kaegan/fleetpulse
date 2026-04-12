@@ -134,9 +134,10 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         </div>
       </div>
 
-      {/* Issue */}
+      {/* Issue — fixed width so the pipeline columns are always the same width */}
       <div
-        className="lg:min-w-[180px]"
+        className="lg:w-[180px] lg:shrink-0 lg:overflow-hidden lg:text-ellipsis lg:whitespace-nowrap"
+        title={order.issue}
         style={{
           fontSize: 13,
           fontWeight: 500,
