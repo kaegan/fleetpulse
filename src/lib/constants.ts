@@ -121,17 +121,25 @@ export function getStageStates(
 }
 
 export const STATUS_COLORS: Record<BusStatus, string> = {
-  running: "#22c55e",
-  "pm-due": "#f59e0b",
-  "in-maintenance": "#ef4444",
+  running: "#222222",
+  "pm-due": "#b4541a",
+  "in-maintenance": "#6a6a6a",
   "road-call": "#222222",
 };
 
 export const STATUS_BG: Record<BusStatus, string> = {
-  running: "#f0fdf4",
-  "pm-due": "#fffbeb",
-  "in-maintenance": "#fef2f2",
+  running: "#f5f5f5",
+  "pm-due": "#fdf0ed",
+  "in-maintenance": "#f5f5f5",
   "road-call": "#f5f5f5",
+};
+
+/** Text color for status badges — darker shade of each STATUS_COLORS entry. */
+export const STATUS_TEXT: Record<BusStatus, string> = {
+  running: "#222222",
+  "pm-due": "#6a3b2a",
+  "in-maintenance": "#3f3f3f",
+  "road-call": "#222222",
 };
 
 export const STATUS_LABELS: Record<BusStatus, string> = {
@@ -195,27 +203,27 @@ export const BRAND_COLOR = "#d4654a";
 export const BRAND_COLOR_HOVER = "#be5840";
 
 export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
-  "Fleet Availability": { color: "#7c3aed", bg: "#f5f3ff" },
-  Running: { color: "#22c55e", bg: "#f0fdf4" },
-  "Preventive Maintenance Due": { color: "#f59e0b", bg: "#fffbeb" },
-  "In Maintenance": { color: "#ef4444", bg: "#fef2f2" },
-  "Road Calls": { color: "#64748b", bg: "#f1f5f9" },
+  "Fleet Availability": { color: "#6a6a6a", bg: "#f5f5f5" },
+  Running: { color: "#6a6a6a", bg: "#f5f5f5" },
+  "Preventive Maintenance Due": { color: "#6a6a6a", bg: "#f5f5f5" },
+  "In Maintenance": { color: "#6a6a6a", bg: "#f5f5f5" },
+  "Road Calls": { color: "#6a6a6a", bg: "#f5f5f5" },
 };
 
 /**
- * Pill color per kanban stage. Gradient: cool upstream → amber held →
- * purple active → green terminal, preserving the existing visual rhythm.
+ * Pill color per kanban stage. Neutral across the board except Held,
+ * which keeps its warm copper accent as a genuine blocker signal.
  */
 export const KANBAN_STAGE_PILLS: Record<
   WorkOrderStage,
   { color: string; bg: string }
 > = {
-  inbound: { color: "#64748b", bg: "#f1f5f9" },
-  triage: { color: "#0ea5e9", bg: "#f0f9ff" },
-  diagnosing: { color: "#3b82f6", bg: "#eff6ff" },
+  inbound: { color: "#6a6a6a", bg: "#f5f5f5" },
+  triage: { color: "#6a6a6a", bg: "#f5f5f5" },
+  diagnosing: { color: "#6a6a6a", bg: "#f5f5f5" },
   held: { color: "#b4541a", bg: "#fff4ed" },
-  repairing: { color: "#8b5cf6", bg: "#f5f3ff" },
-  "road-test": { color: "#22c55e", bg: "#f0fdf4" },
+  repairing: { color: "#6a6a6a", bg: "#f5f5f5" },
+  "road-test": { color: "#6a6a6a", bg: "#f5f5f5" },
 };
 
 export const PARTS_STATUS_LABELS: Record<PartsStatus, string> = {

@@ -7,6 +7,8 @@ import { getBusHistory } from "@/data/bus-history";
 import {
   OUTCOME_STYLES,
   STATUS_COLORS,
+  STATUS_BG,
+  STATUS_TEXT,
   STATUS_LABELS,
   PM_INTERVAL_MILES,
   SEVERITY_COLORS,
@@ -141,16 +143,8 @@ function PanelContent({
         <span
           className="inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-[13px] font-semibold"
           style={{
-            background:
-              bus.status === "road-call" ? "#f5f5f5" : `${color}18`,
-            color:
-              bus.status === "running"
-                ? "#166534"
-                : bus.status === "pm-due"
-                  ? "#92400e"
-                  : bus.status === "in-maintenance"
-                    ? "#991b1b"
-                    : "#222222",
+            background: STATUS_BG[bus.status],
+            color: STATUS_TEXT[bus.status],
           }}
         >
           <span

@@ -243,7 +243,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                       background: STATUS_COLORS[status],
                       border:
                         status === "road-call"
-                          ? "1.5px solid #ef4444"
+                          ? "1.5px solid #dc2626"
                           : "none",
                       boxSizing: "border-box",
                     }}
@@ -278,7 +278,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y={layout.bandY - 10}
               width={width - PAD_R - dueX}
               height={layout.bandH + 18}
-              fill="#f59e0b"
+              fill="#b4541a"
               fillOpacity={0.06}
             />
 
@@ -288,7 +288,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y1={layout.bandY - 14}
               x2={dueX}
               y2={axisY}
-              stroke="#f59e0b"
+              stroke="#b4541a"
               strokeWidth={1.5}
               strokeDasharray="4 3"
             />
@@ -297,7 +297,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y={layout.bandY - 20}
               fontSize={11}
               fontWeight={600}
-              fill="#f59e0b"
+              fill="#b4541a"
               textAnchor="middle"
             >
               PM due
@@ -426,7 +426,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                     cy={p.y}
                     r={isHovered ? 7 : CIRCLE_R}
                     fill={STATUS_COLORS[p.status]}
-                    stroke={isRoadCall ? "#ef4444" : "none"}
+                    stroke={isRoadCall ? "#dc2626" : "none"}
                     strokeWidth={isRoadCall ? 1.5 : 0}
                     style={{
                       cursor: "pointer",
