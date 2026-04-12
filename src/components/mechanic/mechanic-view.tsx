@@ -3,7 +3,8 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
-import { ScopeToggle } from "./scope-toggle";
+import { MyWorkOrders } from "./my-work-orders";
+import { ScopeToggle, type Scope } from "./scope-toggle";
 import { LogRepairForm, type LogRepairFormSnapshot } from "./log-repair-form";
 import { BusPanelContent } from "@/components/bus-detail-panel";
 import { WorkOrderPanelContent } from "@/components/work-order-detail-panel";
@@ -69,8 +70,6 @@ function resolveStageTransition(
   return { stage: requested };
 }
 
-type MineScope = "mine" | "all";
-
 // Subtitle suffix keyed by global depot scope. The h1 stays "Service Board";
 // garage context comes from the top-bar dropdown, not the page header.
 const SUBTITLE: Record<"all" | "north" | "south", string> = {
@@ -90,7 +89,7 @@ type MechanicPanelEntry =
 export function MechanicView() {
   const { workOrders: orders, addWorkOrder, updateWorkOrder, completeWorkOrder } =
     useWorkOrders();
-  const [scope, setScope] = useState<MineScope>("mine");
+  const [scope, setScope] = useState<Scope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
   const formDraftRef = useRef<LogRepairFormSnapshot | null>(null);
   const { scope: depotScope } = useDepot();
@@ -233,8 +232,8 @@ export function MechanicView() {
         scope === "mine"
           ? {
               action: {
-                label: "View in All →",
-                onClick: () => setScope("all"),
+                label: "View on Board →",
+                onClick: () => setScope("board"),
               },
             }
           : undefined
@@ -250,15 +249,10 @@ export function MechanicView() {
     [orders, depotScope]
   );
 
-  const mineCount = useMemo(
-    () => garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC).length,
+  const mineOrders = useMemo(
+    () => garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC),
     [garageOrders]
   );
-
-  const visibleOrders =
-    scope === "mine"
-      ? garageOrders.filter((wo) => wo.mechanicName === CURRENT_MECHANIC)
-      : garageOrders;
 
   // Snapshot the last non-null entry so the sheet keeps rendering its
   // content through the close animation after the user dismisses.
@@ -337,7 +331,7 @@ export function MechanicView() {
         <ScopeToggle
           scope={scope}
           onChange={setScope}
-          mineCount={mineCount}
+          mineCount={mineOrders.length}
           allCount={garageOrders.length}
         />
         <Button onClick={() => setIsLogOpen(true)} className="w-full px-5 sm:w-auto">
@@ -348,13 +342,46 @@ export function MechanicView() {
         </Button>
       </div>
 
-      <KanbanBoard
-        workOrders={visibleOrders}
-        onStageChange={handleStageChange}
-        onComplete={handleComplete}
-        onSelectWorkOrder={openWorkOrderRoot}
-        onUpdateParts={handleUpdateParts}
-      />
+      {/* "Mine" or "Both" → expanded task cards */}
+      {(scope === "mine" || scope === "both") && (
+        <MyWorkOrders
+          workOrders={mineOrders}
+          onStageChange={handleStageChange}
+          onComplete={handleComplete}
+          onSelectWorkOrder={openWorkOrderRoot}
+          onUpdateParts={handleUpdateParts}
+        />
+      )}
+
+      {/* Section divider when showing both views */}
+      {scope === "both" && (
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#929292",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}
+          >
+            Garage Board
+          </span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      )}
+
+      {/* "Board" or "Both" → full kanban */}
+      {(scope === "board" || scope === "both") && (
+        <KanbanBoard
+          workOrders={garageOrders}
+          onStageChange={handleStageChange}
+          onComplete={handleComplete}
+          onSelectWorkOrder={openWorkOrderRoot}
+          onUpdateParts={handleUpdateParts}
+        />
+      )}
 
       {/* Single sheet — stays open throughout navigation so content
           transitions in-place instead of closing and reopening. */}
