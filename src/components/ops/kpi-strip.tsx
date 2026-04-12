@@ -76,7 +76,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
   // grid itself stays 1-col until sm (640px) so narrow phones don't crush
   // the pills into two skinny 160px columns.
   return (
-    <div className="mb-8 grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr] xl:gap-5">
+    <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-[1.2fr_1fr] xl:gap-5">
       <KpiCard
         label={SCOPE_LABEL[scope]}
         value={availRate}
