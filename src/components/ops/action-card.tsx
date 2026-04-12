@@ -63,7 +63,7 @@ export function ActionCard({ onBusClick, onViewAll }: ActionCardProps) {
             margin: 0,
           }}
         >
-          Nothing overdue right now. Every bus has runway before its next PM service.
+          Nothing overdue right now. Every bus has runway before its next preventive maintenance service.
         </p>
       </Card>
     );

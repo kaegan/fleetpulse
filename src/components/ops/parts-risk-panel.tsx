@@ -35,8 +35,8 @@ const MAX_ROWS = 5;
 
 const SCOPE_SUFFIX: Record<DepotScope, string> = {
   all: "across both garages",
-  north: "at North Garage",
-  south: "at South Garage",
+  north: "in garage",
+  south: "in garage",
 };
 
 export function PartsRiskPanel() {

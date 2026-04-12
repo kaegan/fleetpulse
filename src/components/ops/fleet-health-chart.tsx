@@ -200,7 +200,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               margin: 0,
             }}
           >
-            Each dot is one bus, positioned by miles until its next PM service.
+            Each dot is one bus, positioned by miles until its next preventive maintenance service.
           </p>
         </div>
 
@@ -300,7 +300,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               fill="#f59e0b"
               textAnchor="middle"
             >
-              PM Due
+              PM due
             </text>
 
             {/* Axis line */}
@@ -401,7 +401,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                   fill="#929292"
                   textAnchor="end"
                 >
-                  3,000+ mi until PM
+                  3,000+ mi until PM service
                 </text>
               </g>
             )}
@@ -508,8 +508,8 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
                 {milesUntilPm(hoveredBus) < 0
                   ? `${formatNumber(
                       Math.abs(milesUntilPm(hoveredBus))
-                    )} mi overdue for PM`
-                  : `${formatNumber(milesUntilPm(hoveredBus))} mi to next PM`}
+                    )} mi overdue for PM service`
+                  : `${formatNumber(milesUntilPm(hoveredBus))} mi to next PM service`}
               </div>
               {/* Arrow */}
               <div
@@ -565,7 +565,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               color: "#6a6a6a",
             }}
           >
-            (3,000+ mi until PM)
+            (3,000+ mi until PM service)
           </span>
         </div>
       )}

@@ -23,8 +23,8 @@ const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
 
 const SCOPE_SUFFIX: Record<"all" | "north" | "south", string> = {
   all: "across both garages",
-  north: "in North Garage",
-  south: "in South Garage",
+  north: "in garage",
+  south: "in garage",
 };
 
 interface WorkOrderTrackerProps {

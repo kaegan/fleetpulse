@@ -373,7 +373,7 @@ export function LogRepairForm({
 
       {/* Field 4: Assigned to */}
       <div>
-        <FieldLabel htmlFor="assigned-to-select">Assigned to</FieldLabel>
+        <FieldLabel htmlFor="assigned-to-select">Assigned Mechanic</FieldLabel>
         <select
           id="assigned-to-select"
           value={assignedTo ?? ""}

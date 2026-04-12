@@ -55,7 +55,7 @@ const META: Record<BusListKind, StatusMeta> = {
     emptyMessage: "No buses running in this depot.",
   },
   "pm-due": {
-    pillLabel: "PM Due",
+    pillLabel: "Preventive Maintenance Due",
     heading: "Due for preventive maintenance",
     subtitle: () =>
       `Sorted by miles overdue. Pull these in before they break down on route.`,

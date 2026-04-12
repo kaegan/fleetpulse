@@ -209,11 +209,11 @@ function PanelContent({
               value={`${formatNumber(bus.mileage)} mi`}
             />
             <MiniStat
-              label="Next PM"
+              label="Next Service"
               value={formatPmStatus(bus)}
               valueColor={pmColor(bus)}
             />
-            <MiniStat label="Last PM" value={`${formatNumber(bus.lastPmMileage)} mi`} />
+            <MiniStat label="Last Service" value={`${formatNumber(bus.lastPmMileage)} mi`} />
           </div>
           <Button
             variant="outline"
@@ -278,7 +278,7 @@ function ActiveWorkOrderBody({
       <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Assignment</h3>
       <InfoGrid>
         <InfoRow
-          label="Mechanic"
+          label="Assigned Mechanic"
           value={order.mechanicName ?? "Unassigned"}
           muted={!order.mechanicName}
         />
