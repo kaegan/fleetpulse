@@ -30,6 +30,12 @@ interface KpiCardProps {
   yesterdayValue?: number;
   forecastValue?: number;
   deltaDirection?: DeltaDirection;
+  /** Optional line shown below the main value — used for compliance cards
+   *  to surface the raw count (e.g. "10 buses overdue"). */
+  subtitle?: string;
+  /** Optional suffix appended to the footer delta value (e.g. "%" for rate
+   *  cards). Also switches delta formatting to one decimal place. */
+  footerSuffix?: string;
   /** Whole-card click — used to drill into the affected bus list. */
   onClick?: () => void;
   /** ARIA label for the clickable card. */
@@ -68,6 +74,8 @@ export function KpiCard({
   yesterdayValue,
   forecastValue,
   deltaDirection = "down-is-good",
+  subtitle,
+  footerSuffix,
   onClick,
   ariaLabel,
 }: KpiCardProps) {
@@ -157,6 +165,11 @@ export function KpiCard({
           </span>
         )}
       </div>
+      {subtitle && (
+        <p className="mt-1.5 text-[13px] font-medium" style={{ color: "#929292" }}>
+          {subtitle}
+        </p>
+      )}
       {sparklineData ? (
         <div style={{ marginTop: 20, paddingTop: 24 }}>
           <AreaChart
@@ -230,7 +243,7 @@ export function KpiCard({
               className="text-[13px] font-bold tabular-nums"
               style={{ color: deltaColor(footerDelta.delta, deltaDirection) }}
             >
-              {footerDelta.delta > 0 ? "↑" : "↓"}{Math.abs(footerDelta.delta)} {footerDelta.timeLabel}
+              {footerDelta.delta > 0 ? "↑" : "↓"}{footerSuffix ? Math.abs(footerDelta.delta).toFixed(1) : Math.abs(footerDelta.delta)}{footerSuffix ?? ""} {footerDelta.timeLabel}
             </span>
           )}
         </div>

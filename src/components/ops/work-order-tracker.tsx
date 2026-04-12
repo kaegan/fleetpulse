@@ -12,6 +12,7 @@ import {
   BRAND_COLOR,
   stageIndex,
 } from "@/lib/constants";
+import { getMTTR } from "@/lib/utils";
 import type { Severity, WorkOrder } from "@/data/types";
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
@@ -42,6 +43,8 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
     [scope, workOrders]
   );
 
+  const mttr = useMemo(() => getMTTR(scopedOrders), [scopedOrders]);
+
   const severityOrder = { critical: 0, high: 1, routine: 2 };
   const filtered =
     filter === "all"
@@ -69,17 +72,23 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
     <div>
       {/* Section header */}
       <div style={{ marginBottom: 20 }}>
-        <h2
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: "#222222",
-            letterSpacing: "-0.02em",
-            marginBottom: 4,
-          }}
-        >
-          Active Work Orders
-        </h2>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
+          <h2
+            style={{
+              fontSize: 18,
+              fontWeight: 700,
+              color: "#222222",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Active Work Orders
+          </h2>
+          {mttr !== null && (
+            <span style={{ fontSize: 13, fontWeight: 500, color: "#929292" }}>
+              Avg. repair: {mttr.toFixed(1)} days
+            </span>
+          )}
+        </div>
         <p
           style={{
             fontSize: 13,
@@ -210,7 +219,8 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         </div>
         <div
           style={{
-            minWidth: 180,
+            width: 180,
+            flexShrink: 0,
             fontSize: 11,
             fontWeight: 600,
             color: "#b5b5b5",

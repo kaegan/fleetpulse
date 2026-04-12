@@ -16,6 +16,7 @@ import {
   getForecastAvailableCount,
   getForecastCounts,
   getStatusCounts,
+  milesUntilPm,
 } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { KPI_PILLS } from "@/lib/constants";
@@ -70,6 +71,16 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
       ? availabilityHistory
       : depotAvailabilityHistory[scope];
 
+  // PM Compliance rate: buses still within their PM interval / total.
+  // Uses mileage data directly so the rate reflects every bus — not just
+  // those with "pm-due" status (which excludes buses already in the shop).
+  const pmCompliantCount = useMemo(
+    () => scopedBuses.filter((b) => milesUntilPm(b) > 0).length,
+    [scopedBuses]
+  );
+  const pmComplianceRate = (pmCompliantCount / scopedBuses.length) * 100;
+  const pmOverdueCount = scopedBuses.length - pmCompliantCount;
+
   // Yesterday helper: passes the garage when scoped so we pull from the
   // per-depot status history series.
   const yesterday = (status: BusStatus) =>
@@ -90,7 +101,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         label={SCOPE_LABEL[scope]}
         value={availRate}
         suffix="%"
-        color={availRate < 85 ? "#d4654a" : "#222222"}
+        color={availRate < 85 ? "#d4654a" : "#22c55e"}
         isPrimary
         pillColor={p["Fleet Availability"].color}
         pillBg={p["Fleet Availability"].bg}
@@ -114,17 +125,20 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           ariaLabel={`Show ${counts.running} running buses`}
         />
         <KpiCard
-          label="Preventive Maintenance Due"
-          value={counts["pm-due"]}
+          label="PM Compliance"
+          value={pmComplianceRate}
+          suffix="%"
+          subtitle={`${pmOverdueCount} ${pmOverdueCount === 1 ? "bus" : "buses"} overdue`}
           color="#222222"
-          pillColor={p["Preventive Maintenance Due"].color}
-          pillBg={p["Preventive Maintenance Due"].bg}
+          pillColor={p["PM Compliance"].color}
+          pillBg={p["PM Compliance"].bg}
           pillIcon={<IconWrenchFillDuo18 />}
-          yesterdayValue={yesterday("pm-due")}
-          forecastValue={forecastCounts["pm-due"]}
-          deltaDirection="down-is-good"
+          yesterdayValue={((scopedBuses.length - yesterday("pm-due")) / scopedBuses.length) * 100}
+          forecastValue={((scopedBuses.length - forecastCounts["pm-due"]) / scopedBuses.length) * 100}
+          deltaDirection="up-is-good"
+          footerSuffix="%"
           onClick={() => onOpenStatusList("pm-due")}
-          ariaLabel={`Show ${counts["pm-due"]} buses due for preventive maintenance`}
+          ariaLabel={`PM compliance: ${pmComplianceRate.toFixed(1)}%, ${pmOverdueCount} buses overdue`}
         />
         <KpiCard
           label="In Maintenance"

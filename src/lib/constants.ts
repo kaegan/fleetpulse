@@ -205,9 +205,12 @@ export const BRAND_COLOR = "#d4654a";
 export const BRAND_COLOR_HOVER = "#be5840";
 
 export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
-  "Fleet Availability": { color: "#6a6a6a", bg: "#f5f5f5" },
+  // Brand coral — the primary metric, deserves hierarchy signal
+  "Fleet Availability": { color: "#d4654a", bg: "#fdf0ed" },
   Running: { color: "#6a6a6a", bg: "#f5f5f5" },
   "Preventive Maintenance Due": { color: "#6a6a6a", bg: "#f5f5f5" },
+  // Warm amber — most actionable metric, compliance rate needs attention when low
+  "PM Compliance": { color: "#92400e", bg: "#fff7ed" },
   "In Maintenance": { color: "#6a6a6a", bg: "#f5f5f5" },
   "Road Calls": { color: "#6a6a6a", bg: "#f5f5f5" },
 };

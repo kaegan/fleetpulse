@@ -19,6 +19,7 @@ import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
+import { analytics } from "@/lib/analytics";
 import { usePanelNav } from "@/hooks/use-panel-nav";
 import type {
   BlockReason,
@@ -101,12 +102,20 @@ export function MechanicView() {
   // Root-entry opens come from the page (kanban, intake form). These
   // reset the stack so no back button is shown on the target.
   const openBusRoot = useCallback(
-    (bus: Bus) =>
-      nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus }),
-    [nav]
+    (bus: Bus) => {
+      analytics.busDetailOpened(bus.id, "kanban");
+      if (depotScope !== "all" && bus.garage !== depotScope) {
+        analytics.crossGaragePeek(bus.id, depotScope, bus.garage);
+      }
+      nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
+    },
+    [nav, depotScope]
   );
   const openWorkOrderRoot = useCallback(
-    (wo: WorkOrder) => nav.open({ kind: "workOrder", label: wo.id, workOrder: wo }),
+    (wo: WorkOrder) => {
+      analytics.woDetailOpened(wo.id, "kanban");
+      nav.open({ kind: "workOrder", label: wo.id, workOrder: wo });
+    },
     [nav]
   );
 
@@ -114,12 +123,20 @@ export function MechanicView() {
   // top of the stack and let the hook handle the 320ms handoff + back
   // wiring.
   const drillToBus = useCallback(
-    (bus: Bus) =>
-      nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus }),
-    [nav]
+    (bus: Bus) => {
+      analytics.busDetailOpened(bus.id, "history");
+      if (depotScope !== "all" && bus.garage !== depotScope) {
+        analytics.crossGaragePeek(bus.id, depotScope, bus.garage);
+      }
+      nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
+    },
+    [nav, depotScope]
   );
   const drillToWorkOrder = useCallback(
-    (wo: WorkOrder) => nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo }),
+    (wo: WorkOrder) => {
+      analytics.woDetailOpened(wo.id, "drilldown");
+      nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo });
+    },
     [nav]
   );
   const drillToHistoryEntry = useCallback(
@@ -149,6 +166,8 @@ export function MechanicView() {
       if (notice) toast(notice);
 
       if (stage === wo.stage) return;
+
+      analytics.woStageAdvanced(woId, wo.stage, stage);
 
       const now = new Date().toISOString();
       updateWorkOrder(woId, {
