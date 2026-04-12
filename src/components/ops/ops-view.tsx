@@ -11,7 +11,6 @@ import {
   getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
-import { TriagePanel } from "./triage-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
@@ -135,7 +134,6 @@ export function OpsView() {
         />
         <FleetHealthChart onBusClick={openBusRoot} />
       </div>
-      <TriagePanel onSelectWorkOrder={openWorkOrderRoot} />
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
       <BusDetailPanel
