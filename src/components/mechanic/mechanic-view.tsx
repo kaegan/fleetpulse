@@ -19,6 +19,7 @@ import type {
   Bus,
   BusHistoryEntry,
   Garage,
+  PartRequirement,
   PartsStatus,
   Severity,
   WorkOrder,
@@ -157,6 +158,13 @@ export function MechanicView() {
   const handleUpdateParts = useCallback(
     (woId: string, partsStatus: PartsStatus) => {
       updateWorkOrder(woId, { partsStatus });
+    },
+    [updateWorkOrder]
+  );
+
+  const handleUpdatePartsList = useCallback(
+    (woId: string, parts: PartRequirement[]) => {
+      updateWorkOrder(woId, { parts });
     },
     [updateWorkOrder]
   );
@@ -342,6 +350,7 @@ export function MechanicView() {
             ? nav.backButton?.onBack
             : undefined
         }
+        onUpdateParts={handleUpdatePartsList}
       />
       <Dialog open={isLogOpen} onOpenChange={setIsLogOpen}>
         <DialogContent

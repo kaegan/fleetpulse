@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder } from "@/data/types";
+import { parts as partsCatalog } from "@/data/parts";
 import {
   STAGE_LABELS,
   PARTS_STATUS_LABELS,
@@ -24,6 +25,12 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface WorkOrderDetailPanelProps {
   order: WorkOrder | null;
@@ -41,6 +48,8 @@ interface WorkOrderDetailPanelProps {
   // from another panel (e.g. a bus's active work order) — see usePanelNav.
   backLabel?: string;
   onBack?: () => void;
+  /** When provided, the parts section shows add/remove controls. Mechanic view passes this. */
+  onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
 }
 
 export function WorkOrderDetailPanel({
@@ -51,6 +60,7 @@ export function WorkOrderDetailPanel({
   onOpenBus,
   backLabel,
   onBack,
+  onUpdateParts,
 }: WorkOrderDetailPanelProps) {
   // Snapshot the last non-null record so the sheet keeps rendering its
   // contents through the close animation after the parent clears the props.
@@ -100,6 +110,7 @@ export function WorkOrderDetailPanel({
             onOpenBus={onOpenBus}
             backLabel={backLabel}
             onBack={onBack}
+            onUpdateParts={onUpdateParts}
           />
         )}
       </ResponsiveSheetContent>
@@ -114,6 +125,7 @@ function PanelContent({
   onOpenBus,
   backLabel,
   onBack,
+  onUpdateParts,
 }: {
   order: WorkOrder | null;
   historyEntry: BusHistoryEntry | null;
@@ -121,6 +133,7 @@ function PanelContent({
   onOpenBus: (bus: Bus) => void;
   backLabel?: string;
   onBack?: () => void;
+  onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
 }) {
   // Exactly one of order / historyEntry is non-null (enforced by the
   // wrapper's snapshot effect). Pull a few shared header fields off
@@ -172,7 +185,7 @@ function PanelContent({
       </div>
 
       {order ? (
-        <ActiveWorkOrderBody order={order} />
+        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} />
       ) : (
         <HistoryEntryBody entry={historyEntry!} />
       )}
@@ -224,7 +237,13 @@ function PanelContent({
 // Sibling components keep PanelContent readable. Both rely on the local
 // InfoGrid/InfoRow/MiniStat helpers below.
 
-function ActiveWorkOrderBody({ order }: { order: WorkOrder }) {
+function ActiveWorkOrderBody({
+  order,
+  onUpdateParts,
+}: {
+  order: WorkOrder;
+  onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+}) {
   return (
     <>
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
@@ -275,6 +294,9 @@ function ActiveWorkOrderBody({ order }: { order: WorkOrder }) {
         />
       </InfoGrid>
 
+      {/* ── Parts Required ─────────────────────────────────────────────── */}
+      <PartsRequiredSection order={order} onUpdateParts={onUpdateParts} />
+
       {/* ── Timeline ───────────────────────────────────────────────────── */}
       <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Timeline</h3>
       <InfoGrid cols={2}>
@@ -314,6 +336,155 @@ function HistoryEntryBody({ entry }: { entry: BusHistoryEntry }) {
         </>
       )}
     </>
+  );
+}
+
+// ── Parts Required section ───────────────────────────────────────────────
+
+function PartsRequiredSection({
+  order,
+  onUpdateParts,
+}: {
+  order: WorkOrder;
+  onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+}) {
+  const parts = order.parts ?? [];
+  if (parts.length === 0 && !onUpdateParts) return null;
+
+  const handleRemove = (partId: string) => {
+    onUpdateParts?.(order.id, parts.filter((p) => p.partId !== partId));
+  };
+
+  const handleAdd = (partId: string) => {
+    const catalogEntry = partsCatalog.find((p) => p.id === partId);
+    if (!catalogEntry) return;
+    onUpdateParts?.(order.id, [
+      ...parts,
+      { partId: catalogEntry.id, partName: catalogEntry.name, qty: 1 },
+    ]);
+  };
+
+  // Parts from catalog not already on this WO.
+  const availableToAdd = partsCatalog.filter(
+    (cp) => !parts.some((p) => p.partId === cp.id)
+  );
+
+  return (
+    <>
+      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">
+        Parts Required
+      </h3>
+      <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9]">
+        {parts.length > 0 ? (
+          <div className="divide-y divide-black/[0.04]">
+            {parts.map((req) => (
+              <PartRow
+                key={req.partId}
+                req={req}
+                garage={order.garage}
+                editable={!!onUpdateParts}
+                onRemove={() => handleRemove(req.partId)}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="px-3.5 py-3 text-[13px] font-medium text-[#b5b5b5]">
+            No parts logged yet.
+          </p>
+        )}
+        {onUpdateParts && availableToAdd.length > 0 && (
+          <div className="border-t border-black/[0.04] px-3.5 py-2.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="text-[12px] font-semibold text-[#929292] transition-colors hover:text-[#b4541a]"
+                >
+                  + Add part
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="max-h-64 overflow-y-auto">
+                {availableToAdd.map((cp) => (
+                  <DropdownMenuItem key={cp.id} onClick={() => handleAdd(cp.id)}>
+                    {cp.name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function PartRow({
+  req,
+  garage,
+  editable,
+  onRemove,
+}: {
+  req: PartRequirement;
+  garage: Garage;
+  editable: boolean;
+  onRemove: () => void;
+}) {
+  const catalogPart = partsCatalog.find((p) => p.id === req.partId);
+  const garageStock = catalogPart
+    ? garage === "north"
+      ? catalogPart.stockNorth
+      : catalogPart.stockSouth
+    : null;
+
+  const sufficient = garageStock !== null && garageStock >= req.qty;
+  const stockLabel =
+    garageStock === null
+      ? "Unknown"
+      : garageStock === 0
+        ? "Out of stock"
+        : sufficient
+          ? `${garageStock} in stock`
+          : `${garageStock} left`;
+  const stockColor =
+    garageStock === null
+      ? "#929292"
+      : garageStock === 0
+        ? "#991b1b"
+        : sufficient
+          ? "#166534"
+          : "#92400e";
+
+  return (
+    <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+      <div className="min-w-0">
+        <span className="text-[13px] font-semibold text-[#222222]">
+          {req.partName}
+        </span>
+        <span className="ml-1.5 text-[12px] font-medium text-[#929292]">
+          &times;{req.qty}
+        </span>
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        <span
+          className="text-[12px] font-semibold"
+          style={{ color: stockColor }}
+        >
+          {stockLabel}
+        </span>
+        {editable && (
+          <button
+            type="button"
+            onClick={onRemove}
+            className="flex h-5 w-5 items-center justify-center rounded-full text-[#b5b5b5] transition-colors hover:bg-[#fef2f2] hover:text-[#991b1b]"
+            aria-label={`Remove ${req.partName}`}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
