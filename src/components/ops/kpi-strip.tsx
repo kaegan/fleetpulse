@@ -26,8 +26,8 @@ import {
 
 const SCOPE_LABEL: Record<"all" | "north" | "south", string> = {
   all: "Fleet Availability",
-  north: "North Availability",
-  south: "South Availability",
+  north: "Availability",
+  south: "Availability",
 };
 
 interface KpiStripProps {
@@ -109,11 +109,11 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           ariaLabel={`Show ${counts.running} running buses`}
         />
         <KpiCard
-          label="PM Due"
+          label="Preventive Maintenance Due"
           value={counts["pm-due"]}
           color="#f59e0b"
-          pillColor={p["PM Due"].color}
-          pillBg={p["PM Due"].bg}
+          pillColor={p["Preventive Maintenance Due"].color}
+          pillBg={p["Preventive Maintenance Due"].bg}
           pillIcon={<IconWrenchFillDuo18 />}
           yesterdayValue={
             showCountFooter ? getYesterdayCount("pm-due") : undefined

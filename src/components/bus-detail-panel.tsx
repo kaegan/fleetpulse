@@ -197,7 +197,7 @@ function PanelContent({
         </div>
 
         <div className="flex justify-between text-[11px] font-medium text-[#b5b5b5]">
-          <span>Last PM: {formatNumber(bus.lastPmMileage)} mi</span>
+          <span>Last service: {formatNumber(bus.lastPmMileage)} mi</span>
           <span>Due: {formatNumber(bus.nextPmDueMileage)} mi</span>
         </div>
 
@@ -207,7 +207,7 @@ function PanelContent({
             onClick={() => onSchedulePm?.(bus)}
             className="mt-4 w-full"
           >
-            Schedule PM service
+            Schedule preventive maintenance
           </Button>
         )}
       </div>
@@ -290,7 +290,7 @@ function PanelContent({
                         color: "#b5b5b5",
                       }}
                     >
-                      Assigned: {wo.mechanicName}
+                      Mechanic: {wo.mechanicName}
                     </div>
                   )}
                 </button>
