@@ -210,7 +210,8 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         </div>
         <div
           style={{
-            minWidth: 180,
+            width: 180,
+            flexShrink: 0,
             fontSize: 11,
             fontWeight: 600,
             color: "#b5b5b5",
