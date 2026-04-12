@@ -61,6 +61,10 @@ export function BusDetailPanel({
     if (bus) setDisplayBus(bus);
   }, [bus]);
 
+  // Prefer the live prop when opening so we never flash a stale bus from a
+  // previous session; fall back to the snapshot only during close animation.
+  const renderBus = bus ?? displayBus;
+
   return (
     <ResponsiveSheet
       open={Boolean(bus)}
@@ -68,15 +72,15 @@ export function BusDetailPanel({
     >
       <ResponsiveSheetContent side="right" className="p-0">
         <ResponsiveSheetTitle className="sr-only">
-          {displayBus ? `Bus #${displayBus.busNumber} details` : "Bus details"}
+          {renderBus ? `Bus #${renderBus.busNumber} details` : "Bus details"}
         </ResponsiveSheetTitle>
         <ResponsiveSheetDescription className="sr-only">
           Vehicle info, preventive maintenance status, active work orders, and
           service history.
         </ResponsiveSheetDescription>
-        {displayBus && (
+        {renderBus && (
           <PanelContent
-            bus={displayBus}
+            bus={renderBus}
             onSelectWorkOrder={onSelectWorkOrder}
             onSchedulePm={onSchedulePm}
             onSelectHistoryEntry={onSelectHistoryEntry}

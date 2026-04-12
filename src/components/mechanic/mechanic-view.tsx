@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { KanbanBoard } from "./kanban-board";
 import { ScopeToggle } from "./scope-toggle";
-import { LogRepairForm } from "./log-repair-form";
+import { LogRepairForm, type LogRepairFormSnapshot } from "./log-repair-form";
 import { BusDetailPanel } from "@/components/bus-detail-panel";
 import { WorkOrderDetailPanel } from "@/components/work-order-detail-panel";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -85,6 +85,7 @@ export function MechanicView() {
     useWorkOrders();
   const [scope, setScope] = useState<MineScope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
+  const formDraftRef = useRef<LogRepairFormSnapshot | null>(null);
   const { scope: depotScope } = useDepot();
 
   const nav = usePanelNav<MechanicPanelEntry>();
@@ -362,12 +363,19 @@ export function MechanicView() {
           <LogRepairForm
             garage={newRepairGarage}
             recentBusNumbers={recentBusNumbers}
-            onCancel={() => setIsLogOpen(false)}
-            onSubmit={handleCreate}
-            onViewBus={(bus) => {
-              // Dismiss the form and open the detail panel so the mechanic
-              // can inspect the related bus's history. They can re-open the
-              // form after if they still want to log the current repair.
+            initialSnapshot={formDraftRef.current}
+            onCancel={() => {
+              formDraftRef.current = null;
+              setIsLogOpen(false);
+            }}
+            onSubmit={(draft) => {
+              formDraftRef.current = null;
+              handleCreate(draft);
+            }}
+            onViewBus={(bus, snapshot) => {
+              // Save the in-progress form state so it can be restored when
+              // the mechanic re-opens "Log new repair" after reviewing.
+              formDraftRef.current = snapshot;
               setIsLogOpen(false);
               openBusRoot(bus);
             }}

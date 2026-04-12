@@ -83,10 +83,16 @@ export function WorkOrderDetailPanel({
     if (bus) setDisplayBus(bus);
   }, [order, historyEntry, bus]);
 
-  const titleText = displayOrder
-    ? `Work order ${displayOrder.id} details`
-    : displayHistoryEntry
-      ? `Service history ${displayHistoryEntry.id} details`
+  // Prefer live props when opening so we never flash stale data from a
+  // previous panel session; fall back to snapshots only during close.
+  const renderOrder = order ?? displayOrder;
+  const renderHistoryEntry = historyEntry ?? displayHistoryEntry;
+  const renderBus = bus ?? displayBus;
+
+  const titleText = renderOrder
+    ? `Work order ${renderOrder.id} details`
+    : renderHistoryEntry
+      ? `Service history ${renderHistoryEntry.id} details`
       : "Work order details";
 
   return (
@@ -102,11 +108,11 @@ export function WorkOrderDetailPanel({
           Issue, stage progress, assignment, timeline, and the bus this work
           order is attached to.
         </ResponsiveSheetDescription>
-        {(displayOrder || displayHistoryEntry) && (
+        {(renderOrder || renderHistoryEntry) && (
           <PanelContent
-            order={displayOrder}
-            historyEntry={displayHistoryEntry}
-            bus={displayBus}
+            order={renderOrder}
+            historyEntry={renderHistoryEntry}
+            bus={renderBus}
             onOpenBus={onOpenBus}
             backLabel={backLabel}
             onBack={onBack}
