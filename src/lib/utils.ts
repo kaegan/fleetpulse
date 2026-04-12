@@ -265,6 +265,21 @@ export function getSimilarRecentIssues(
   return matches.sort((a, b) => a.daysAgo - b.daysAgo);
 }
 
+/** Mean time to repair in days, computed from WOs that have reached
+ *  road-test stage. Uses time from createdAt (intake) to stageEnteredAt
+ *  (when road-test started) as the repair cycle duration.
+ *  Returns null when no road-test WOs exist. */
+export function getMTTR(workOrders: WorkOrder[]): number | null {
+  const roadTestWOs = workOrders.filter((wo) => wo.stage === "road-test");
+  if (roadTestWOs.length === 0) return null;
+  const total = roadTestWOs.reduce((sum, wo) => {
+    const start = new Date(wo.createdAt).getTime();
+    const end = new Date(wo.stageEnteredAt).getTime();
+    return sum + Math.max(0, (end - start) / (1000 * 60 * 60 * 24));
+  }, 0);
+  return total / roadTestWOs.length;
+}
+
 /** Hours (integer, non-negative) between an ISO timestamp and `now`. */
 export function hoursSince(isoDate: string, now: Date = new Date()): number {
   const then = new Date(isoDate);

@@ -208,6 +208,7 @@ export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
   "Fleet Availability": { color: "#6a6a6a", bg: "#f5f5f5" },
   Running: { color: "#6a6a6a", bg: "#f5f5f5" },
   "Preventive Maintenance Due": { color: "#6a6a6a", bg: "#f5f5f5" },
+  "PM Compliance": { color: "#6a6a6a", bg: "#f5f5f5" },
   "In Maintenance": { color: "#6a6a6a", bg: "#f5f5f5" },
   "Road Calls": { color: "#6a6a6a", bg: "#f5f5f5" },
 };

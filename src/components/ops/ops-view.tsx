@@ -15,6 +15,9 @@ import { WorkOrderTracker } from "./work-order-tracker";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { usePanelNav } from "@/hooks/use-panel-nav";
+import { useDepot } from "@/hooks/use-depot";
+import { milesUntilPm } from "@/lib/utils";
+import { analytics } from "@/lib/analytics";
 import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 
 // Panels on Fleet Overview form a drill-down graph (list → bus → WO,
@@ -32,6 +35,7 @@ export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
   const current = nav.current;
   const { addWorkOrder } = useWorkOrders();
+  const { scope: depotScope } = useDepot();
 
   // Ops-side action: scheduling a PM pulls a bus off the road and into
   // the mechanic's Intake column as a routine WO. Mechanic view leaves
@@ -49,6 +53,7 @@ export function OpsView() {
       mechanicName: null,
       partsStatus: "not-needed",
     });
+    analytics.pmServiceScheduled(bus.id, Math.abs(milesUntilPm(bus)));
     toast(
       <span>
         Scheduled — Bus #{bus.busNumber} added to Service Board intake as{" "}
@@ -68,19 +73,33 @@ export function OpsView() {
       label: getBusListPillLabel(busListKind),
       busListKind,
     });
-  const openBusRoot = (bus: Bus) =>
+  const openBusRoot = (bus: Bus) => {
+    analytics.busDetailOpened(bus.id, "chart");
+    if (depotScope !== "all" && bus.garage !== depotScope) {
+      analytics.crossGaragePeek(bus.id, depotScope, bus.garage);
+    }
     nav.open({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
-  const openWorkOrderRoot = (wo: WorkOrder) =>
+  };
+  const openWorkOrderRoot = (wo: WorkOrder) => {
+    analytics.woDetailOpened(wo.id, "tracker");
     nav.open({ kind: "workOrder", label: wo.id, workOrder: wo });
+  };
 
   // Drill-down callbacks: the click originates from inside an already-
   // open panel, so we `drill` to push a new entry on top. The hook
   // handles the 320ms Radix Presence handoff and wires the back button
   // for the new panel automatically.
-  const drillToBus = (bus: Bus) =>
+  const drillToBus = (bus: Bus) => {
+    analytics.busDetailOpened(bus.id, "history");
+    if (depotScope !== "all" && bus.garage !== depotScope) {
+      analytics.crossGaragePeek(bus.id, depotScope, bus.garage);
+    }
     nav.drill({ kind: "bus", label: `Bus #${bus.busNumber}`, bus });
-  const drillToWorkOrder = (wo: WorkOrder) =>
+  };
+  const drillToWorkOrder = (wo: WorkOrder) => {
+    analytics.woDetailOpened(wo.id, "drilldown");
     nav.drill({ kind: "workOrder", label: wo.id, workOrder: wo });
+  };
   const drillToHistoryEntry = (entry: BusHistoryEntry, bus: Bus) =>
     nav.drill({ kind: "historyEntry", label: entry.id, entry, bus });
 
