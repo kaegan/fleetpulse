@@ -101,7 +101,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         label={SCOPE_LABEL[scope]}
         value={availRate}
         suffix="%"
-        color={availRate < 85 ? "#d4654a" : "#222222"}
+        color={availRate < 85 ? "#d4654a" : "#22c55e"}
         isPrimary
         pillColor={p["Fleet Availability"].color}
         pillBg={p["Fleet Availability"].bg}
