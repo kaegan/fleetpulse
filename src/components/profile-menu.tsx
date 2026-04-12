@@ -1,21 +1,15 @@
 "use client";
 
-import { LogOut, Monitor, Moon, Settings, Sparkles, Sun } from "lucide-react";
+import { LogOut, Settings, Sparkles } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useThemeSafe } from "@/hooks/use-theme-safe";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -37,17 +31,9 @@ interface ProfileMenuProps {
   onOpenWhatsNew: () => void;
 }
 
-const THEME_ICON = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-} as const;
-
 export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
   const { isMobile } = useSidebar();
   const initials = getInitials(CURRENT_MECHANIC);
-  const { theme, setTheme } = useThemeSafe();
-  const ThemeIcon = THEME_ICON[theme as keyof typeof THEME_ICON] ?? Monitor;
 
   return (
     <SidebarMenu>
@@ -110,31 +96,6 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
               <Sparkles />
               What&apos;s new
             </DropdownMenuItem>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <ThemeIcon />
-                Appearance
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                <DropdownMenuRadioGroup
-                  value={theme}
-                  onValueChange={(v) => setTheme(v)}
-                >
-                  <DropdownMenuRadioItem value="light">
-                    <Sun />
-                    Light
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="dark">
-                    <Moon />
-                    Dark
-                  </DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="system">
-                    <Monitor />
-                    System
-                  </DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
             <DropdownMenuItem disabled>
               <Settings />
               Account settings
