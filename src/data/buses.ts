@@ -6,7 +6,7 @@ import { PM_INTERVAL_MILES } from "@/lib/constants";
  * #001–#175 = North Garage, #176–#300 = South Garage
  *
  * Status distribution (fixed, not random):
- * ~73% running (219), ~10% PM due (30), ~10% in-maintenance (30), ~7% road-call (21)
+ * ~85% running (255), ~3% PM due (10), ~9% in-maintenance (26), ~3% road-call (9)
  *
  * Buses with active work orders are explicitly set to "in-maintenance".
  * PM-due buses genuinely have mileage > nextPmDueMileage (usage-based triggers).

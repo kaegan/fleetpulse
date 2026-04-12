@@ -61,9 +61,11 @@ function generateHistory(
 }
 
 // Fleet-wide
+// Fleet-wide startRate ≈ 85.3% — derived from status-history day-0 starts
+// (running≈242 + pm-due≈14 = 256 available out of 300 → 85.3%).
 export const availabilityHistory = generateHistory(
   getAvailabilityRate(buses),
-  84.2,
+  85.3,
   137
 );
 
