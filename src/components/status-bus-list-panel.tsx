@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
@@ -120,6 +120,13 @@ function PanelContent({
   kind: BusListKind;
   onSelectBus: (bus: Bus) => void;
 }) {
+  const topRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    topRef.current
+      ?.closest('[data-slot="sheet-content"]')
+      ?.scrollTo(0, 0);
+  }, [kind]);
+
   const { scope } = useDepot();
   const { workOrders } = useWorkOrders();
   const meta = META[kind];
@@ -160,7 +167,7 @@ function PanelContent({
   }, [kind, scope, worksByBus, workOrders]);
 
   return (
-    <div className="flex h-full flex-col p-5 pb-6 sm:p-7">
+    <div ref={topRef} className="flex h-full flex-col p-5 pb-6 sm:p-7">
       {/* Header */}
       <div className="mb-5">
         <h2

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
 import { useWorkOrders } from "@/contexts/work-orders-context";
 import { getBusHistory } from "@/data/bus-history";
@@ -104,6 +104,14 @@ function PanelContent({
   backLabel?: string;
   onBack?: () => void;
 }) {
+  // Scroll the sheet back to top when content swaps in place.
+  const topRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    topRef.current
+      ?.closest('[data-slot="sheet-content"]')
+      ?.scrollTo(0, 0);
+  }, [bus.id]);
+
   const { workOrders } = useWorkOrders();
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
@@ -117,7 +125,7 @@ function PanelContent({
   const history = getBusHistory(bus.id);
 
   return (
-    <div className="p-5 sm:p-7">
+    <div ref={topRef} className="p-5 sm:p-7">
       {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* Bus number */}

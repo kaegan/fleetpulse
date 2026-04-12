@@ -13,6 +13,13 @@ const SWAP_DELAY_MS = 320;
 
 export interface NavEntry {
   /**
+   * Discriminant used to decide whether a transition requires the 320ms
+   * Radix Presence swap (cross-panel) or can update content in place
+   * (same-panel). Consumers already provide this via their discriminated
+   * union (e.g. `"bus" | "workOrder" | "historyEntry"`).
+   */
+  kind: string;
+  /**
    * Short destination noun rendered in the NEXT panel's back button as
    * `Back to {label}`. E.g. `"PM Due"`, `"WO-90123"`, `"Bus #4012"`,
    * `"Pull In Next"`. Keep it short — the back button is a breadcrumb,
@@ -119,15 +126,21 @@ export function usePanelNav<T extends NavEntry>(): UsePanelNavResult<T> {
   const transition = useCallback(
     (next: T[]) => {
       cancelPending();
-      const prevLen = stackRef.current.length;
+      const prev = stackRef.current;
+      const prevTop = prev[prev.length - 1];
+      const nextTop = next[next.length - 1];
       stackRef.current = next;
-      // Swap only when something is already showing AND something new
-      // is entering. First-mount and dismiss paths flip synchronously
-      // so click → content stays snappy on root entries.
-      const isSwap = prevLen > 0 && next.length > 0;
+      // Cross-panel swap: something is already showing AND something new
+      // is entering AND it's a different panel type (kind). First-mount,
+      // dismiss, and same-kind transitions flip synchronously so click →
+      // content stays snappy — no close/open animation for card-to-card.
+      const needsSwap =
+        prev.length > 0 &&
+        next.length > 0 &&
+        prevTop?.kind !== nextTop?.kind;
       setStack(next);
-      setIsSwapping(isSwap);
-      if (isSwap) {
+      setIsSwapping(needsSwap);
+      if (needsSwap) {
         timerRef.current = setTimeout(() => {
           setIsSwapping(false);
           timerRef.current = null;
