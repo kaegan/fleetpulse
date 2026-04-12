@@ -278,7 +278,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y={layout.bandY - 10}
               width={width - PAD_R - dueX}
               height={layout.bandH + 18}
-              fill="#b4541a"
+              fill="#f59e0b"
               fillOpacity={0.06}
             />
 
@@ -288,7 +288,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y1={layout.bandY - 14}
               x2={dueX}
               y2={axisY}
-              stroke="#b4541a"
+              stroke="#f59e0b"
               strokeWidth={1.5}
               strokeDasharray="4 3"
             />
@@ -297,7 +297,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               y={layout.bandY - 20}
               fontSize={11}
               fontWeight={600}
-              fill="#b4541a"
+              fill="#f59e0b"
               textAnchor="middle"
             >
               PM due

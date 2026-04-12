@@ -120,10 +120,12 @@ export function getStageStates(
   });
 }
 
+/** Used for data-viz (fleet health chart dots, legend swatches).
+ *  Distinct from STATUS_BG/STATUS_TEXT which style UI badges. */
 export const STATUS_COLORS: Record<BusStatus, string> = {
-  running: "#222222",
-  "pm-due": "#b4541a",
-  "in-maintenance": "#6a6a6a",
+  running: "#22c55e",
+  "pm-due": "#f59e0b",
+  "in-maintenance": "#ef4444",
   "road-call": "#222222",
 };
 
