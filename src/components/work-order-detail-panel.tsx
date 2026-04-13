@@ -304,7 +304,6 @@ function ActiveWorkOrderBody({
 }) {
   const next = nextStage(order.stage);
   const terminal = isTerminalStage(order.stage);
-  const isIntake = order.stage === "intake";
   return (
     <>
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
@@ -348,8 +347,6 @@ function ActiveWorkOrderBody({
           <Button
             variant="outline"
             size="sm"
-            disabled={isIntake}
-            title={isIntake ? "Bus hasn't arrived at the depot yet" : undefined}
             onClick={() => onStageChange(order.id, next)}
           >
             Move to {STAGE_LABELS[next]} <span aria-hidden>&rarr;</span>
