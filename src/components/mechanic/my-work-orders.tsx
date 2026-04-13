@@ -10,6 +10,7 @@ import {
   BLOCK_REASON_LABELS,
   isTerminalStage,
   nextStage,
+  getCrossDepotPartsTip,
 } from "@/lib/constants";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { TimeDisplay } from "@/components/time-display";
@@ -141,7 +142,8 @@ function MyWorkOrderCard({
       const eta = order.blockEta
         ? ` · ETA ${formatShortEta(order.blockEta)}`
         : "";
-      return `${reason}${eta}`;
+      const tip = getCrossDepotPartsTip(order.garage, order.blockReason);
+      return `${reason}${eta}${tip ? ` · ${tip}` : ""}`;
     }
     if (isIntake) {
       return order.arrivalEta
@@ -260,7 +262,7 @@ function MyWorkOrderCard({
               onStageChange(order.id, next);
             }}
             title={
-              isIntake ? "Bus hasn't arrived at the depot yet" : undefined
+              isIntake ? "Bus hasn't arrived at the garage yet" : undefined
             }
           >
             {STAGE_LABELS[next]} &rarr;

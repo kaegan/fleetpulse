@@ -12,6 +12,7 @@ import {
   SEVERITY_ICONS,
   OUTCOME_STYLES,
   PM_INTERVAL_MILES,
+  getCrossDepotPartsTip,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { BackButton } from "@/components/back-button";
@@ -282,6 +283,14 @@ function ActiveWorkOrderBody({
               Held · {BLOCK_REASON_LABELS[order.blockReason]}
             </span>
             {order.blockEta && <> · ETA {formatEta(order.blockEta)}</>}
+            {getCrossDepotPartsTip(order.garage, order.blockReason) && (
+              <>
+                {" · "}
+                <span className="font-semibold text-[#16a34a]">
+                  {getCrossDepotPartsTip(order.garage, order.blockReason)}
+                </span>
+              </>
+            )}
           </>
         )}
         {order.stage === "intake" && order.arrivalEta && (
