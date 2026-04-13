@@ -25,6 +25,8 @@ interface KanbanBoardProps {
   onComplete: (woId: string) => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
   onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
+  /** When set, cards get a layoutId for cross-view morph animations. */
+  layoutPrefix?: string;
 }
 
 export function KanbanBoard({
@@ -33,6 +35,7 @@ export function KanbanBoard({
   onComplete,
   onSelectWorkOrder,
   onUpdateParts,
+  layoutPrefix,
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -96,6 +99,7 @@ export function KanbanBoard({
               onAdvance={(woId) => {
                 if (next) onStageChange(woId, next);
               }}
+              layoutPrefix={layoutPrefix}
             />
           );
         })}

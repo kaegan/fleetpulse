@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
 import { SectionPill } from "@/components/section-pill";
@@ -25,6 +26,8 @@ const STAGE_ICONS: Record<WorkOrderStage, React.ReactNode> = {
   "road-test": <IconBadgeCheckFillDuo18 />,
 };
 
+const LAYOUT_TRANSITION = { type: "spring", stiffness: 300, damping: 30 } as const;
+
 interface KanbanColumnProps {
   stageId: string;
   stage: WorkOrderStage;
@@ -36,6 +39,8 @@ interface KanbanColumnProps {
   onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
   /** Responsive layout classes applied by the parent board. */
   className?: string;
+  /** When set, cards get a layoutId for cross-view morph animations. */
+  layoutPrefix?: string;
 }
 
 export function KanbanColumn({
@@ -48,6 +53,7 @@ export function KanbanColumn({
   onAdvance,
   onUpdateParts,
   className = "",
+  layoutPrefix,
 }: KanbanColumnProps) {
   const pill = KANBAN_STAGE_PILLS[stage];
   const { setNodeRef, isOver } = useDroppable({ id: stageId });
@@ -85,14 +91,20 @@ export function KanbanColumn({
       {/* Cards */}
       <div className="flex flex-col gap-2.5">
         {orders.map((wo) => (
-          <WorkOrderCard
+          <motion.div
             key={wo.id}
-            order={wo}
-            onComplete={onComplete}
-            onSelectWorkOrder={onSelectWorkOrder}
-            onAdvance={onAdvance}
-            onUpdateParts={onUpdateParts}
-          />
+            layoutId={layoutPrefix ? `${layoutPrefix}-${wo.id}` : undefined}
+            layout={!!layoutPrefix}
+            transition={LAYOUT_TRANSITION}
+          >
+            <WorkOrderCard
+              order={wo}
+              onComplete={onComplete}
+              onSelectWorkOrder={onSelectWorkOrder}
+              onAdvance={onAdvance}
+              onUpdateParts={onUpdateParts}
+            />
+          </motion.div>
         ))}
         {orders.length === 0 && (
           <div className="p-6 text-center text-[13px] font-medium text-text-faint">
