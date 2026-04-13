@@ -33,6 +33,7 @@ interface KanbanColumnProps {
   onComplete: (woId: string) => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
   onAdvance: (woId: string) => void;
+  onRetreat: (woId: string) => void;
   onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
   /** Responsive layout classes applied by the parent board. */
   className?: string;
@@ -48,6 +49,7 @@ export function KanbanColumn({
   onComplete,
   onSelectWorkOrder,
   onAdvance,
+  onRetreat,
   onUpdateParts,
   className = "",
   layoutPrefix,
@@ -101,6 +103,7 @@ export function KanbanColumn({
               onComplete={onComplete}
               onSelectWorkOrder={onSelectWorkOrder}
               onAdvance={onAdvance}
+              onRetreat={onRetreat}
               onUpdateParts={onUpdateParts}
             />
           </motion.div>

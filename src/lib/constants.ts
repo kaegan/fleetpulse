@@ -68,6 +68,22 @@ export function nextStage(stage: WorkOrderStage): WorkOrderStage | null {
   }
 }
 
+/** Previous stage for the back-navigation card action. */
+export function prevStage(stage: WorkOrderStage): WorkOrderStage | null {
+  switch (stage) {
+    case "intake":
+      return null;
+    case "triage":
+      return "intake";
+    case "repair":
+      return "triage";
+    case "road-test":
+      return "repair";
+    case "done":
+      return "road-test";
+  }
+}
+
 /** True once a WO has reached Done (the terminal forward stage). */
 export function isTerminalStage(stage: WorkOrderStage): boolean {
   return stage === "done";
