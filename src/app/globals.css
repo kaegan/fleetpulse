@@ -154,9 +154,15 @@ body {
   background: var(--color-surface-warm);
   color: var(--color-text-primary);
   font-family: var(--font-sans), -apple-system, system-ui, sans-serif;
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dashboard density: lighter icon strokes (1.5 default per cheatsheet) */
+.lucide {
+  stroke-width: 1.5 !important;
 }
 
 /* Custom scrollbar */

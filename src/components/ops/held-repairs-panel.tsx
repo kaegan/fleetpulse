@@ -63,7 +63,7 @@ export function HeldRepairsPanelContent({
         <h2
           style={{
             fontSize: 24,
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#222222",
             letterSpacing: "-0.03em",
             marginBottom: 4,
@@ -148,7 +148,7 @@ function HeldWoRow({
           <span
             style={{
               fontSize: 14,
-              fontWeight: 700,
+              fontWeight: 600,
               color: "#222222",
               letterSpacing: "-0.01em",
             }}
@@ -173,7 +173,7 @@ function HeldWoRow({
         <span
           style={{
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#6a6a6a",
             fontVariantNumeric: "tabular-nums",
           }}

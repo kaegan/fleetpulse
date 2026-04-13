@@ -50,7 +50,7 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
             <Badge className={CATEGORY_CLASSES.feature} size="default">
               What&apos;s new
             </Badge>
-            <DialogTitle className="mt-2.5 text-[22px] font-bold tracking-[-0.03em] text-foreground">
+            <DialogTitle className="mt-2.5 text-[22px] font-semibold tracking-[-0.03em] text-foreground">
               Latest updates
             </DialogTitle>
             <p className="mt-1 text-sm font-medium text-[#929292]">

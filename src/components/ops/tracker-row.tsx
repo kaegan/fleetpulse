@@ -83,7 +83,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           <div
             style={{
               fontSize: 14,
-              fontWeight: 700,
+              fontWeight: 600,
               color: "#222222",
               letterSpacing: "-0.02em",
             }}
@@ -115,7 +115,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         <div
           style={{
             fontSize: 14,
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#222222",
             fontFamily: "var(--font-mono)",
           }}

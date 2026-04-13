@@ -78,7 +78,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         <h2
           style={{
             fontSize: 18,
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#222222",
             letterSpacing: "-0.02em",
             marginBottom: 4,
@@ -183,7 +183,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                 <span
                   style={{
                     fontSize: 12,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: isPeak ? BRAND_COLOR : "#6a6a6a",
                   }}
                 >
@@ -223,7 +223,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
             <span
               style={{
                 fontSize: 12,
-                fontWeight: 700,
+                fontWeight: 600,
                 color: heldCount > 0 ? HELD_PILL.color : "#6a6a6a",
               }}
             >
