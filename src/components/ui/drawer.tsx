@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
+import { XIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 const Drawer = DrawerPrimitive.Root;
@@ -43,29 +45,19 @@ const DrawerContent = React.forwardRef<
       )}
       {...props}
     >
-      {/* Drag handle strip — a dedicated drag target that works regardless
-       * of scroll position. The full sheet body is also draggable (vaul
-       * disambiguates scroll vs drag based on scrollTop), but the handle
-       * gives users a clear affordance and works even when the list is
-       * scrolled partway down.
-       *
-       * The Handle div is full-width and 36px tall (transparent) so the
-       * entire top strip is the hit area. The visible grabber bar is a
-       * sibling with `pointer-events-none` so it paints over the Handle
-       * without intercepting touches. */}
+      {/* Invisible drag strip — keeps swipe-to-dismiss working from the
+       * top of the sheet. The visible affordance is an X close button in
+       * the top-right corner instead of a centred grab bar. */}
       <div className="relative shrink-0">
         <DrawerPrimitive.Handle
           preventCycle
           aria-label="Drag down to dismiss"
-          // Strip vaul's default visual styles and turn the Handle into an
-          // invisible full-width drag strip. `!`-prefixed utilities win over
-          // vaul's injected stylesheet.
           className="!my-0 !block !h-9 !w-full !rounded-none !bg-transparent !opacity-100"
         />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-border-strong"
-        />
+        <DrawerPrimitive.Close className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded text-text-muted transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2">
+          <XIcon className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DrawerPrimitive.Close>
       </div>
       <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {children}
