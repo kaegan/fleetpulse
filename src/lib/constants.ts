@@ -1,6 +1,7 @@
 import type {
   BlockReason,
   BusStatus,
+  Garage,
   HistoryOutcome,
   PartsStatus,
   Severity,
@@ -202,6 +203,7 @@ export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
   "PM Compliance": { color: "#6a6a6a", bg: "#f5f5f5" },
   "In Maintenance": { color: "#6a6a6a", bg: "#f5f5f5" },
   "Road Calls": { color: "#6a6a6a", bg: "#f5f5f5" },
+  "Repairs on Hold": { color: "#b4541a", bg: "#fff4ed" },
 };
 
 /**
@@ -221,6 +223,24 @@ export const KANBAN_STAGE_PILLS: Record<
 
 /** Copper accent for held-state badges and pills. */
 export const HELD_PILL = { color: "#b4541a", bg: "#fff4ed" } as const;
+
+/**
+ * Cross-depot parts availability tip for held WOs.
+ * When a repair is blocked on parts, the same part may be in stock at the
+ * other garage. Returns a short string like "In stock at South depot" when
+ * the block reason is parts-related, or null otherwise.
+ *
+ * For this demo build we always return a tip for parts-related blocks.
+ */
+export function getCrossDepotPartsTip(
+  garage: Garage,
+  blockReason?: BlockReason,
+): string | null {
+  if (blockReason !== "parts-ordered" && blockReason !== "parts-needed")
+    return null;
+  const other = garage === "north" ? "South" : "North";
+  return `In stock at ${other} garage`;
+}
 
 export const PARTS_STATUS_LABELS: Record<PartsStatus, string> = {
   "not-needed": "Not needed",
@@ -257,6 +277,10 @@ export const ISSUE_TEMPLATES: Array<{ label: string; defaultIssue: string }> = [
 /** Fleet availability thresholds — defines the three-tier color system.
  *  Below industry avg → coral. Above avg, below target → amber. At/above target → green. */
 export const AVAILABILITY_THRESHOLDS = { industryAvg: 84, target: 95 } as const;
+
+/** Mean maintenance time threshold in hours. Buses in the shop longer than
+ *  this are flagged as "above mean" for ops triage. */
+export const MAINTENANCE_MEAN_HOURS = 12;
 
 export function getAvailabilityTierColor(rate: number): string {
   if (rate < AVAILABILITY_THRESHOLDS.industryAvg) return "#d4654a";

@@ -424,6 +424,8 @@ export function MechanicView() {
                   backLabel={nav.backButton?.label}
                   onBack={nav.backButton?.onBack}
                   onUpdateParts={handleUpdatePartsList}
+                  onStageChange={handleStageChange}
+                  onDismiss={handleDismiss}
                 />
               )}
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder, WorkOrderStage } from "@/data/types";
 import { parts as partsCatalog } from "@/data/parts";
 import {
   STAGE_LABELS,
@@ -12,6 +12,9 @@ import {
   SEVERITY_ICONS,
   OUTCOME_STYLES,
   PM_INTERVAL_MILES,
+  getCrossDepotPartsTip,
+  nextStage,
+  isTerminalStage,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { BackButton } from "@/components/back-button";
@@ -50,6 +53,10 @@ interface WorkOrderDetailPanelProps {
   onBack?: () => void;
   /** When provided, the parts section shows add/remove controls. Mechanic view passes this. */
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+  /** When provided, the progress section shows a stage-advance button. Mechanic view passes this. */
+  onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  /** Dismiss a completed (done) work order. Paired with onStageChange. */
+  onDismiss?: (woId: string) => void;
 }
 
 export function WorkOrderDetailPanel({
@@ -61,6 +68,8 @@ export function WorkOrderDetailPanel({
   backLabel,
   onBack,
   onUpdateParts,
+  onStageChange,
+  onDismiss,
 }: WorkOrderDetailPanelProps) {
   // Snapshot the last non-null record so the sheet keeps rendering its
   // contents through the close animation after the parent clears the props.
@@ -117,6 +126,8 @@ export function WorkOrderDetailPanel({
             backLabel={backLabel}
             onBack={onBack}
             onUpdateParts={onUpdateParts}
+            onStageChange={onStageChange}
+            onDismiss={onDismiss}
           />
         )}
       </ResponsiveSheetContent>
@@ -132,6 +143,8 @@ export function WorkOrderPanelContent({
   backLabel,
   onBack,
   onUpdateParts,
+  onStageChange,
+  onDismiss,
 }: {
   order: WorkOrder | null;
   historyEntry: BusHistoryEntry | null;
@@ -140,6 +153,8 @@ export function WorkOrderPanelContent({
   backLabel?: string;
   onBack?: () => void;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+  onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  onDismiss?: (woId: string) => void;
 }) {
   // Scroll the sheet back to top when content swaps in place (same panel
   // type, different record). Without this the user would land mid-scroll
@@ -201,7 +216,7 @@ export function WorkOrderPanelContent({
       </div>
 
       {order ? (
-        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} />
+        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} onDismiss={onDismiss} />
       ) : (
         <HistoryEntryBody entry={historyEntry!} />
       )}
@@ -256,10 +271,17 @@ export function WorkOrderPanelContent({
 function ActiveWorkOrderBody({
   order,
   onUpdateParts,
+  onStageChange,
+  onDismiss,
 }: {
   order: WorkOrder;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+  onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  onDismiss?: (woId: string) => void;
 }) {
+  const next = nextStage(order.stage);
+  const terminal = isTerminalStage(order.stage);
+  const isIntake = order.stage === "intake";
   return (
     <>
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
@@ -272,7 +294,7 @@ function ActiveWorkOrderBody({
           size="lg"
         />
       </div>
-      <p className="mb-[26px] pl-0.5 text-xs font-medium text-[#6a6a6a]">
+      <p className="pl-0.5 text-xs font-medium text-[#6a6a6a]">
         Currently{" "}
         <strong className="text-[#222222]">{STAGE_LABELS[order.stage]}</strong>
         {order.isHeld && order.blockReason && (
@@ -282,6 +304,14 @@ function ActiveWorkOrderBody({
               Held · {BLOCK_REASON_LABELS[order.blockReason]}
             </span>
             {order.blockEta && <> · ETA {formatEta(order.blockEta)}</>}
+            {getCrossDepotPartsTip(order.garage, order.blockReason) && (
+              <>
+                {" · "}
+                <span className="font-semibold text-[#16a34a]">
+                  {getCrossDepotPartsTip(order.garage, order.blockReason)}
+                </span>
+              </>
+            )}
           </>
         )}
         {order.stage === "intake" && order.arrivalEta && (
@@ -290,6 +320,31 @@ function ActiveWorkOrderBody({
         {" · "}
         <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
       </p>
+      {onStageChange && !terminal && next && (
+        <div className="mt-2.5 mb-[26px]">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={isIntake}
+            title={isIntake ? "Bus hasn't arrived at the depot yet" : undefined}
+            onClick={() => onStageChange(order.id, next)}
+          >
+            Move to {STAGE_LABELS[next]} <span aria-hidden>&rarr;</span>
+          </Button>
+        </div>
+      )}
+      {onDismiss && terminal && (
+        <div className="mt-2.5 mb-[26px]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onDismiss(order.id)}
+          >
+            Dismiss
+          </Button>
+        </div>
+      )}
+      {!onStageChange && <div className="mb-[26px]" />}
 
       {/* ── Assignment ─────────────────────────────────────────────────── */}
       <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Assignment</h3>

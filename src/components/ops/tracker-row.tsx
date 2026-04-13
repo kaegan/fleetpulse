@@ -105,7 +105,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           className="px-2.5 py-[3px] gap-1"
           style={{ color: sev.text, background: sev.bg }}
         >
-          <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
           {SEVERITY_LABELS[order.severity]}
         </Badge>
       </div>
@@ -192,7 +192,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         className="hidden lg:inline-flex px-2.5 py-[3px] gap-1"
         style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
       >
-        <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
+        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
         {SEVERITY_LABELS[order.severity]}
       </Badge>
     </motion.div>

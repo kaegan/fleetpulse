@@ -49,7 +49,7 @@ const META: Record<BusListKind, StatusMeta> = {
     heading: "On the road",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} running right now. Nothing here needs your attention.`,
-    emptyMessage: "No buses running in this depot.",
+    emptyMessage: "No buses running in this garage.",
   },
   "pm-due": {
     pillLabel: "Preventive Maintenance Due",
@@ -70,7 +70,7 @@ const META: Record<BusListKind, StatusMeta> = {
     heading: "Road-called today",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
-    emptyMessage: "No road calls in this depot today.",
+    emptyMessage: "No road calls in this garage today.",
   },
 };
 
@@ -182,6 +182,7 @@ export function BusListPanelContent({
     }
     return { aboveMean: above, belowMean: below };
   }, [kind, rows, worksByBus]);
+
 
   return (
     <div ref={topRef} className="flex h-full flex-col p-5 pb-6 sm:p-7">
@@ -411,12 +412,14 @@ function RightValue({
   }
 
   if (kind === "in-maintenance" && workOrder) {
+    const elapsedMs = Date.now() - new Date(workOrder.createdAt).getTime();
+    const isAboveMean = elapsedMs > MTIM_THRESHOLDS.excellent * 60 * 60 * 1000;
     return (
       <span
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "#6a6a6a",
+          color: isAboveMean ? "#b4541a" : "#6a6a6a",
           fontVariantNumeric: "tabular-nums",
         }}
       >
@@ -486,7 +489,7 @@ function SecondaryLine({
             fontWeight: 600,
           }}
         >
-          <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 11, height: 11, flexShrink: 0, lineHeight: 0 }}>
             {SEVERITY_ICONS[workOrder.severity]}
           </span>
           {SEVERITY_LABELS[workOrder.severity]}
