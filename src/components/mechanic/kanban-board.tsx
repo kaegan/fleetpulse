@@ -5,6 +5,7 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -39,9 +40,12 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // 5px activation distance so clicks on interactive children aren't hijacked as drags.
+  // Desktop: 5px activation distance so clicks on interactive children aren't hijacked.
+  // Mobile: 250ms hold delay before drag activates (Notion-style), so touch-scrolling
+  // the board isn't blocked. If the finger moves >5px during the hold, it's a scroll.
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
   );
 
   const activeOrder = activeId
@@ -68,9 +72,10 @@ export function KanbanBoard({
 
   const handleDragCancel = () => setActiveId(null);
 
-  // Disable scroll-snap while a drag is active so dnd-kit's auto-scroll can
-  // pan smoothly across columns without the browser snapping back mid-drag.
-  const snapClass = activeId ? "" : "snap-x snap-proximity";
+  // Disable scroll-snap and scroll-smooth while a drag is active so dnd-kit's
+  // auto-scroll can pan smoothly across columns without the browser snapping
+  // back mid-drag or smoothing per-frame scroll increments.
+  const idleScrollClasses = activeId ? "" : "scroll-smooth snap-x snap-proximity";
 
   return (
     <DndContext
@@ -80,7 +85,7 @@ export function KanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div
-        className={`-mx-4 flex gap-2 overflow-x-auto scroll-smooth px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 xl:mx-0 xl:grid xl:grid-cols-5 xl:gap-3 xl:overflow-visible xl:px-0 ${snapClass}`}
+        className={`-mx-4 flex gap-2 overflow-x-auto px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 xl:mx-0 xl:grid xl:grid-cols-5 xl:gap-3 xl:overflow-visible xl:px-0 ${idleScrollClasses}`}
       >
         {STAGE_ORDER.map((stage) => {
           const stageOrders = workOrders.filter((wo) => wo.stage === stage);
