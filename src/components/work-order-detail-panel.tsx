@@ -157,14 +157,16 @@ export function WorkOrderPanelContent({
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
   onDismiss?: (woId: string) => void;
 }) {
-  // Scroll the sheet back to top when content swaps in place (same panel
+  // Scroll the panel back to top when content swaps in place (same panel
   // type, different record). Without this the user would land mid-scroll
-  // in the new card's content.
+  // in the new card's content. Target both desktop (SheetContent) and
+  // mobile (DrawerContent scroll wrapper).
   const topRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    topRef.current
-      ?.closest('[data-slot="sheet-content"]')
-      ?.scrollTo(0, 0);
+    const scrollParent = topRef.current?.closest(
+      '[data-slot="sheet-content"], [data-slot="drawer-scroll"]'
+    );
+    scrollParent?.scrollTo(0, 0);
   }, [order?.id, historyEntry?.id]);
 
   // Exactly one of order / historyEntry is non-null (enforced by the

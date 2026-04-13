@@ -38,7 +38,7 @@ const DrawerContent = React.forwardRef<
         // rounded to 24px to match --radius-lg. Capped at 80vh so a clear
         // strip of the page stays visible above the sheet — that's the cue
         // that the sheet is a layer floating *over* content, not a new page.
-        "fixed inset-x-2 bottom-0 z-50 flex max-h-[80vh] flex-col overflow-hidden rounded-t-[24px] bg-card shadow-panel",
+        "fixed inset-x-2 bottom-0 z-50 flex h-[80vh] flex-col overflow-hidden rounded-t-[24px] bg-card shadow-panel",
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ const DrawerContent = React.forwardRef<
           className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-border-strong"
         />
       </div>
-      <div className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
+      <div data-slot="drawer-scroll" className="flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
         {children}
       </div>
     </DrawerPrimitive.Content>

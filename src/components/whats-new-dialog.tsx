@@ -43,7 +43,7 @@ export function WhatsNewDialog({ open, onOpenChange }: WhatsNewDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent showCloseButton={false} aria-describedby={undefined} className="p-0">
+      <DialogContent showCloseButton aria-describedby={undefined} className="p-0">
         <div className="px-7 pt-7 pb-6">
           {/* Header */}
           <div className="mb-5">
