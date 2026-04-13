@@ -14,7 +14,7 @@ import {
 } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconAccessibilityFillDuo18, IconChevronRightFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   Card,
   CardHeader,
@@ -126,8 +126,8 @@ export function WorkOrderCard({
       onClick={handleClick}
       className={
         isOverlay
-          ? "touch-none select-none cursor-grabbing border border-border shadow-panel"
-          : "touch-none select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
+          ? "touch-none select-none cursor-grabbing shadow-panel"
+          : "touch-none select-none cursor-grab shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
       }
       style={{
         opacity: isDragging && !isOverlay ? 0 : 1,
@@ -240,7 +240,10 @@ export function WorkOrderCard({
                   isIntake ? "Bus hasn't arrived at the garage yet" : undefined
                 }
               >
-                {STAGE_LABELS[next]} →
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {STAGE_LABELS[next]}
+                  <span style={{ display: "inline-flex", width: 14, height: 14, lineHeight: 0 }}><IconChevronRightFillDuo18 /></span>
+                </span>
               </Button>
             )}
             {terminal && onComplete && (

@@ -6,7 +6,6 @@ import { parts as partsCatalog } from "@/data/parts";
 import { useFleet } from "@/contexts/fleet-context";
 import { useDepot, type DepotScope } from "@/hooks/use-depot";
 import type { Part } from "@/data/types";
-import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface PartsRiskEntry {
   part: Part;
@@ -193,11 +192,6 @@ function PartsRiskRow({
           }}
         >
           {part.name}
-          {part.category === "Accessibility" && (
-            <span style={{ display: "inline-flex", marginLeft: 4, width: 14, height: 14, color: "#1e40af", verticalAlign: "middle" }}>
-              <IconAccessibilityFillDuo18 />
-            </span>
-          )}
         </span>
         <span
           style={{

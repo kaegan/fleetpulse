@@ -15,7 +15,7 @@ import {
   isAccessibilityIssue,
   ACCESSIBILITY_ESCALATION_NOTICE,
 } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconAccessibilityFillDuo18, IconAlertWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   BRAND_COLOR,
   CURRENT_MECHANIC,
@@ -525,7 +525,7 @@ function CrossGarageInlineWarning({
         style={{ marginTop: 1 }}
         aria-hidden
       >
-        ⚠️
+        <IconAlertWarningFillDuo18 />
       </span>
       <div className="min-w-0 flex-1">
         <div
