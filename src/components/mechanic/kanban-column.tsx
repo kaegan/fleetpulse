@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { useDroppable } from "@dnd-kit/core";
 import { WorkOrderCard } from "./work-order-card";
-import { SectionPill } from "@/components/section-pill";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { KANBAN_STAGE_PILLS } from "@/lib/constants";
@@ -69,12 +68,14 @@ export function KanbanColumn({
     >
       {/* Column header */}
       <div className="mb-3.5 flex items-center justify-between gap-2">
-        <SectionPill
-          label={stageName}
-          color={pill.color}
-          bgColor={pill.bg}
-          icon={STAGE_ICONS[stage]}
-        />
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="flex h-[14px] w-[14px] shrink-0 items-center justify-center text-[#a0a0a0] [&>svg]:h-[14px] [&>svg]:w-[14px]">
+            {STAGE_ICONS[stage]}
+          </span>
+          <span className="text-[12px] font-semibold text-[#6a6a6a] tracking-[0.01em] truncate">
+            {stageName}
+          </span>
+        </div>
         <span
           className="min-w-5 shrink-0 rounded-full px-2.5 py-[3px] text-center text-[11px] font-bold"
           style={{

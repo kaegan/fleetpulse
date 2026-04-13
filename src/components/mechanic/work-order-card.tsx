@@ -127,9 +127,7 @@ export function WorkOrderCard({
       }
       style={{
         opacity: isDragging && !isOverlay ? 0 : 1,
-        ...(isHeld && !isOverlay
-          ? { borderLeft: "3px dashed #b4541a", background: "#fffbf8" }
-          : {}),
+        ...(isHeld && !isOverlay ? { background: "#fff8f3" } : {}),
       }}
     >
       <CardHeader className="px-4 pb-3 pt-4">

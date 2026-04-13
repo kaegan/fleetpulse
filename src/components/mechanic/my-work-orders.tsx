@@ -160,7 +160,7 @@ function MyWorkOrderCard({
         "cursor-pointer border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover" +
         (isHeld ? " border-border" : " border-border")
       }
-      style={isHeld ? { borderLeft: "3px dashed #b4541a", background: "#fffbf8" } : undefined}
+      style={isHeld ? { background: "#fff8f3" } : undefined}
       onClick={() => onSelectWorkOrder(order)}
     >
       {/* Header: Bus # + severity + time */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { SectionPill } from "@/components/section-pill";
 import { AVAILABILITY_THRESHOLDS, getAvailabilityTierColor } from "@/lib/constants";
 import { Card } from "@/components/ui/card";
 import { AreaChart } from "@/components/ui/area-chart";
@@ -126,13 +125,15 @@ export function KpiCard({
       // keep the Card's visual hover style above for the shadow lift.
       role={isClickable ? undefined : undefined}
     >
-      <div className="flex min-w-0" style={{ marginBottom: isPrimary ? 20 : 14 }}>
-        <SectionPill
-          label={label}
-          color={pillColor}
-          bgColor={pillBg}
-          icon={pillIcon}
-        />
+      <div className="flex min-w-0 items-center gap-1.5" style={{ marginBottom: isPrimary ? 20 : 14 }}>
+        {pillIcon && (
+          <span className="flex h-[14px] w-[14px] shrink-0 items-center justify-center text-[#a0a0a0] [&>svg]:h-[14px] [&>svg]:w-[14px]">
+            {pillIcon}
+          </span>
+        )}
+        <span className="text-[12px] font-semibold text-[#a0a0a0] tracking-[0.01em] truncate">
+          {label}
+        </span>
       </div>
       <div
         style={{
@@ -247,7 +248,7 @@ export function KpiCard({
             </span>
           ) : (
             <span
-              className="text-[13px] font-bold tabular-nums"
+              className="text-[13px] font-medium tabular-nums"
               style={{ color: deltaColor(footerDelta.delta, deltaDirection) }}
             >
               {footerDelta.delta > 0 ? "↑" : "↓"}{footerSuffix ? Math.abs(footerDelta.delta).toFixed(1) : Math.abs(footerDelta.delta)}{footerSuffix ?? ""} {footerDelta.timeLabel}
