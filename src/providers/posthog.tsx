@@ -12,7 +12,11 @@ export function PHProvider({ children }: { children: ReactNode }) {
       api_host:
         process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com",
       capture_pageview: false, // handled by PostHogPageView
+      capture_pageleave: true,
       persistence: "localStorage",
+      // maskAllInputs: false is explicit — fleet tool has no sensitive inputs,
+      // and full recordings are needed to review how mentors use the product.
+      session_recording: { maskAllInputs: false },
     });
   }, []);
 
