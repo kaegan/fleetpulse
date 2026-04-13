@@ -155,37 +155,13 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
       <div style={{ marginBottom: 20 }}>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#929292",
             marginBottom: 8,
           }}
         >
-          <span
-            style={{
-              fontSize: 12,
-              fontWeight: 500,
-              color: "#929292",
-            }}
-          >
-            Queue by stage
-          </span>
-          {(filter !== "all" || stageFilter !== null) && (
-            <button
-              onClick={() => { setFilter("all"); setStageFilter(null); analytics.trackerSeverityFiltered("all"); analytics.trackerStageFiltered(null); }}
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: "#929292",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: "0 2px",
-              }}
-            >
-              Clear all
-            </button>
-          )}
+          Queue by stage
         </div>
         <div
           style={{
