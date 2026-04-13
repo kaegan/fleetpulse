@@ -4,49 +4,43 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
+import { baseBuses } from "@/data/buses";
 import { workOrders as seedWorkOrders } from "@/data/work-orders";
-import type { WorkOrder, WorkOrderStage } from "@/data/types";
+import { deriveBusStatuses } from "@/lib/derive-bus-statuses";
+import type { Bus, WorkOrder, WorkOrderStage } from "@/data/types";
 
 /**
- * Single source of truth for live work orders, shared across ops and
- * mechanic views. Previously the mechanic view owned the mutable list
- * locally and the ops view read a static module import — which meant
- * ops-initiated actions (e.g. "Schedule PM service") had no way to
- * appear on the mechanic's kanban.
+ * Unified fleet state provider. Owns the mutable work-order list and derives
+ * a live `buses` array where each bus's status reflects current work-order
+ * state via `deriveBusStatuses`.
  *
- * Provider lives in <AppShell> so both /fleet-overview and
- * /service-board subscribe to the same store. Session-only state —
- * reloads reset to the seeded mock data.
+ * Replaces the old `WorkOrdersProvider` + `useBuses` pair with a single
+ * context so every view reads the same derived bus array without needing
+ * two separate hook calls.
  */
 
-type WorkOrderDraft = Omit<
-  WorkOrder,
-  "id" | "createdAt" | "stageEnteredAt"
->;
+type WorkOrderDraft = Omit<WorkOrder, "id" | "createdAt" | "stageEnteredAt">;
 
-interface WorkOrdersContextValue {
+interface FleetContextValue {
+  buses: Bus[];
   workOrders: WorkOrder[];
   addWorkOrder: (draft: WorkOrderDraft) => WorkOrder;
   updateStage: (woId: string, stage: WorkOrderStage) => void;
-  /** Full partial update — used by mechanic view for complex transitions. */
   updateWorkOrder: (woId: string, patch: Partial<WorkOrder>) => void;
-  /** Remove a WO from the board entirely (dismiss from Done). */
   dismissWorkOrder: (woId: string) => void;
 }
 
-const WorkOrdersContext = createContext<WorkOrdersContextValue | null>(null);
+const FleetContext = createContext<FleetContextValue | null>(null);
 
-export function WorkOrdersProvider({ children }: { children: ReactNode }) {
+export function FleetProvider({ children }: { children: ReactNode }) {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>(seedWorkOrders);
 
-  // Monotonic WO id counter, seeded from the max id in the initial set.
-  // Using a ref (not state) so id minting is a pure side-effect of
-  // addWorkOrder and isn't duplicated by StrictMode's double-invocation
-  // of setState updaters.
+  // Monotonic WO id counter — ref to avoid StrictMode double-invocation issues.
   const nextIdNumRef = useRef<number>(
     seedWorkOrders.reduce((max, wo) => {
       const n = parseInt(wo.id.replace("WO-", ""), 10);
@@ -93,18 +87,29 @@ export function WorkOrdersProvider({ children }: { children: ReactNode }) {
     setWorkOrders((prev) => prev.filter((wo) => wo.id !== woId));
   }, []);
 
+  const buses = useMemo(
+    () => deriveBusStatuses(baseBuses, workOrders),
+    [workOrders]
+  );
+
   return (
-    <WorkOrdersContext.Provider
-      value={{ workOrders, addWorkOrder, updateStage, updateWorkOrder, dismissWorkOrder }}
+    <FleetContext.Provider
+      value={{
+        buses,
+        workOrders,
+        addWorkOrder,
+        updateStage,
+        updateWorkOrder,
+        dismissWorkOrder,
+      }}
     >
       {children}
-    </WorkOrdersContext.Provider>
+    </FleetContext.Provider>
   );
 }
 
-export function useWorkOrders(): WorkOrdersContextValue {
-  const ctx = useContext(WorkOrdersContext);
-  if (!ctx)
-    throw new Error("useWorkOrders must be used inside <WorkOrdersProvider>");
+export function useFleet(): FleetContextValue {
+  const ctx = useContext(FleetContext);
+  if (!ctx) throw new Error("useFleet must be used inside <FleetProvider>");
   return ctx;
 }

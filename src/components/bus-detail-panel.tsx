@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Bus, BusHistoryEntry, HistoryOutcome, WorkOrder } from "@/data/types";
-import { useWorkOrders } from "@/contexts/work-orders-context";
+import { useFleet } from "@/contexts/fleet-context";
 import { getBusHistory } from "@/data/bus-history";
 import {
   OUTCOME_STYLES,
@@ -116,7 +116,7 @@ export function BusPanelContent({
     topRef.current?.scrollTo(0, 0);
   }, [bus.id]);
 
-  const { workOrders } = useWorkOrders();
+  const { workOrders } = useFleet();
   const color = STATUS_COLORS[bus.status];
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
   const milesLeft = milesUntilPm(bus);

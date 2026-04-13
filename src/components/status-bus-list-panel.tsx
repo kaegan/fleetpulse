@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
-import { useWorkOrders } from "@/contexts/work-orders-context";
-import { useBuses } from "@/hooks/use-buses";
+import { useFleet } from "@/contexts/fleet-context";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
   SEVERITY_COLORS,
@@ -128,8 +127,7 @@ export function BusListPanelContent({
   }, [kind]);
 
   const { scope } = useDepot();
-  const buses = useBuses();
-  const { workOrders } = useWorkOrders();
+  const { buses, workOrders } = useFleet();
   const meta = META[kind];
 
   // WOs indexed by busId for fast lookup in row renderers.

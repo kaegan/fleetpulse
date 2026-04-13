@@ -2,8 +2,7 @@
 
 import { useMemo } from "react";
 import { KpiCard } from "./kpi-card";
-import { useWorkOrders } from "@/contexts/work-orders-context";
-import { useBuses } from "@/hooks/use-buses";
+import { useFleet } from "@/contexts/fleet-context";
 import {
   availabilityHistory,
   depotAvailabilityHistory,
@@ -40,8 +39,7 @@ interface KpiStripProps {
 
 export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
   const { scope } = useDepot();
-  const buses = useBuses();
-  const { workOrders } = useWorkOrders();
+  const { buses, workOrders } = useFleet();
   const scopedBuses = useMemo(() => filterByDepot(buses, scope), [buses, scope]);
   const scopedWorkOrders = useMemo(
     () => filterByDepot(workOrders, scope),

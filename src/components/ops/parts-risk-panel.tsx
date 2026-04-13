@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { parts as partsCatalog } from "@/data/parts";
-import { useWorkOrders } from "@/contexts/work-orders-context";
+import { useFleet } from "@/contexts/fleet-context";
 import { useDepot, type DepotScope } from "@/hooks/use-depot";
 import type { Part } from "@/data/types";
 
@@ -41,7 +41,7 @@ const SCOPE_SUFFIX: Record<DepotScope, string> = {
 
 export function PartsRiskPanel() {
   const { scope } = useDepot();
-  const { workOrders } = useWorkOrders();
+  const { workOrders } = useFleet();
 
   const entries = useMemo<PartsRiskEntry[]>(() => {
     // Count how many scoped WOs reference each part.
