@@ -104,13 +104,6 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge
-            className="px-2.5 py-[3px] gap-1"
-            style={{ color: sev.text, background: sev.bg }}
-          >
-            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
-            {SEVERITY_LABELS[order.severity]}
-          </Badge>
           {order.autoEscalated && (
             <span
               title={ACCESSIBILITY_ESCALATION_NOTICE}
@@ -120,6 +113,13 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
               <IconPersonWheelchairFillDuo18 />
             </span>
           )}
+          <Badge
+            className="px-2.5 py-[3px] gap-1"
+            style={{ color: sev.text, background: sev.bg }}
+          >
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
+            {SEVERITY_LABELS[order.severity]}
+          </Badge>
         </div>
       </div>
 
@@ -205,13 +205,6 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           {agingTag && <AgingTag tag={agingTag} />}
           <TimeDisplay isoDate={order.stageEnteredAt} />
         </div>
-        <Badge
-          className="px-2.5 py-[3px] gap-1"
-          style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
-        >
-          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
-          {SEVERITY_LABELS[order.severity]}
-        </Badge>
         {order.autoEscalated && (
           <span
             title={ACCESSIBILITY_ESCALATION_NOTICE}
@@ -221,6 +214,13 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
             <IconPersonWheelchairFillDuo18 />
           </span>
         )}
+        <Badge
+          className="px-2.5 py-[3px] gap-1"
+          style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
+        >
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
+          {SEVERITY_LABELS[order.severity]}
+        </Badge>
       </div>
     </motion.div>
   );
