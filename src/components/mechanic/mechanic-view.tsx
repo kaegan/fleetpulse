@@ -203,7 +203,15 @@ export function MechanicView() {
 
   const handleUpdateParts = useCallback(
     (woId: string, partsStatus: PartsStatus) => {
-      updateWorkOrder(woId, { partsStatus });
+      // Marking parts resolved (in-stock) or not-needed unblocks any hold that
+      // was set by resolveStageTransition. "not-needed" also clears the parts
+      // list so the Assigned Parts section doesn't contradict the badge.
+      const unblocks = partsStatus === "in-stock" || partsStatus === "not-needed";
+      updateWorkOrder(woId, {
+        partsStatus,
+        ...(partsStatus === "not-needed" ? { parts: [] } : {}),
+        ...(unblocks ? { isHeld: false, blockReason: undefined, blockEta: undefined } : {}),
+      });
     },
     [updateWorkOrder]
   );
@@ -211,12 +219,31 @@ export function MechanicView() {
   const handleUpdatePartsList = useCallback(
     (woId: string, parts: PartRequirement[]) => {
       const wo = orders.find((o) => o.id === woId);
+      if (!wo) return;
       const shouldEscalate =
         parts.length > 0 &&
         hasAccessibilityPart(parts) &&
-        wo?.severity !== "critical";
+        wo.severity !== "critical";
+
+      // Keep partsStatus in sync with the parts list:
+      // - adding the first part to an untracked WO → bump to "needed"
+      // - removing all parts when not yet ordered → reset to "not-needed" and
+      //   clear any hold so the WO is no longer blocked
+      let reconciled: Partial<WorkOrder> = {};
+      if (parts.length > 0 && wo.partsStatus === "not-needed") {
+        reconciled = { partsStatus: "needed" as PartsStatus };
+      } else if (parts.length === 0 && wo.partsStatus === "needed") {
+        reconciled = {
+          partsStatus: "not-needed" as PartsStatus,
+          isHeld: false,
+          blockReason: undefined,
+          blockEta: undefined,
+        };
+      }
+
       updateWorkOrder(woId, {
         parts,
+        ...reconciled,
         ...(shouldEscalate
           ? { severity: "critical" as Severity, autoEscalated: true }
           : {}),
