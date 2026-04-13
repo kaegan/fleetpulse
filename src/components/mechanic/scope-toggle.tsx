@@ -3,7 +3,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { BRAND_COLOR } from "@/lib/constants";
 
-export type Scope = "mine" | "board" | "both";
+export type Scope = "mine" | "board";
 
 interface ScopeToggleProps {
   scope: Scope;
@@ -28,9 +28,6 @@ export function ScopeToggle({ scope, onChange, mineCount, allCount }: ScopeToggl
       <ToggleGroupItem value="board" className="px-4 py-[7px] text-[13px] gap-2">
         Board
         <CountChip count={allCount} active={scope === "board"} />
-      </ToggleGroupItem>
-      <ToggleGroupItem value="both" className="px-4 py-[7px] text-[13px] gap-2">
-        Both
       </ToggleGroupItem>
     </ToggleGroup>
   );
