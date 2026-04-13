@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { KpiStrip } from "./kpi-strip";
 import { FleetHealthChart } from "./fleet-health-chart";
@@ -42,7 +42,7 @@ type OpsPanelEntry =
 export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
   const current = nav.current;
-  const { buses, addWorkOrder } = useFleet();
+  const { buses, workOrders, addWorkOrder } = useFleet();
   const { scope: depotScope } = useDepot();
 
   // Snapshot the last non-null entry so the sheet keeps rendering its
@@ -50,6 +50,19 @@ export function OpsView() {
   const lastEntryRef = useRef<OpsPanelEntry | null>(null);
   if (current !== null) lastEntryRef.current = current;
   const renderEntry = current ?? lastEntryRef.current;
+
+  const livePanelBus = useMemo(() => {
+    if (renderEntry?.kind !== "bus") return null;
+    return buses.find((b) => b.id === renderEntry.bus.id) ?? renderEntry.bus;
+  }, [buses, renderEntry]);
+
+  const livePanelWorkOrder = useMemo(() => {
+    if (renderEntry?.kind !== "workOrder") return null;
+    return (
+      workOrders.find((wo) => wo.id === renderEntry.workOrder.id) ??
+      renderEntry.workOrder
+    );
+  }, [renderEntry, workOrders]);
 
   // Ops-side action: scheduling a PM pulls a bus off the road and into
   // the mechanic's Intake column as a routine WO. Mechanic view leaves
@@ -206,11 +219,11 @@ export function OpsView() {
               )}
               {renderEntry.kind === "bus" && (
                 <BusPanelContent
-                  bus={renderEntry.bus}
+                  bus={livePanelBus ?? renderEntry.bus}
                   onSelectWorkOrder={drillToWorkOrder}
                   onSchedulePm={handleSchedulePm}
                   onSelectHistoryEntry={(entry) =>
-                    drillToHistoryEntry(entry, renderEntry.bus)
+                    drillToHistoryEntry(entry, livePanelBus ?? renderEntry.bus)
                   }
                   backLabel={nav.backButton?.label}
                   onBack={nav.backButton?.onBack}
@@ -221,7 +234,7 @@ export function OpsView() {
                 <WorkOrderPanelContent
                   order={
                     renderEntry.kind === "workOrder"
-                      ? renderEntry.workOrder
+                      ? livePanelWorkOrder
                       : null
                   }
                   historyEntry={
@@ -232,7 +245,7 @@ export function OpsView() {
                   bus={
                     renderEntry.kind === "workOrder"
                       ? (buses.find(
-                          (b) => b.id === renderEntry.workOrder.busId
+                          (b) => b.id === livePanelWorkOrder?.busId
                         ) ?? null)
                       : renderEntry.bus
                   }

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { parts as partsCatalog } from "@/data/parts";
 import { useFleet } from "@/contexts/fleet-context";
 import { useDepot, type DepotScope } from "@/hooks/use-depot";
 import type { Part } from "@/data/types";
@@ -41,19 +40,20 @@ const SCOPE_SUFFIX: Record<DepotScope, string> = {
 
 export function PartsRiskPanel() {
   const { scope } = useDepot();
-  const { workOrders } = useFleet();
+  const { workOrders, parts } = useFleet();
 
   const entries = useMemo<PartsRiskEntry[]>(() => {
     // Count how many scoped WOs reference each part.
     const woPartCounts = new Map<string, number>();
     for (const wo of workOrders) {
+      if (wo.stage === "done") continue;
       if (scope !== "all" && wo.garage !== scope) continue;
       for (const req of wo.parts ?? []) {
         woPartCounts.set(req.partId, (woPartCounts.get(req.partId) ?? 0) + 1);
       }
     }
 
-    return partsCatalog
+    return parts
       .map((part) => {
         const garageStock = stockForScope(part, scope);
         const reorder = reorderForScope(part, scope);
@@ -74,7 +74,7 @@ export function PartsRiskPanel() {
         return a.daysUntilStockout - b.daysUntilStockout;
       })
       .slice(0, MAX_ROWS);
-  }, [scope, workOrders]);
+  }, [parts, scope, workOrders]);
 
   if (entries.length === 0) {
     return (

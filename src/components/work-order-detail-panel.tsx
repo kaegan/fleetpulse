@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder, WorkOrderStage } from "@/data/types";
+import type { Bus, BusHistoryEntry, Garage, Part, PartRequirement, WorkOrder, WorkOrderStage } from "@/data/types";
 import { analytics } from "@/lib/analytics";
-import { parts as partsCatalog } from "@/data/parts";
+import { useFleet } from "@/contexts/fleet-context";
 import {
   STAGE_LABELS,
   PARTS_STATUS_LABELS,
@@ -181,6 +181,10 @@ export function WorkOrderPanelContent({
   // context (always passed in alongside the entry by the drill caller).
   const busNumber = order ? order.busNumber : bus?.busNumber ?? "—";
   const outcome = historyEntry ? OUTCOME_STYLES[historyEntry.outcome] : null;
+  const { completedWorkOrders } = useFleet();
+  const archivedOrder = historyEntry
+    ? (completedWorkOrders.find((wo) => wo.id === historyEntry.id) ?? null)
+    : null;
 
   return (
     <div ref={topRef} className="p-5 sm:p-7">
@@ -237,7 +241,7 @@ export function WorkOrderPanelContent({
       {order ? (
         <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} onDismiss={onDismiss} />
       ) : (
-        <HistoryEntryBody entry={historyEntry!} />
+        <HistoryEntryBody entry={historyEntry!} archivedOrder={archivedOrder} />
       )}
 
       {/* ── Bus context ────────────────────────────────────────────────── */}
@@ -401,7 +405,13 @@ function ActiveWorkOrderBody({
   );
 }
 
-function HistoryEntryBody({ entry }: { entry: BusHistoryEntry }) {
+function HistoryEntryBody({
+  entry,
+  archivedOrder,
+}: {
+  entry: BusHistoryEntry;
+  archivedOrder: WorkOrder | null;
+}) {
   return (
     <>
       {/* ── Service Details ────────────────────────────────────────────── */}
@@ -426,6 +436,18 @@ function HistoryEntryBody({ entry }: { entry: BusHistoryEntry }) {
           </div>
         </>
       )}
+
+      {archivedOrder && (
+        <>
+          <PartsRequiredSection order={archivedOrder} />
+
+          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Original Timeline</h3>
+          <InfoGrid cols={2}>
+            <InfoRow label="Opened" value={formatOpenedDate(archivedOrder.createdAt)} />
+            <InfoRow label="Completed" value={formatOpenedDate(archivedOrder.stageEnteredAt)} />
+          </InfoGrid>
+        </>
+      )}
     </>
   );
 }
@@ -439,6 +461,7 @@ function PartsRequiredSection({
   order: WorkOrder;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
 }) {
+  const { parts: partsCatalog } = useFleet();
   const parts = order.parts ?? [];
   if (parts.length === 0 && !onUpdateParts) return null;
 
@@ -492,6 +515,9 @@ function PartsRequiredSection({
                 key={req.partId}
                 req={req}
                 garage={order.garage}
+                catalogPart={
+                  partsCatalog.find((part) => part.id === req.partId) ?? null
+                }
                 editable={!!onUpdateParts}
                 onRemove={() => handleRemove(req.partId)}
                 onRequestTransfer={
@@ -536,17 +562,18 @@ function PartsRequiredSection({
 function PartRow({
   req,
   garage,
+  catalogPart,
   editable,
   onRemove,
   onRequestTransfer,
 }: {
   req: PartRequirement;
   garage: Garage;
+  catalogPart: Part | null;
   editable: boolean;
   onRemove: () => void;
   onRequestTransfer?: () => void;
 }) {
-  const catalogPart = partsCatalog.find((p) => p.id === req.partId);
   const garageStock = catalogPart
     ? garage === "north"
       ? catalogPart.stockNorth

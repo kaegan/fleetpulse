@@ -47,6 +47,14 @@ function resolveStageTransition(
   wo: WorkOrder,
   requested: WorkOrderStage
 ): { stage: WorkOrderStage; isHeld?: boolean; blockReason?: BlockReason; notice?: string } {
+  if (wo.stage === "done" && requested !== "done") {
+    return {
+      stage: "done",
+      isHeld: false,
+      notice: "This work order is completed. Dismiss it from the board when you're ready.",
+    };
+  }
+
   const isForward = stageIndex(requested) > stageIndex(wo.stage);
   if (!isForward) return { stage: requested, isHeld: false };
 
@@ -185,6 +193,10 @@ export function MechanicView() {
         blockReason: isHeld ? (blockReason ?? wo.blockReason) : undefined,
         blockEta: isHeld ? wo.blockEta : undefined,
       });
+
+      if (wo.stage !== "done" && stage === "done") {
+        toast("Completion recorded — service history and stock updated.");
+      }
     },
     [orders, updateWorkOrder]
   );
@@ -300,6 +312,11 @@ export function MechanicView() {
     () => (liveWo ? buses.find((b) => b.id === liveWo.busId) ?? null : null),
     [buses, liveWo]
   );
+
+  const livePanelBus = useMemo(() => {
+    if (renderEntry?.kind !== "bus") return null;
+    return buses.find((b) => b.id === renderEntry.bus.id) ?? renderEntry.bus;
+  }, [buses, renderEntry]);
 
   // Auto-close when a WO is completed and removed from orders. This
   // preserves the existing behavior where completing a card closes the
@@ -424,10 +441,10 @@ export function MechanicView() {
             >
               {renderEntry.kind === "bus" && (
                 <BusPanelContent
-                  bus={renderEntry.bus}
+                  bus={livePanelBus ?? renderEntry.bus}
                   onSelectWorkOrder={drillToWorkOrder}
                   onSelectHistoryEntry={(entry) =>
-                    drillToHistoryEntry(entry, renderEntry.bus)
+                    drillToHistoryEntry(entry, livePanelBus ?? renderEntry.bus)
                   }
                   backLabel={nav.backButton?.label}
                   onBack={nav.backButton?.onBack}
