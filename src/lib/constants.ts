@@ -241,6 +241,15 @@ export const KANBAN_STAGE_PILLS: Record<
 /** Copper accent for held-state badges and pills. */
 export const HELD_PILL = { color: "#b4541a", bg: "#fff4ed" } as const;
 
+/** Neutral pipeline colors — decoupled from severity so the tracker
+ *  doesn't clash with severity badges elsewhere in the UI. */
+export const PIPELINE_NEUTRAL = {
+  dot: "#6a6a6a",
+  bg: "#f5f5f5",
+  border: "#6a6a6a",
+  text: "#6a6a6a",
+} as const;
+
 /**
  * Cross-depot parts availability tip for held WOs.
  * When a repair is blocked on parts, the same part may be in stock at the

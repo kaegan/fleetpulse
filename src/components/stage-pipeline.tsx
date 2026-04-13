@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import {
   STAGE_ORDER,
-  SEVERITY_COLORS,
+  PIPELINE_NEUTRAL,
   STAGE_LABELS,
   getStageStates,
 } from "@/lib/constants";
@@ -46,7 +46,7 @@ export function StagePipeline({
   animated = true,
   staggerDelay = 0,
 }: StagePipelineProps) {
-  const sev = SEVERITY_COLORS[severity];
+  const pal = PIPELINE_NEUTRAL;
   const circleSize = size === "lg" ? 36 : 26;
   const connectorHeight = size === "lg" ? 3 : 2;
   const showLabels = size === "lg";
@@ -67,15 +67,15 @@ export function StagePipeline({
 
           switch (state) {
             case "complete":
-              bg = sev.dot;
+              bg = pal.dot;
               border = "none";
               color = "#ffffff";
               glyph = "\u2713";
               break;
             case "current":
-              bg = sev.bg;
-              border = `2px solid ${sev.border}`;
-              color = sev.dot;
+              bg = pal.bg;
+              border = `2px solid ${pal.border}`;
+              color = pal.dot;
               glyph = String(idx + 1);
               break;
             case "current-held":
@@ -105,7 +105,7 @@ export function StagePipeline({
             state === "current-held"
               ? HELD_TEXT
               : state === "current"
-                ? sev.text
+                ? pal.text
                 : state === "complete"
                   ? "#6a6a6a"
                   : "#b5b5b5"; // pending muted
@@ -200,7 +200,7 @@ export function StagePipeline({
                   style={{
                     flex: 1,
                     height: connectorHeight,
-                    background: connectorSolid ? sev.dot : "rgba(0,0,0,0.06)",
+                    background: connectorSolid ? pal.dot : "rgba(0,0,0,0.06)",
                     marginLeft: 2,
                     marginRight: 2,
                     marginTop: circleSize / 2 - connectorHeight / 2,
