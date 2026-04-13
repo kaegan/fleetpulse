@@ -196,6 +196,25 @@ export const busHistory: Record<number, BusHistoryEntry[]> = {
     },
   ],
 
+  // ── Greg's triage bus: recent brake work at South, uneven wear flagged ──────
+  // Bus 015 (North, running) had brake pads replaced at South 22 days ago.
+  // When Greg opens Log Repair → picks Bus 015 → taps "Brakes", the
+  // SimilarIssuesPeek fires AND the CrossGarageInlineWarning shows — two
+  // features in one flow. The note about uneven wear gives Greg reason to
+  // investigate the caliper alignment (the root cause causing rapid re-wear).
+  15: [
+    {
+      id: "WO-1190",
+      date: daysAgo(10),
+      garage: "south",
+      issue: "Brake pad replacement",
+      severity: "routine",
+      mechanicName: "Chen, R.",
+      outcome: "completed",
+      note: "Pads worn unevenly — possible caliper alignment issue. Monitor on next service.",
+    },
+  ],
+
   // ── Bus with no history (empty state demo) ──────────────────────────────
   // Bus 41 intentionally has no history — newer to fleet or just no prior WOs.
   41: [],

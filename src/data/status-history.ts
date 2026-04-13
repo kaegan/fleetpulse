@@ -77,34 +77,35 @@ function generateSeries(
 function buildHistory(): Record<BusStatus, StatusDataPoint[]> {
   const counts = getStatusCounts(buses);
 
-  // Story framing (matches the availability-history narrative at ~85% → ~88%):
-  // fleet has been improving — in-maintenance + road calls trending down, PM
-  // Due drifting down as overdue buses get pulled in. Running is derived as
-  // the residual (fleetTotal − others) so daily sums always equal 300.
+  // Story framing (matches the availability-history narrative at ~80% → ~88%):
+  // Transitland ~1 month into FleetPulse — bigger backlogs at the start as
+  // the team gained visibility and cleared work. PM Due drifting down as ops
+  // pulls in overdue buses. Running is derived as the residual (fleetTotal −
+  // others) so daily sums always equal 300.
 
   // Generate the three smaller series independently, then derive running.
   const pmDue = generateSeries(counts["pm-due"], {
-    startValue: 14, // 4 above today — trending down as ops pulls in overdue buses
+    startValue: 20, // ~10 above today — larger PM backlog when FleetPulse first surfaced it
     seed: 307,
     jitter: 1.5,
     min: 8,
-    max: 18,
+    max: 24,
   });
 
   const inMaintenance = generateSeries(counts["in-maintenance"], {
-    startValue: 32, // 6 above today — trending down as shop clears backlog
+    startValue: 38, // ~11 above today — more buses stuck in shop before ops got visibility
     seed: 401,
     jitter: 2.0,
     min: 22,
-    max: 36,
+    max: 42,
   });
 
   const roadCall = generateSeries(counts["road-call"], {
-    startValue: 12, // 3 above today — trending down
+    startValue: 15, // ~6 above today — more breakdowns before PM compliance improved
     seed: 509,
     jitter: 1.5,
     min: 5,
-    max: 14,
+    max: 17,
   });
 
   // Running = fleet total − others. Guarantees sum = 300 every day.
