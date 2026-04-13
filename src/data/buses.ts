@@ -1,14 +1,18 @@
 import type { Bus, BusStatus } from "./types";
 import { PM_INTERVAL_MILES } from "@/lib/constants";
+import { workOrders as seedWorkOrders } from "./work-orders";
+import { deriveBusStatuses } from "@/lib/derive-bus-statuses";
 
 /**
  * 300 deterministic bus records.
  * #001–#175 = North Garage, #176–#300 = South Garage
  *
- * Status distribution (fixed, not random):
- * ~85% running (255), ~3% PM due (10), ~9% in-maintenance (26), ~3% road-call (9)
+ * Base status distribution (before work-order derivation):
+ * ~88% running (265), ~3% PM due (10), ~0% in-maintenance (0), ~3% road-call (9)
  *
- * Buses with active work orders are explicitly set to "in-maintenance".
+ * "In-maintenance" is derived from active work orders via deriveBusStatuses().
+ * After derivation with seed WOs: ~27 in-maintenance, ~238 running, 10 PM due, 9 road-call.
+ *
  * PM-due buses genuinely have mileage > nextPmDueMileage (usage-based triggers).
  */
 
@@ -28,20 +32,6 @@ function seededRandom(seed: number): () => number {
     return (s - 1) / 2147483646;
   };
 }
-
-// IDs of buses that have active work orders — always "in-maintenance".
-// Includes the 10 featured WOs plus 2 pre-seeded PM-A intake WOs (55, 220)
-// representing pull-ins ops has already scheduled.
-const WO_BUS_IDS = new Set([
-  147, 203, 89, 56, 78, 195, 267, 41, 182, 112,
-  55, 220,
-]);
-
-// Additional buses in maintenance (in the shop but no featured work order).
-// Combined with WO_BUS_IDS this gives us ~24 in maintenance total (20-30 per brief).
-const ADDITIONAL_MAINTENANCE_IDS = new Set([
-  10, 37, 49, 62, 99, 131, 145, 185, 215, 245, 275, 290, 295, 300,
-]);
 
 // Manually pick which bus IDs are *still on the road* with overdue PM — the
 // actionable backlog the ops manager sees in the ActionCard. Shrunk from 30
@@ -64,11 +54,9 @@ function generateBuses(): Bus[] {
     const garage = i <= 175 ? "north" : "south";
     const busNumber = String(i).padStart(3, "0");
 
-    // Determine status
+    // Determine base status — in-maintenance is derived from work orders
     let status: BusStatus;
-    if (WO_BUS_IDS.has(i) || ADDITIONAL_MAINTENANCE_IDS.has(i)) {
-      status = "in-maintenance";
-    } else if (ROAD_CALL_IDS.has(i)) {
+    if (ROAD_CALL_IDS.has(i)) {
       status = "road-call";
     } else if (PM_DUE_IDS.has(i)) {
       status = "pm-due";
@@ -114,4 +102,14 @@ function generateBuses(): Bus[] {
   return buses;
 }
 
-export const buses = generateBuses();
+/** Raw bus array — no in-maintenance status. Use `useBuses()` in components. */
+export const baseBuses = generateBuses();
+
+/**
+ * Seed-derived bus array: base statuses overridden by the seed work orders.
+ * Used by module-scope history generators (status-history.ts,
+ * availability-history.ts) that need deterministic data at import time.
+ *
+ * Components should use the `useBuses()` hook instead for live-reactive data.
+ */
+export const buses = deriveBusStatuses(baseBuses, seedWorkOrders);

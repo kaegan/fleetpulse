@@ -19,8 +19,8 @@ import {
   ResponsiveSheetTitle,
   ResponsiveSheetDescription,
 } from "@/components/ui/responsive-sheet";
-import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
+import { useBuses } from "@/hooks/use-buses";
 import { usePanelNav } from "@/hooks/use-panel-nav";
 import { useDepot } from "@/hooks/use-depot";
 import { milesUntilPm } from "@/lib/utils";
@@ -41,6 +41,7 @@ type OpsPanelEntry =
 export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
   const current = nav.current;
+  const buses = useBuses();
   const { addWorkOrder } = useWorkOrders();
   const { scope: depotScope } = useDepot();
 

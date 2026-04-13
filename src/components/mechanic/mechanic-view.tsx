@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/responsive-sheet";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
+import { useBuses } from "@/hooks/use-buses";
 import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { analytics } from "@/lib/analytics";
@@ -89,6 +89,7 @@ type MechanicPanelEntry =
   | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function MechanicView() {
+  const buses = useBuses();
   const { workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
     useWorkOrders();
   const [scope, setScope] = useState<Scope>("mine");
@@ -270,7 +271,7 @@ export function MechanicView() {
 
   const liveWoBus = useMemo(
     () => (liveWo ? buses.find((b) => b.id === liveWo.busId) ?? null : null),
-    [liveWo]
+    [buses, liveWo]
   );
 
   // Auto-close when a WO is completed and removed from orders. This
