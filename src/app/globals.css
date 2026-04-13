@@ -23,10 +23,10 @@
   --destructive-foreground: #ffffff;
   --input: var(--color-border-strong);
   --ring: var(--color-brand);
-  --radius: 14px;
+  --radius: 8px;
 
   /* Sidebar — matches the NavRail neutral the project shipped with. */
-  --sidebar: #fafafa;
+  --sidebar: #ffffff;
   --sidebar-foreground: var(--color-text-primary);
   --sidebar-primary: var(--color-brand);
   --sidebar-primary-foreground: #ffffff;
@@ -44,7 +44,7 @@
 
   /* Surfaces */
   --color-surface: #ffffff;
-  --color-surface-warm: #f5f5f7;
+  --color-surface-warm: #fafafa;
   --color-surface-hover: #fafaf9;
   --color-card-hover: #fafaf9;
 
@@ -97,10 +97,10 @@
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-strong: rgba(0, 0, 0, 0.12);
 
-  /* Shadows — ultra-soft */
-  --shadow-card: 0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04);
-  --shadow-card-hover: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.06), 0px 8px 16px rgba(0,0,0,0.06);
-  --shadow-panel: 0px 0px 0px 1px rgba(0,0,0,0.04), 0px 8px 24px rgba(0,0,0,0.06), 0px 16px 32px rgba(0,0,0,0.04);
+  /* Shadows — shadcn middle ground: border ring + 1px bottom shadow */
+  --shadow-card: 0px 0px 0px 1px rgba(0,0,0,0.08), 0px 1px 2px 0px rgba(0,0,0,0.05);
+  --shadow-card-hover: 0px 0px 0px 1px rgba(0,0,0,0.12), 0px 2px 4px 0px rgba(0,0,0,0.07);
+  --shadow-panel: 0px 0px 0px 1px rgba(0,0,0,0.08), 0px 2px 6px 0px rgba(0,0,0,0.06);
 
   /* Scrollbar + scrim */
   --color-scrollbar-thumb: rgba(0, 0, 0, 0.15);
@@ -108,14 +108,15 @@
   --color-scrim: rgba(0, 0, 0, 0.35);
 
   /* Radius */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-pill: 999px;
 
   /* Font */
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
 
   /* shadcn semantic colors — bridge :root vars into Tailwind utilities
    * (bg-background, text-foreground, border-input, ring-ring, etc.) */
@@ -153,7 +154,7 @@ body {
   background: var(--color-surface-warm);
   color: var(--color-text-primary);
   font-family: var(--font-sans), -apple-system, system-ui, sans-serif;
-  letter-spacing: -0.31px;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

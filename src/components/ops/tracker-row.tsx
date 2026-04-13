@@ -43,9 +43,9 @@ function getAgingTag(
 }
 
 const RESTING_SHADOW =
-  "0px 0px 0px 1px rgba(0,0,0,0.02), 0px 2px 6px rgba(0,0,0,0.03), 0px 4px 8px rgba(0,0,0,0.04)";
+  "0px 0px 0px 1px rgba(0,0,0,0.08), 0px 1px 2px 0px rgba(0,0,0,0.05)";
 const HOVER_SHADOW =
-  "0px 0px 0px 1px rgba(0,0,0,0.04), 0px 4px 12px rgba(0,0,0,0.05), 0px 8px 18px rgba(0,0,0,0.05)";
+  "0px 0px 0px 1px rgba(0,0,0,0.12), 0px 2px 4px 0px rgba(0,0,0,0.07)";
 
 export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps) {
   const sev = SEVERITY_COLORS[order.severity];
@@ -70,7 +70,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         e.currentTarget.style.transform = "translateY(0)";
       }}
       data-slot="card"
-      className="flex flex-col gap-3 rounded-[16px] bg-card p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
+      className="flex flex-col gap-3 rounded-lg bg-card p-3.5 lg:flex-row lg:items-center lg:gap-5 lg:p-[14px_18px]"
       style={{
         boxShadow: RESTING_SHADOW,
         cursor: onSelectWorkOrder ? "pointer" : "default",
@@ -95,7 +95,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
               fontSize: 11,
               fontWeight: 500,
               color: "#b5b5b5",
-              fontFamily: "monospace",
+              fontFamily: "var(--font-mono)",
             }}
           >
             {order.id}
@@ -117,7 +117,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
             fontSize: 14,
             fontWeight: 700,
             color: "#222222",
-            letterSpacing: "-0.02em",
+            fontFamily: "var(--font-mono)",
           }}
         >
           Bus #{order.busNumber}
@@ -127,7 +127,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
             fontSize: 11,
             fontWeight: 500,
             color: "#b5b5b5",
-            fontFamily: "monospace",
+            fontFamily: "var(--font-mono)",
           }}
         >
           {order.id}

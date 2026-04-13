@@ -96,21 +96,25 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
               <Sparkles />
               What&apos;s new
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <Settings />
-              Account settings
-              <span className="ml-auto text-[11px] font-medium text-muted-foreground">
-                Soon
-              </span>
-            </DropdownMenuItem>
+            <div className="group/menu-item">
+              <DropdownMenuItem disabled>
+                <Settings />
+                Account settings
+                <span className="ml-auto text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover/menu-item:opacity-100">
+                  Coming Soon
+                </span>
+              </DropdownMenuItem>
+            </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>
-              <LogOut />
-              Sign out
-              <span className="ml-auto text-[11px] font-medium text-muted-foreground">
-                Soon
-              </span>
-            </DropdownMenuItem>
+            <div className="group/menu-item">
+              <DropdownMenuItem disabled>
+                <LogOut />
+                Sign out
+                <span className="ml-auto text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover/menu-item:opacity-100">
+                  Coming Soon
+                </span>
+              </DropdownMenuItem>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
