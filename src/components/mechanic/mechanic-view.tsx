@@ -245,7 +245,7 @@ export function MechanicView() {
         scope === "mine"
           ? {
               action: {
-                label: "View on Board →",
+                label: "View on Board",
                 onClick: () => setScope("board"),
               },
             }

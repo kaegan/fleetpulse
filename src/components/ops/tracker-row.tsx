@@ -183,39 +183,44 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         {agingTag && <AgingTag tag={agingTag} />}
       </div>
 
-      {/* Desktop-only: Time in status + aging tag */}
+      {/* Desktop-only: Time + Severity + ADA badge in a fixed-width group
+          so the pipeline (flex-1) always gets the same width regardless of
+          whether an ADA badge is present. */}
       <div
-        className="hidden items-center justify-end gap-2 lg:flex"
-        style={{
-          width: 120,
-          flexShrink: 0,
-          textAlign: "right",
-          fontSize: 12,
-          fontWeight: 500,
-          color: "#929292",
-        }}
+        className="hidden lg:flex items-center justify-end gap-2"
+        style={{ width: 280, flexShrink: 0 }}
       >
-        {agingTag && <AgingTag tag={agingTag} />}
-        <TimeDisplay isoDate={order.stageEnteredAt} />
-      </div>
-
-      {/* Desktop-only: Severity badge */}
-      <Badge
-        className="hidden lg:inline-flex px-2.5 py-[3px] gap-1"
-        style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
-      >
-        <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
-        {SEVERITY_LABELS[order.severity]}
-      </Badge>
-      {order.autoEscalated && (
-        <Badge
-          className="hidden lg:inline-flex px-2 py-[3px] gap-1"
-          title={ACCESSIBILITY_ESCALATION_NOTICE}
-          style={{ color: "#1e40af", background: "#eff6ff", border: "1px solid #bfdbfe", flexShrink: 0 }}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            gap: 6,
+            fontSize: 12,
+            fontWeight: 500,
+            color: "#929292",
+          }}
         >
-          ♿ ADA
+          {agingTag && <AgingTag tag={agingTag} />}
+          <TimeDisplay isoDate={order.stageEnteredAt} />
+        </div>
+        <Badge
+          className="px-2.5 py-[3px] gap-1"
+          style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
+        >
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
+          {SEVERITY_LABELS[order.severity]}
         </Badge>
-      )}
+        {order.autoEscalated && (
+          <Badge
+            className="px-2 py-[3px] gap-1"
+            title={ACCESSIBILITY_ESCALATION_NOTICE}
+            style={{ color: "#1e40af", background: "#eff6ff", border: "1px solid #bfdbfe", flexShrink: 0 }}
+          >
+            <IconAccessibilityFillDuo18 /> ADA
+          </Badge>
+        )}
+      </div>
     </motion.div>
   );
 }

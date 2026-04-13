@@ -16,6 +16,7 @@ import {
   SEVERITY_ICONS,
   STAGE_LABELS,
 } from "@/lib/constants";
+import { IconAlertWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   formatNumber,
   milesUntilPm,
@@ -462,7 +463,7 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
         }}
         aria-hidden
       >
-        ⚠️
+        <IconAlertWarningFillDuo18 />
       </div>
       <div style={{ flex: 1 }}>
         <div
