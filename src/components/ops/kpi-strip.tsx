@@ -21,7 +21,7 @@ import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { KPI_PILLS, getAvailabilityTierColor } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
-  IconBoltSpeedFillDuo18,
+  IconHandFillDuo18,
   IconWrenchFillDuo18,
   IconGearsFillDuo18,
   IconSirenFillDuo18,
@@ -35,9 +35,10 @@ const SCOPE_LABEL: Record<"all" | "north" | "south", string> = {
 
 interface KpiStripProps {
   onOpenStatusList: (status: BusStatus) => void;
+  onOpenHeldList: () => void;
 }
 
-export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
+export function KpiStrip({ onOpenStatusList, onOpenHeldList }: KpiStripProps) {
   const { scope } = useDepot();
   const { buses, workOrders } = useFleet();
   const scopedBuses = useMemo(() => filterByDepot(buses, scope), [buses, scope]);
@@ -85,6 +86,17 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
   const yesterday = (status: BusStatus) =>
     getYesterdayCount(status, scope === "all" ? undefined : scope);
 
+  // Held repairs: WOs blocked on parts, approvals, etc.
+  const heldWos = useMemo(
+    () => scopedWorkOrders.filter((wo) => wo.isHeld),
+    [scopedWorkOrders]
+  );
+  const heldCount = heldWos.length;
+  const heldBusCount = useMemo(
+    () => new Set(heldWos.map((wo) => wo.busId)).size,
+    [heldWos]
+  );
+
   const p = KPI_PILLS;
 
   // Breakpoint rationale: the count column (1fr of [1.2fr_1fr]) must be
@@ -111,17 +123,15 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
       />
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <KpiCard
-          label="Running"
-          value={counts.running}
+          label="Repairs on Hold"
+          value={heldCount}
           color="#222222"
-          pillColor={p.Running.color}
-          pillBg={p.Running.bg}
-          pillIcon={<IconBoltSpeedFillDuo18 />}
-          yesterdayValue={yesterday("running")}
-          forecastValue={forecastCounts.running}
-          deltaDirection="up-is-good"
-          onClick={() => onOpenStatusList("running")}
-          ariaLabel={`Show ${counts.running} running buses`}
+          pillColor={p["Repairs on Hold"].color}
+          pillBg={p["Repairs on Hold"].bg}
+          pillIcon={<IconHandFillDuo18 />}
+          subtitle={`${heldBusCount} ${heldBusCount === 1 ? "bus" : "buses"} waiting`}
+          onClick={onOpenHeldList}
+          ariaLabel={`Show ${heldCount} held repairs`}
         />
         <KpiCard
           label="PM Compliance"

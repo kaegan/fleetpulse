@@ -48,7 +48,7 @@ const META: Record<BusListKind, StatusMeta> = {
     heading: "On the road",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} running right now. Nothing here needs your attention.`,
-    emptyMessage: "No buses running in this depot.",
+    emptyMessage: "No buses running in this garage.",
   },
   "pm-due": {
     pillLabel: "Preventive Maintenance Due",
@@ -69,7 +69,7 @@ const META: Record<BusListKind, StatusMeta> = {
     heading: "Road-called today",
     subtitle: (n) =>
       `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
-    emptyMessage: "No road calls in this depot today.",
+    emptyMessage: "No road calls in this garage today.",
   },
 };
 

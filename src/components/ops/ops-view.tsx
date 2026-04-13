@@ -11,6 +11,7 @@ import {
   getBusListPillLabel,
   type BusListKind,
 } from "@/components/status-bus-list-panel";
+import { HeldRepairsPanelContent } from "./held-repairs-panel";
 import { PartsRiskPanel } from "./parts-risk-panel";
 import { WorkOrderTracker } from "./work-order-tracker";
 import {
@@ -33,6 +34,7 @@ import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
 // machinery.
 type OpsPanelEntry =
   | { kind: "busList"; label: string; busListKind: BusListKind }
+  | { kind: "heldList"; label: string }
   | { kind: "bus"; label: string; bus: Bus }
   | { kind: "workOrder"; label: string; workOrder: WorkOrder }
   | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
@@ -85,6 +87,8 @@ export function OpsView() {
       label: getBusListPillLabel(busListKind),
       busListKind,
     });
+  const openHeldList = () =>
+    nav.open({ kind: "heldList", label: "Repairs on Hold" });
   const openBusRoot = (bus: Bus) => {
     analytics.busDetailOpened(bus.id, "chart");
     if (depotScope !== "all" && bus.garage !== depotScope) {
@@ -140,7 +144,7 @@ export function OpsView() {
         </p>
       </div>
 
-      <KpiStrip onOpenStatusList={openBusList} />
+      <KpiStrip onOpenStatusList={openBusList} onOpenHeldList={openHeldList} />
       <div className="mb-6">
         <FleetHealthChart onBusClick={openBusRoot} />
       </div>
@@ -161,20 +165,24 @@ export function OpsView() {
           <ResponsiveSheetTitle className="sr-only">
             {renderEntry?.kind === "busList"
               ? "Bus list"
-              : renderEntry?.kind === "bus"
-                ? `Bus #${renderEntry.bus.busNumber} details`
-                : renderEntry?.kind === "workOrder"
-                  ? `Work order ${renderEntry.workOrder.id} details`
-                  : renderEntry?.kind === "historyEntry"
-                    ? `Service history ${renderEntry.entry.id} details`
-                    : "Panel"}
+              : renderEntry?.kind === "heldList"
+                ? "Repairs on hold"
+                : renderEntry?.kind === "bus"
+                  ? `Bus #${renderEntry.bus.busNumber} details`
+                  : renderEntry?.kind === "workOrder"
+                    ? `Work order ${renderEntry.workOrder.id} details`
+                    : renderEntry?.kind === "historyEntry"
+                      ? `Service history ${renderEntry.entry.id} details`
+                      : "Panel"}
           </ResponsiveSheetTitle>
           <ResponsiveSheetDescription className="sr-only">
             {renderEntry?.kind === "busList"
               ? "Filtered list of buses matching the selected fleet status."
-              : renderEntry?.kind === "bus"
-                ? "Vehicle info, preventive maintenance status, active work orders, and service history."
-                : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
+              : renderEntry?.kind === "heldList"
+                ? "Work orders currently blocked, sorted by time in shop."
+                : renderEntry?.kind === "bus"
+                  ? "Vehicle info, preventive maintenance status, active work orders, and service history."
+                  : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
           </ResponsiveSheetDescription>
           {renderEntry && (
             <div
@@ -185,6 +193,11 @@ export function OpsView() {
                 <BusListPanelContent
                   kind={renderEntry.busListKind}
                   onSelectBus={drillToBus}
+                />
+              )}
+              {renderEntry.kind === "heldList" && (
+                <HeldRepairsPanelContent
+                  onSelectWorkOrder={drillToWorkOrder}
                 />
               )}
               {renderEntry.kind === "bus" && (
