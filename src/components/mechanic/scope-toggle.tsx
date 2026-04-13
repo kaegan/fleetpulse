@@ -22,11 +22,11 @@ export function ScopeToggle({ scope, onChange, mineCount, allCount }: ScopeToggl
       className="p-1"
     >
       <ToggleGroupItem value="mine" className="px-4 py-[7px] text-[13px] gap-2">
-        Mine
+        My repairs
         <CountChip count={mineCount} active={scope === "mine"} />
       </ToggleGroupItem>
       <ToggleGroupItem value="board" className="px-4 py-[7px] text-[13px] gap-2">
-        Board
+        All repairs
         <CountChip count={allCount} active={scope === "board"} />
       </ToggleGroupItem>
     </ToggleGroup>
