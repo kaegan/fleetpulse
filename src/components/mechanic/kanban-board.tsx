@@ -5,7 +5,6 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
-  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -41,11 +40,11 @@ export function KanbanBoard({
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Mouse: 5px distance so clicks on interactive children aren't hijacked.
-  // Touch: 250ms hold before drag activates — swipes are ignored so they
-  // don't accidentally move a card.
+  // Touch dragging is intentionally disabled — horizontal scroll and card drag
+  // are irreconcilable on a horizontally-scrolling board. Use the Advance
+  // buttons on each card to move work orders on touch devices.
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
 
   const activeOrder = activeId
