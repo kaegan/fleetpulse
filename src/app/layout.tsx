@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AppShell } from "@/components/app-shell";
 import { PHProvider } from "@/providers/posthog";
 import { PostHogPageView } from "@/components/posthog-page-view";
+import { Analytics } from "@vercel/analytics/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -49,6 +50,7 @@ export default async function RootLayout({
           <AppShell defaultOpen={defaultOpen}>{children}</AppShell>
           <Toaster />
         </PHProvider>
+        <Analytics />
       </body>
     </html>
   );
