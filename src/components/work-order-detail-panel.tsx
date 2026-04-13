@@ -59,8 +59,6 @@ interface WorkOrderDetailPanelProps {
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   /** When provided, the progress section shows a stage-advance button. Mechanic view passes this. */
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
-  /** Dismiss a completed (done) work order. Paired with onStageChange. */
-  onDismiss?: (woId: string) => void;
 }
 
 export function WorkOrderDetailPanel({
@@ -73,7 +71,6 @@ export function WorkOrderDetailPanel({
   onBack,
   onUpdateParts,
   onStageChange,
-  onDismiss,
 }: WorkOrderDetailPanelProps) {
   // Snapshot the last non-null record so the sheet keeps rendering its
   // contents through the close animation after the parent clears the props.
@@ -131,7 +128,6 @@ export function WorkOrderDetailPanel({
             onBack={onBack}
             onUpdateParts={onUpdateParts}
             onStageChange={onStageChange}
-            onDismiss={onDismiss}
           />
         )}
       </ResponsiveSheetContent>
@@ -148,7 +144,6 @@ export function WorkOrderPanelContent({
   onBack,
   onUpdateParts,
   onStageChange,
-  onDismiss,
 }: {
   order: WorkOrder | null;
   historyEntry: BusHistoryEntry | null;
@@ -158,7 +153,6 @@ export function WorkOrderPanelContent({
   onBack?: () => void;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
-  onDismiss?: (woId: string) => void;
 }) {
   // Scroll the panel back to top when content swaps in place (same panel
   // type, different record). Without this the user would land mid-scroll
@@ -239,7 +233,7 @@ export function WorkOrderPanelContent({
       )}
 
       {order ? (
-        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} onDismiss={onDismiss} />
+        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} />
       ) : (
         <HistoryEntryBody entry={historyEntry!} archivedOrder={archivedOrder} />
       )}
@@ -295,12 +289,10 @@ function ActiveWorkOrderBody({
   order,
   onUpdateParts,
   onStageChange,
-  onDismiss,
 }: {
   order: WorkOrder;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
-  onDismiss?: (woId: string) => void;
 }) {
   const next = nextStage(order.stage);
   const terminal = isTerminalStage(order.stage);
@@ -350,17 +342,6 @@ function ActiveWorkOrderBody({
             onClick={() => onStageChange(order.id, next)}
           >
             Move to {STAGE_LABELS[next]} <span aria-hidden>&rarr;</span>
-          </Button>
-        </div>
-      )}
-      {onDismiss && terminal && (
-        <div className="mt-2.5 mb-[26px]">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onDismiss(order.id)}
-          >
-            Dismiss
           </Button>
         </div>
       )}
