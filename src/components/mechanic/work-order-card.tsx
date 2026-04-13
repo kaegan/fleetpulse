@@ -224,8 +224,10 @@ export function WorkOrderCard({
       {!isOverlay && (
         <div className="hidden [@media(pointer:coarse)]:block">
           <Separator />
-          <CardFooter className={`px-4 py-2 ${prev ? "justify-between" : "justify-end"}`}>
-            {prev && onRetreat && (
+          <CardFooter
+            className={`px-4 py-2 ${prev && !terminal ? "justify-between" : "justify-end"}`}
+          >
+            {prev && !terminal && onRetreat && (
               <Button
                 variant="ghost"
                 size="sm"

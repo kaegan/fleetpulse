@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFleet } from "@/contexts/fleet-context";
-import { getBusHistory } from "@/data/bus-history";
 import { MECHANICS } from "@/data/mechanics";
 import type {
   Bus,
@@ -81,7 +80,7 @@ export function LogRepairForm({
   const [assignedTo, setAssignedTo] = useState<string | null>(initialSnapshot?.assignedTo ?? CURRENT_MECHANIC);
 
   const issueInputRef = useRef<HTMLInputElement>(null);
-  const { buses } = useFleet();
+  const { buses, getBusHistory } = useFleet();
 
   // Buses in the current garage, for both the prefix filter and recent chips.
   const garageBuses = useMemo(

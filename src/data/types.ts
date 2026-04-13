@@ -70,6 +70,12 @@ export interface WorkOrder {
   autoEscalated?: boolean;
 }
 
+export interface CompletedWorkOrder extends WorkOrder {
+  stage: "done";
+  completedAt: string; // ISO datetime
+  dismissedAt?: string; // ISO datetime — set when removed from the active board
+}
+
 /**
  * A completed or historical entry in a bus's service log.
  * Used by the BusDetailPanel to show "everything that's been done to this bus"

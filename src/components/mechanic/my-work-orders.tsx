@@ -253,8 +253,10 @@ function MyWorkOrderCard({
       <Separator />
 
       {/* Action footer */}
-      <CardFooter className={`px-5 py-2.5 ${prev ? "justify-between" : "justify-end"}`}>
-        {prev && (
+      <CardFooter
+        className={`px-5 py-2.5 ${prev && !terminal ? "justify-between" : "justify-end"}`}
+      >
+        {prev && !terminal && (
           <Button
             variant="ghost"
             size="sm"
