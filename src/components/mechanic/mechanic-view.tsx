@@ -343,50 +343,27 @@ export function MechanicView() {
         </Button>
       </div>
 
-      {/* LayoutGroup coordinates cross-view morph animations.
-          layoutPrefix is only set for mine/board (not both, where the
-          same card would appear in two places = duplicate layoutIds). */}
+      {/* LayoutGroup coordinates cross-view morph animations. */}
       <LayoutGroup>
-        {/* "Mine" or "Both" → expanded task cards */}
-        {(scope === "mine" || scope === "both") && (
+        {scope === "mine" && (
           <MyWorkOrders
             workOrders={mineOrders}
             onStageChange={handleStageChange}
             onComplete={handleComplete}
             onSelectWorkOrder={openWorkOrderRoot}
             onUpdateParts={handleUpdateParts}
-            layoutPrefix={scope !== "both" ? "wo" : undefined}
+            layoutPrefix="wo"
           />
         )}
 
-        {/* Section divider when showing both views */}
-        {scope === "both" && (
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-border" />
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#929292",
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}
-            >
-              Garage Board
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-        )}
-
-        {/* "Board" or "Both" → full kanban */}
-        {(scope === "board" || scope === "both") && (
+        {scope === "board" && (
           <KanbanBoard
             workOrders={garageOrders}
             onStageChange={handleStageChange}
             onComplete={handleComplete}
             onSelectWorkOrder={openWorkOrderRoot}
             onUpdateParts={handleUpdateParts}
-            layoutPrefix={scope !== "both" ? "wo" : undefined}
+            layoutPrefix="wo"
           />
         )}
       </LayoutGroup>
