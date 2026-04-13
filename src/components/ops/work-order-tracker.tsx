@@ -10,12 +10,26 @@ import {
   STAGE_LABELS,
   STAGE_ORDER,
   SEVERITY_COLORS,
-  BRAND_COLOR,
-  HELD_PILL,
   stageIndex,
 } from "@/lib/constants";
 import { getMTTR } from "@/lib/utils";
-import type { Severity, WorkOrder } from "@/data/types";
+import type { Severity, WorkOrder, WorkOrderStage } from "@/data/types";
+import {
+  IconTruckFillDuo18,
+  IconMagnifierCheckFillDuo18,
+  IconWrenchFillDuo18,
+  IconBadgeCheckFillDuo18,
+  IconCheckFillDuo18,
+  IconHandFillDuo18,
+} from "nucleo-ui-fill-duo-18";
+
+const STAGE_ICONS: Record<WorkOrderStage, React.ReactNode> = {
+  intake: <IconTruckFillDuo18 />,
+  triage: <IconMagnifierCheckFillDuo18 />,
+  repair: <IconWrenchFillDuo18 />,
+  "road-test": <IconBadgeCheckFillDuo18 />,
+  done: <IconCheckFillDuo18 />,
+};
 
 const FILTER_OPTIONS: Array<{ label: string; value: Severity | "all" }> = [
   { label: "All", value: "all" },
@@ -69,12 +83,6 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   );
   // Cross-cutting held count (orthogonal to stage).
   const heldCount = scopedOrders.filter((wo) => wo.isHeld).length;
-  // A "peak" only exists when one stage is strictly ahead of the rest.
-  // When counts are tied (e.g. 2/2/2/2/2), nothing should glow — the whole
-  // point of the bar is to surface an actual pile-up, not to decorate.
-  const maxCount = Math.max(...stageCounts);
-  const secondMax = [...stageCounts].sort((a, b) => b - a)[1] ?? 0;
-  const hasPeak = maxCount > 0 && maxCount > secondMax;
 
   return (
     <div>
@@ -106,7 +114,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         <ToggleGroup
           type="single"
           value={filter}
-          onValueChange={(v) => { if (v) { analytics.trackerSeverityFiltered(v); setFilter(v as Severity | "all"); } }}
+          onValueChange={(v) => { const next = (v || "all") as Severity | "all"; analytics.trackerSeverityFiltered(next); setFilter(next); }}
           aria-label="Severity filter"
           className="mt-3.5 bg-transparent gap-1.5 p-0"
         >
@@ -134,25 +142,50 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                   />
                 )}
                 {label}
+                {isActive && value !== "all" && (
+                  <span style={{ fontSize: 13, fontWeight: 400, lineHeight: 1, marginLeft: -1 }}>×</span>
+                )}
               </ToggleGroupItem>
             );
           })}
         </ToggleGroup>
       </div>
 
-      {/* Queue-by-stage bar — informational, not a filter. Only the peak
-          stage (if there is one) lights up in brand coral. In evenly
-          distributed states, the whole row stays quiet. */}
+      {/* Queue-by-stage bar — neutral pills with stage icons. */}
       <div style={{ marginBottom: 20 }}>
         <div
           style={{
-            fontSize: 12,
-            fontWeight: 500,
-            color: "#929292",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
             marginBottom: 8,
           }}
         >
-          Queue by stage
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#929292",
+            }}
+          >
+            Queue by stage
+          </span>
+          {(filter !== "all" || stageFilter !== null) && (
+            <button
+              onClick={() => { setFilter("all"); setStageFilter(null); analytics.trackerSeverityFiltered("all"); analytics.trackerStageFiltered(null); }}
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#929292",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 2px",
+              }}
+            >
+              Clear all
+            </button>
+          )}
         </div>
         <div
           style={{
@@ -163,7 +196,6 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         >
           {STAGE_ORDER.map((stage, i) => {
             const count = stageCounts[i];
-            const isPeak = hasPeak && count === maxCount;
             const isActive = stageFilter === stage;
             return (
               <button
@@ -172,20 +204,23 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
+                  gap: 5,
                   padding: "3px 10px",
                   borderRadius: 999,
-                  background: isActive ? BRAND_COLOR : isPeak ? "#fdf0ed" : "#f7f7f7",
+                  background: isActive ? "#484848" : "#f7f7f7",
                   border: "none",
                   cursor: "pointer",
                   outline: "none",
                 }}
               >
+                <span style={{ display: "flex", color: isActive ? "#ffffff" : "#a0a0a0", width: 14, height: 14 }}>
+                  {STAGE_ICONS[stage]}
+                </span>
                 <span
                   style={{
                     fontSize: 12,
                     fontWeight: 500,
-                    color: isActive ? "#ffffff" : isPeak ? BRAND_COLOR : "#929292",
+                    color: isActive ? "#ffffff" : "#929292",
                   }}
                 >
                   {STAGE_LABELS[stage]}
@@ -194,11 +229,14 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
-                    color: isActive ? "#ffffff" : isPeak ? BRAND_COLOR : "#6a6a6a",
+                    color: isActive ? "#ffffff" : "#6a6a6a",
                   }}
                 >
                   {count}
                 </span>
+                {isActive && (
+                  <span style={{ fontSize: 13, fontWeight: 400, color: "#ffffff", marginLeft: -1, lineHeight: 1 }}>×</span>
+                )}
               </button>
             );
           })}
@@ -216,20 +254,23 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 6,
+              gap: 5,
               padding: "3px 10px",
               borderRadius: 999,
-              background: stageFilter === "held" ? HELD_PILL.color : heldCount > 0 ? HELD_PILL.bg : "#f7f7f7",
+              background: stageFilter === "held" ? "#484848" : "#f7f7f7",
               border: "none",
               cursor: "pointer",
               outline: "none",
             }}
           >
+            <span style={{ display: "flex", color: stageFilter === "held" ? "#ffffff" : "#a0a0a0", width: 14, height: 14 }}>
+              <IconHandFillDuo18 />
+            </span>
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 500,
-                color: stageFilter === "held" ? "#ffffff" : heldCount > 0 ? HELD_PILL.color : "#929292",
+                color: stageFilter === "held" ? "#ffffff" : "#929292",
               }}
             >
               Held
@@ -238,11 +279,14 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: stageFilter === "held" ? "#ffffff" : heldCount > 0 ? HELD_PILL.color : "#6a6a6a",
+                color: stageFilter === "held" ? "#ffffff" : "#6a6a6a",
               }}
             >
               {heldCount}
             </span>
+            {stageFilter === "held" && (
+              <span style={{ fontSize: 13, fontWeight: 400, color: "#ffffff", marginLeft: -1, lineHeight: 1 }}>×</span>
+            )}
           </button>
         </div>
       </div>
