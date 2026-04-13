@@ -14,8 +14,9 @@ import {
   STAGE_LABELS,
   getStageStates,
 } from "@/lib/constants";
+import { formatDurationMs, getStageDurations } from "@/lib/utils";
 import type { ReactNode } from "react";
-import type { Severity, WorkOrderStage } from "@/data/types";
+import type { Severity, StageHistoryEntry, WorkOrderStage } from "@/data/types";
 
 interface StagePipelineProps {
   currentStage: WorkOrderStage;
@@ -31,6 +32,9 @@ interface StagePipelineProps {
   animated?: boolean;
   /** Extra stagger so the pipeline can cascade with surrounding animations. */
   staggerDelay?: number;
+  /** Stage transition history. When provided (lg mode), per-stage dwell times
+   *  are shown beneath each stage label for bottleneck visibility. */
+  stageHistory?: StageHistoryEntry[];
 }
 
 // Held palette — neutral dashed treatment so it reads as blocked via
@@ -46,6 +50,7 @@ export function StagePipeline({
   size = "sm",
   animated = true,
   staggerDelay = 0,
+  stageHistory,
 }: StagePipelineProps) {
   const pal = PIPELINE_NEUTRAL;
   const circleSize = size === "lg" ? 36 : 26;
@@ -53,6 +58,7 @@ export function StagePipeline({
   const showLabels = size === "lg";
 
   const stageStates = getStageStates(currentStage, isHeld);
+  const durations = showLabels && stageHistory ? getStageDurations(stageHistory) : null;
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -168,7 +174,7 @@ export function StagePipeline({
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 8,
+                  gap: durations ? 4 : 8,
                   flexShrink: 0,
                 }}
               >
@@ -181,17 +187,33 @@ export function StagePipeline({
                   </Tooltip>
                 )}
                 {showLabels && (
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: labelColor,
-                      whiteSpace: "nowrap",
-                      textAlign: "center",
-                    }}
-                  >
-                    {labelText}
-                  </span>
+                  <>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: labelColor,
+                        whiteSpace: "nowrap",
+                        textAlign: "center",
+                      }}
+                    >
+                      {labelText}
+                    </span>
+                    {durations?.has(stage) && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 500,
+                          fontFamily: "var(--font-mono, monospace)",
+                          color: state === "current" || state === "current-held" ? "#6a6a6a" : "#929292",
+                          whiteSpace: "nowrap",
+                          textAlign: "center",
+                        }}
+                      >
+                        {formatDurationMs(durations.get(stage)!)}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
 

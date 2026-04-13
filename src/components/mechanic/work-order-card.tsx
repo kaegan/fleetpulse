@@ -144,7 +144,7 @@ export function WorkOrderCard({
             Bus #{order.busNumber}
           </CardTitle>
           <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-            <TimeDisplay isoDate={order.stageEnteredAt} />
+            <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
           </span>
         </div>
         <CardDescription className="text-[13px] leading-snug">

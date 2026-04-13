@@ -186,7 +186,7 @@ function MyWorkOrderCard({
             </Badge>
           </div>
           <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-            <TimeDisplay isoDate={order.stageEnteredAt} />
+            <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
           </span>
         </div>
         <CardDescription className="mt-1 text-[15px] leading-snug">

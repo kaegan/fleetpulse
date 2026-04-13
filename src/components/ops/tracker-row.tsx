@@ -171,7 +171,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         />
       </div>
 
-      {/* Mobile-only bottom: time in stage + aging tag */}
+      {/* Mobile-only bottom: total shop time + aging tag */}
       <div
         className="flex items-center gap-2 lg:hidden"
         style={{
@@ -180,7 +180,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           color: "#929292",
         }}
       >
-        <TimeDisplay isoDate={order.stageEnteredAt} />
+        <span><TimeDisplay isoDate={order.createdAt} /> in shop</span>
         {agingTag && <AgingTag tag={agingTag} />}
       </div>
 
@@ -203,7 +203,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           }}
         >
           {agingTag && <AgingTag tag={agingTag} />}
-          <TimeDisplay isoDate={order.stageEnteredAt} />
+          <span><TimeDisplay isoDate={order.createdAt} /> in shop</span>
         </div>
         {order.autoEscalated && (
           <span

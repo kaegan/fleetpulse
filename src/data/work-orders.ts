@@ -1,4 +1,4 @@
-import type { PartRequirement, WorkOrder } from "./types";
+import type { PartRequirement, StageHistoryEntry, WorkOrder } from "./types";
 
 /**
  * 27 work orders exercising the five-stage pipeline.
@@ -11,11 +11,15 @@ import type { PartRequirement, WorkOrder } from "./types";
  * Any bus with an active (non-done) WO here gets derived status "in-maintenance"
  * via deriveBusStatuses(). No separate ID sets needed.
  *
- * Timestamps use hoursAgo(n)/hoursFromNow(n) so the 12h mean threshold and
- * tracker aging tags stay deterministic regardless of when the app is run.
+ * Timestamps use hoursAgo(n)/hoursFromNow(n) with fractional hours to produce
+ * natural-looking minute values. The 12h mean threshold and tracker aging tags
+ * stay deterministic regardless of when the app is run.
  *
  * Above 12h mean (4): WO-1250 (48h), WO-1264 (36h), WO-1251 (20h), WO-1270 (15h)
  * Within 12h mean: all others.
+ *
+ * stageHistory records every stage transition. The last entry's enteredAt always
+ * matches stageEnteredAt. Stage durations sum to total shop time (createdAt → now).
  */
 
 /** N hours in the past from now (fractional hours are fine). */
@@ -26,6 +30,17 @@ function hoursAgo(n: number): string {
 /** N hours in the future from now. */
 function hoursFromNow(n: number): string {
   return new Date(Date.now() + n * 60 * 60 * 1000).toISOString();
+}
+
+/** Build a stageHistory array from a list of [stage, hoursAgo] tuples.
+ *  Each tuple says "this stage was entered N hours ago". */
+function buildHistory(
+  entries: [stage: string, hrsAgo: number][]
+): StageHistoryEntry[] {
+  return entries.map(([stage, hrsAgo]) => ({
+    stage: stage as StageHistoryEntry["stage"],
+    enteredAt: hoursAgo(hrsAgo),
+  }));
 }
 
 export const workOrders: WorkOrder[] = [
@@ -42,9 +57,10 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [{ partId: "air-brake-compressor", partName: "Air Brake Compressor", qty: 1 }],
-    createdAt: hoursAgo(5),
-    stageEnteredAt: hoursAgo(5),
-    arrivalEta: hoursFromNow(3),
+    createdAt: hoursAgo(5.12),       // 5h 7m
+    stageEnteredAt: hoursAgo(5.12),
+    arrivalEta: hoursFromNow(2.62),
+    stageHistory: buildHistory([["intake", 5.12]]),
   },
 
   // ── Triage: arrived, not yet assigned ───────────────────────────────────
@@ -60,8 +76,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "not-needed",
     parts: [],
-    createdAt: hoursAgo(4),
-    stageEnteredAt: hoursAgo(3),
+    createdAt: hoursAgo(4.38),       // 4h 23m
+    stageEnteredAt: hoursAgo(3.05),  // 3h 3m
+    stageHistory: buildHistory([["intake", 4.38], ["triage", 3.05]]),
   },
 
   // ── Triage: Greg actively investigating ──────────────────────────────
@@ -77,12 +94,13 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Greg T.",
     partsStatus: "in-stock",
     parts: [{ partId: "hydraulic-cylinder", partName: "Wheelchair Ramp Hydraulic Cylinder", qty: 1 }],
-    createdAt: hoursAgo(7),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(6.92),       // 6h 55m
+    stageEnteredAt: hoursAgo(4.72),  // 4h 43m
     autoEscalated: true,
+    stageHistory: buildHistory([["intake", 6.92], ["triage", 4.72]]),
   },
 
-  // ── Triage: stuck — ABOVE 12H MEAN (48h in shop, 30h in stage → "Stuck 1d" tag) ──
+  // ── Triage: stuck — ABOVE 12H MEAN (48h in shop, ~30h in triage → "Aging 1d+" tag) ──
   {
     id: "WO-1250",
     busId: 203,
@@ -95,8 +113,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Chen, R.",
     partsStatus: "needed",
     parts: [{ partId: "transmission-fluid", partName: "Transmission Fluid (gal)", qty: 3 }],
-    createdAt: hoursAgo(48),
-    stageEnteredAt: hoursAgo(30),
+    createdAt: hoursAgo(47.55),      // 1d 23h 33m
+    stageEnteredAt: hoursAgo(29.82), // 1d 5h 49m — triggers "Aging 1d+" (≥24h)
+    stageHistory: buildHistory([["intake", 47.55], ["triage", 29.82]]),
   },
 
   // ── Triage: held — ABOVE 12H MEAN (20h in shop, parts ordered) ─────────
@@ -112,11 +131,12 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Chen, R.",
     partsStatus: "ordered",
     parts: [{ partId: "alternator", partName: "Alternator Assembly", qty: 1 }],
-    createdAt: hoursAgo(20),
-    stageEnteredAt: hoursAgo(14),
+    createdAt: hoursAgo(19.62),      // 19h 37m
+    stageEnteredAt: hoursAgo(13.38), // 13h 23m
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: hoursFromNow(18),
+    blockEta: hoursFromNow(17.45),
+    stageHistory: buildHistory([["intake", 19.62], ["triage", 13.38]]),
   },
 
   // ── Intake: awaiting bay ───────────────────────────────────────────────
@@ -135,8 +155,9 @@ export const workOrders: WorkOrder[] = [
       { partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 4 },
       { partId: "coolant-hose", partName: "Coolant Hose Assembly", qty: 1 },
     ],
-    createdAt: hoursAgo(6),
-    stageEnteredAt: hoursAgo(4),
+    createdAt: hoursAgo(5.78),       // 5h 47m
+    stageEnteredAt: hoursAgo(5.78),
+    stageHistory: buildHistory([["intake", 5.78]]),
   },
 
   // ── Repair: Greg on the rack, critical brake job ─────────────────────
@@ -155,10 +176,11 @@ export const workOrders: WorkOrder[] = [
       { partId: "brake-pads", partName: "Brake Pads (set)", qty: 2 },
       { partId: "brake-rotors", partName: "Brake Rotors (pair)", qty: 1 },
     ],
-    createdAt: hoursAgo(8),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(8.18),       // 8h 11m
+    stageEnteredAt: hoursAgo(1.92),  // 1h 55m
     isHeld: true,
     blockReason: "parts-needed",
+    stageHistory: buildHistory([["intake", 8.18], ["triage", 5.05], ["repair", 1.92]]),
   },
 
   // ── Repair: held — ABOVE 12H MEAN (36h in shop, windshield parts ordered) ──
@@ -174,11 +196,12 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Petrov, A.",
     partsStatus: "ordered",
     parts: [],
-    createdAt: hoursAgo(36),
-    stageEnteredAt: hoursAgo(22),
+    createdAt: hoursAgo(35.58),      // 1d 11h 35m
+    stageEnteredAt: hoursAgo(21.88), // 21h 53m
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: hoursFromNow(14),
+    blockEta: hoursFromNow(13.72),
+    stageHistory: buildHistory([["intake", 35.58], ["triage", 27.42], ["repair", 21.88]]),
   },
 
   // ── Repair: held — waiting on fuel injector kit, Greg ─────────────────
@@ -197,11 +220,12 @@ export const workOrders: WorkOrder[] = [
       { partId: "fuel-injector", partName: "Fuel Injector Kit", qty: 1 },
       { partId: "fuel-filter", partName: "Fuel Filter", qty: 1 },
     ],
-    createdAt: hoursAgo(9),
-    stageEnteredAt: hoursAgo(7),
+    createdAt: hoursAgo(9.28),       // 9h 17m
+    stageEnteredAt: hoursAgo(6.55),  // 6h 33m
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: hoursFromNow(20),
+    blockEta: hoursFromNow(19.38),
+    stageHistory: buildHistory([["intake", 9.28], ["triage", 8.02], ["repair", 6.55]]),
   },
 
   // ── Repair: mid-job, Vasquez ────────────────────────────────────────────
@@ -217,8 +241,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Vasquez, D.",
     partsStatus: "in-stock",
     parts: [{ partId: "oil-filter", partName: "Oil Filter", qty: 1 }],
-    createdAt: hoursAgo(3),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(3.52),       // 3h 31m
+    stageEnteredAt: hoursAgo(1.68),  // 1h 41m
+    stageHistory: buildHistory([["intake", 3.52], ["triage", 2.45], ["repair", 1.68]]),
   },
 
   // ── Road Test: HVAC repair verifying ready to release ──────────────────
@@ -237,8 +262,9 @@ export const workOrders: WorkOrder[] = [
       { partId: "hvac-compressor", partName: "HVAC Compressor", qty: 1 },
       { partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 },
     ],
-    createdAt: hoursAgo(10),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(10.22),      // 10h 13m
+    stageEnteredAt: hoursAgo(1.85),  // 1h 51m
+    stageHistory: buildHistory([["intake", 10.22], ["triage", 7.88], ["repair", 4.18], ["road-test", 1.85]]),
   },
 
   // ── Road Test: steering fluid leak, final check ────────────────────────
@@ -254,8 +280,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 2 }],
-    createdAt: hoursAgo(11),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(11.08),      // 11h 5m
+    stageEnteredAt: hoursAgo(2.32),  // 2h 19m
+    stageHistory: buildHistory([["intake", 11.08], ["triage", 8.72], ["repair", 5.15], ["road-test", 2.32]]),
   },
 
   // ── Pre-seeded PM-A WOs ─────────────────────────────────────────────────
@@ -274,8 +301,9 @@ export const workOrders: WorkOrder[] = [
       { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
     ],
-    createdAt: hoursAgo(5),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(5.22),       // 5h 13m
+    stageEnteredAt: hoursAgo(4.95),  // 4h 57m
+    stageHistory: buildHistory([["intake", 5.22], ["triage", 4.95]]),
   },
   {
     id: "WO-1258",
@@ -292,8 +320,9 @@ export const workOrders: WorkOrder[] = [
       { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
     ],
-    createdAt: hoursAgo(4),
-    stageEnteredAt: hoursAgo(4),
+    createdAt: hoursAgo(4.42),       // 4h 25m
+    stageEnteredAt: hoursAgo(4.15),  // 4h 9m
+    stageHistory: buildHistory([["intake", 4.42], ["triage", 4.15]]),
   },
 
   // ── Additional work orders ──────────────────────────────────────────────
@@ -311,8 +340,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: hoursAgo(6),
-    stageEnteredAt: hoursAgo(6),
+    createdAt: hoursAgo(6.35),       // 6h 21m
+    stageEnteredAt: hoursAgo(6.35),
+    stageHistory: buildHistory([["intake", 6.35]]),
   },
 
   // Bus 037 — North, Triage: suspension
@@ -328,8 +358,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Okafor, E.",
     partsStatus: "in-stock",
     parts: [{ partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 }],
-    createdAt: hoursAgo(8),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(7.68),       // 7h 41m
+    stageEnteredAt: hoursAgo(2.22),  // 2h 13m
+    stageHistory: buildHistory([["intake", 7.68], ["triage", 2.22]]),
   },
 
   // Bus 049 — North, Repair: battery system
@@ -345,8 +376,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
     parts: [],
-    createdAt: hoursAgo(9),
-    stageEnteredAt: hoursAgo(3),
+    createdAt: hoursAgo(8.85),       // 8h 51m
+    stageEnteredAt: hoursAgo(3.42),  // 3h 25m
+    stageHistory: buildHistory([["intake", 8.85], ["triage", 5.98], ["repair", 3.42]]),
   },
 
   // Bus 062 — North, Intake: door mechanism
@@ -362,8 +394,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: hoursAgo(7),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(7.02),       // 7h 1m
+    stageEnteredAt: hoursAgo(7.02),
+    stageHistory: buildHistory([["intake", 7.02]]),
   },
 
   // Bus 131 — North, Road Test: coolant thermostat
@@ -379,8 +412,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Nguyen, T.",
     partsStatus: "in-stock",
     parts: [{ partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 2 }],
-    createdAt: hoursAgo(10),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(9.78),       // 9h 47m
+    stageEnteredAt: hoursAgo(1.55),  // 1h 33m
+    stageHistory: buildHistory([["intake", 9.78], ["triage", 7.15], ["repair", 3.82], ["road-test", 1.55]]),
   },
 
   // Bus 145 — North, Triage: tire blowout
@@ -396,8 +430,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Jackson, L.",
     partsStatus: "needed",
     parts: [{ partId: "tires", partName: "Bus Tire (each)", qty: 2 }],
-    createdAt: hoursAgo(6),
-    stageEnteredAt: hoursAgo(4),
+    createdAt: hoursAgo(5.55),       // 5h 33m
+    stageEnteredAt: hoursAgo(3.78),  // 3h 47m
+    stageHistory: buildHistory([["intake", 5.55], ["triage", 3.78]]),
   },
 
   // Bus 185 — South, Intake: wheelchair lift
@@ -416,9 +451,10 @@ export const workOrders: WorkOrder[] = [
       { partId: "lift-motor", partName: "Wheelchair Lift Motor", qty: 1 },
       { partId: "hydraulic-cylinder", partName: "Wheelchair Ramp Hydraulic Cylinder", qty: 1 },
     ],
-    createdAt: hoursAgo(5),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(4.62),       // 4h 37m
+    stageEnteredAt: hoursAgo(4.62),
     autoEscalated: true,
+    stageHistory: buildHistory([["intake", 4.62]]),
   },
 
   // Bus 215 — South, Road Test: HVAC ductwork
@@ -434,8 +470,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Vasquez, D.",
     partsStatus: "not-needed",
     parts: [],
-    createdAt: hoursAgo(8),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(7.95),       // 7h 57m
+    stageEnteredAt: hoursAgo(2.28),  // 2h 17m
+    stageHistory: buildHistory([["intake", 7.95], ["triage", 5.65], ["repair", 3.48], ["road-test", 2.28]]),
   },
 
   // Bus 245 — South, Triage: fuel system
@@ -451,8 +488,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Petrov, A.",
     partsStatus: "not-needed",
     parts: [],
-    createdAt: hoursAgo(7),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(6.58),       // 6h 35m
+    stageEnteredAt: hoursAgo(5.18),  // 5h 11m
+    stageHistory: buildHistory([["intake", 6.58], ["triage", 5.18]]),
   },
 
   // Bus 275 — South, Repair: held — ABOVE 12H MEAN (15h in shop, parts ordered) ──
@@ -468,11 +506,12 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Nguyen, T.",
     partsStatus: "ordered",
     parts: [{ partId: "air-brake-compressor", partName: "Air Brake Compressor", qty: 1 }],
-    createdAt: hoursAgo(15),
-    stageEnteredAt: hoursAgo(8),
+    createdAt: hoursAgo(14.75),      // 14h 45m
+    stageEnteredAt: hoursAgo(7.88),  // 7h 53m
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: hoursFromNow(16),
+    blockEta: hoursFromNow(15.82),
+    stageHistory: buildHistory([["intake", 14.75], ["triage", 10.92], ["repair", 7.88]]),
   },
 
   // Bus 290 — South, Road Test: steering gearbox
@@ -488,8 +527,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Jackson, L.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 1 }],
-    createdAt: hoursAgo(9),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(9.08),       // 9h 5m
+    stageEnteredAt: hoursAgo(2.05),  // 2h 3m
+    stageHistory: buildHistory([["intake", 9.08], ["triage", 6.72], ["repair", 4.35], ["road-test", 2.05]]),
   },
 
   // Bus 295 — South, Triage: electrical multiplexer
@@ -505,8 +545,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: hoursAgo(6),
-    stageEnteredAt: hoursAgo(4),
+    createdAt: hoursAgo(5.48),       // 5h 29m
+    stageEnteredAt: hoursAgo(3.65),  // 3h 39m
+    stageHistory: buildHistory([["intake", 5.48], ["triage", 3.65]]),
   },
 
   // Bus 300 — South, Intake: PM-B deep service
@@ -526,8 +567,9 @@ export const workOrders: WorkOrder[] = [
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
       { partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 2 },
     ],
-    createdAt: hoursAgo(5),
-    stageEnteredAt: hoursAgo(5),
+    createdAt: hoursAgo(4.88),       // 4h 53m
+    stageEnteredAt: hoursAgo(4.88),
+    stageHistory: buildHistory([["intake", 4.88]]),
   },
 
   // Bus 168 — North, Triage: securement system failure (auto-escalated)
@@ -543,8 +585,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Okafor, E.",
     partsStatus: "needed",
     parts: [{ partId: "securement-track", partName: "Securement Track & Tie-Down Kit", qty: 1 }],
-    createdAt: hoursAgo(4),
-    stageEnteredAt: hoursAgo(3),
+    createdAt: hoursAgo(3.95),       // 3h 57m
+    stageEnteredAt: hoursAgo(2.58),  // 2h 35m
     autoEscalated: true,
+    stageHistory: buildHistory([["intake", 3.95], ["triage", 2.58]]),
   },
 ];
