@@ -5,6 +5,7 @@ import { TrackerRow } from "./tracker-row";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useFleet } from "@/contexts/fleet-context";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
+import { analytics } from "@/lib/analytics";
 import {
   STAGE_LABELS,
   STAGE_ORDER,
@@ -105,7 +106,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         <ToggleGroup
           type="single"
           value={filter}
-          onValueChange={(v) => v && setFilter(v as Severity | "all")}
+          onValueChange={(v) => { if (v) { analytics.trackerSeverityFiltered(v); setFilter(v as Severity | "all"); } }}
           aria-label="Severity filter"
           className="mt-3.5 bg-transparent gap-1.5 p-0"
         >
@@ -167,7 +168,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
             return (
               <button
                 key={stage}
-                onClick={() => setStageFilter(isActive ? null : stage)}
+                onClick={() => { const next = isActive ? null : stage; analytics.trackerStageFiltered(next); setStageFilter(next); }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -211,7 +212,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
             }}
           />
           <button
-            onClick={() => setStageFilter(stageFilter === "held" ? null : "held")}
+            onClick={() => { const next = stageFilter === "held" ? null : "held"; analytics.trackerStageFiltered(next); setStageFilter(next); }}
             style={{
               display: "flex",
               alignItems: "center",

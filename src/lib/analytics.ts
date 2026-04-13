@@ -77,4 +77,12 @@ export const analytics = {
   /** Mechanic switches between "My Work Orders" and "Board" views. */
   mechanicScopeToggled: (from: string, to: string) =>
     capture("mechanic_scope_toggled", { from, to }),
+
+  /** Ops manager filters the work order tracker by severity. */
+  trackerSeverityFiltered: (severity: string) =>
+    capture("tracker_severity_filtered", { severity }),
+
+  /** Ops manager clicks a stage on the bottleneck bar to filter by it. */
+  trackerStageFiltered: (stage: string | null) =>
+    capture("tracker_stage_filtered", { stage }),
 };
