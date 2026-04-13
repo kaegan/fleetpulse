@@ -11,34 +11,21 @@ import type { PartRequirement, WorkOrder } from "./types";
  * Any bus with an active (non-done) WO here gets derived status "in-maintenance"
  * via deriveBusStatuses(). No separate ID sets needed.
  *
- * Timestamps are fixed offsets from today to avoid SSR hydration mismatches.
+ * Timestamps use hoursAgo(n)/hoursFromNow(n) so the 12h mean threshold and
+ * tracker aging tags stay deterministic regardless of when the app is run.
+ *
+ * Above 12h mean (4): WO-1250 (48h), WO-1264 (36h), WO-1251 (20h), WO-1270 (15h)
+ * Within 12h mean: all others.
  */
 
-function todayAt(hours: number, minutes = 0): string {
-  const d = new Date();
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
+/** N hours in the past from now (fractional hours are fine). */
+function hoursAgo(n: number): string {
+  return new Date(Date.now() - n * 60 * 60 * 1000).toISOString();
 }
 
-function yesterdayAt(hours: number, minutes = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
-}
-
-function daysAgoAt(days: number, hours: number, minutes = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
-}
-
-function tomorrowAt(hours: number, minutes = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(hours, minutes, 0, 0);
-  return d.toISOString();
+/** N hours in the future from now. */
+function hoursFromNow(n: number): string {
+  return new Date(Date.now() + n * 60 * 60 * 1000).toISOString();
 }
 
 export const workOrders: WorkOrder[] = [
@@ -55,9 +42,9 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [{ partId: "air-brake-compressor", partName: "Air Brake Compressor", qty: 1 }],
-    createdAt: todayAt(6, 15),
-    stageEnteredAt: todayAt(6, 15),
-    arrivalEta: todayAt(14, 30),
+    createdAt: hoursAgo(5),
+    stageEnteredAt: hoursAgo(5),
+    arrivalEta: hoursFromNow(3),
   },
 
   // ── Triage: arrived, not yet assigned ───────────────────────────────────
@@ -73,8 +60,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "not-needed",
     parts: [],
-    createdAt: todayAt(5, 0),
-    stageEnteredAt: todayAt(7, 40),
+    createdAt: hoursAgo(4),
+    stageEnteredAt: hoursAgo(3),
   },
 
   // ── Triage: Torres actively investigating ──────────────────────────────
@@ -90,11 +77,11 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Torres, M.",
     partsStatus: "in-stock",
     parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
-    createdAt: todayAt(3, 0),
-    stageEnteredAt: todayAt(5, 0),
+    createdAt: hoursAgo(7),
+    stageEnteredAt: hoursAgo(5),
   },
 
-  // ── Triage: stuck, trips the aging tag on the Ops tracker ──────────────
+  // ── Triage: stuck — ABOVE 12H MEAN (48h in shop, 30h in stage → "Stuck 1d" tag) ──
   {
     id: "WO-1250",
     busId: 203,
@@ -107,11 +94,11 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Chen, R.",
     partsStatus: "needed",
     parts: [{ partId: "transmission-fluid", partName: "Transmission Fluid (gal)", qty: 3 }],
-    createdAt: daysAgoAt(2, 7, 0),
-    stageEnteredAt: daysAgoAt(1, 14, 0),
+    createdAt: hoursAgo(48),
+    stageEnteredAt: hoursAgo(30),
   },
 
-  // ── Triage: held — parts ordered, ETA tomorrow ─────────────────────────
+  // ── Triage: held — ABOVE 12H MEAN (20h in shop, parts ordered) ─────────
   {
     id: "WO-1251",
     busId: 267,
@@ -124,14 +111,14 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Chen, R.",
     partsStatus: "ordered",
     parts: [{ partId: "alternator", partName: "Alternator Assembly", qty: 1 }],
-    createdAt: yesterdayAt(0, 30),
-    stageEnteredAt: yesterdayAt(11, 0),
+    createdAt: hoursAgo(20),
+    stageEnteredAt: hoursAgo(14),
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: tomorrowAt(10, 0),
+    blockEta: hoursFromNow(18),
   },
 
-  // ── Intake: awaiting bay (all critical bays occupied) ─────────────────
+  // ── Intake: awaiting bay ───────────────────────────────────────────────
   {
     id: "WO-1252",
     busId: 41,
@@ -147,8 +134,8 @@ export const workOrders: WorkOrder[] = [
       { partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 4 },
       { partId: "coolant-hose", partName: "Coolant Hose Assembly", qty: 1 },
     ],
-    createdAt: yesterdayAt(6, 0),
-    stageEnteredAt: todayAt(6, 30),
+    createdAt: hoursAgo(6),
+    stageEnteredAt: hoursAgo(4),
   },
 
   // ── Repair: Torres on the rack, critical brake job ─────────────────────
@@ -167,8 +154,28 @@ export const workOrders: WorkOrder[] = [
       { partId: "brake-pads", partName: "Brake Pads (set)", qty: 2 },
       { partId: "brake-rotors", partName: "Brake Rotors (pair)", qty: 1 },
     ],
-    createdAt: yesterdayAt(5, 30),
-    stageEnteredAt: todayAt(6, 15),
+    createdAt: hoursAgo(8),
+    stageEnteredAt: hoursAgo(2),
+  },
+
+  // ── Repair: held — ABOVE 12H MEAN (36h in shop, windshield parts ordered) ──
+  {
+    id: "WO-1264",
+    busId: 99,
+    busNumber: "099",
+    issue: "Windshield replacement (stone damage)",
+    severity: "routine",
+    stage: "repair",
+    bayNumber: 11,
+    garage: "north",
+    mechanicName: "Petrov, A.",
+    partsStatus: "ordered",
+    parts: [],
+    createdAt: hoursAgo(36),
+    stageEnteredAt: hoursAgo(22),
+    isHeld: true,
+    blockReason: "parts-ordered",
+    blockEta: hoursFromNow(14),
   },
 
   // ── Repair: held — waiting on fuel injector kit, Torres ─────────────────
@@ -187,11 +194,11 @@ export const workOrders: WorkOrder[] = [
       { partId: "fuel-injector", partName: "Fuel Injector Kit", qty: 1 },
       { partId: "fuel-filter", partName: "Fuel Filter", qty: 1 },
     ],
-    createdAt: daysAgoAt(1, 8, 0),
-    stageEnteredAt: yesterdayAt(14, 0),
+    createdAt: hoursAgo(9),
+    stageEnteredAt: hoursAgo(7),
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: tomorrowAt(14, 0),
+    blockEta: hoursFromNow(20),
   },
 
   // ── Repair: mid-job, Vasquez ────────────────────────────────────────────
@@ -207,8 +214,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Vasquez, D.",
     partsStatus: "in-stock",
     parts: [{ partId: "oil-filter", partName: "Oil Filter", qty: 1 }],
-    createdAt: todayAt(2, 0),
-    stageEnteredAt: todayAt(7, 0),
+    createdAt: hoursAgo(3),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // ── Road Test: HVAC repair verifying ready to release ──────────────────
@@ -227,8 +234,8 @@ export const workOrders: WorkOrder[] = [
       { partId: "hvac-compressor", partName: "HVAC Compressor", qty: 1 },
       { partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 },
     ],
-    createdAt: yesterdayAt(2, 0),
-    stageEnteredAt: todayAt(7, 15),
+    createdAt: hoursAgo(10),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // ── Road Test: steering fluid leak, final check ────────────────────────
@@ -244,13 +251,11 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 2 }],
-    createdAt: daysAgoAt(2, 4, 0),
-    stageEnteredAt: todayAt(7, 0),
+    createdAt: hoursAgo(11),
+    stageEnteredAt: hoursAgo(2),
   },
-  // Pre-seeded PM-A WOs — buses that ops already scheduled out of the
-  // overdue pool. They sit in Triage unassigned, waiting for a mechanic
-  // to pick them up. Gives the mechanic kanban lived-in density and
-  // foreshadows the ops-side "Schedule PM service" action.
+
+  // ── Pre-seeded PM-A WOs ─────────────────────────────────────────────────
   {
     id: "WO-1257",
     busId: 55,
@@ -266,8 +271,8 @@ export const workOrders: WorkOrder[] = [
       { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
     ],
-    createdAt: todayAt(6, 45),
-    stageEnteredAt: todayAt(6, 45),
+    createdAt: hoursAgo(5),
+    stageEnteredAt: hoursAgo(5),
   },
   {
     id: "WO-1258",
@@ -284,11 +289,11 @@ export const workOrders: WorkOrder[] = [
       { partId: "oil-filter", partName: "Oil Filter", qty: 1 },
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
     ],
-    createdAt: todayAt(7, 10),
-    stageEnteredAt: todayAt(7, 10),
+    createdAt: hoursAgo(4),
+    stageEnteredAt: hoursAgo(4),
   },
 
-  // ── Additional work orders (buses previously phantom-maintenance) ─────
+  // ── Additional work orders ──────────────────────────────────────────────
 
   // Bus 010 — North, Intake: exhaust system
   {
@@ -303,8 +308,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: todayAt(5, 30),
-    stageEnteredAt: todayAt(5, 30),
+    createdAt: hoursAgo(6),
+    stageEnteredAt: hoursAgo(6),
   },
 
   // Bus 037 — North, Triage: suspension
@@ -320,8 +325,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Okafor, E.",
     partsStatus: "in-stock",
     parts: [{ partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 }],
-    createdAt: yesterdayAt(14, 0),
-    stageEnteredAt: todayAt(6, 0),
+    createdAt: hoursAgo(8),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // Bus 049 — North, Repair: battery system
@@ -337,8 +342,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
     parts: [],
-    createdAt: yesterdayAt(8, 0),
-    stageEnteredAt: todayAt(5, 45),
+    createdAt: hoursAgo(9),
+    stageEnteredAt: hoursAgo(3),
   },
 
   // Bus 062 — North, Intake: door mechanism
@@ -354,28 +359,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: todayAt(4, 15),
-    stageEnteredAt: todayAt(6, 30),
-  },
-
-  // Bus 099 — North, Repair: held, windshield
-  {
-    id: "WO-1264",
-    busId: 99,
-    busNumber: "099",
-    issue: "Windshield replacement (stone damage)",
-    severity: "routine",
-    stage: "repair",
-    bayNumber: 11,
-    garage: "north",
-    mechanicName: "Petrov, A.",
-    partsStatus: "ordered",
-    parts: [],
-    createdAt: daysAgoAt(2, 9, 0),
-    stageEnteredAt: yesterdayAt(10, 0),
-    isHeld: true,
-    blockReason: "parts-ordered",
-    blockEta: tomorrowAt(16, 0),
+    createdAt: hoursAgo(7),
+    stageEnteredAt: hoursAgo(5),
   },
 
   // Bus 131 — North, Road Test: coolant thermostat
@@ -391,8 +376,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Nguyen, T.",
     partsStatus: "in-stock",
     parts: [{ partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 2 }],
-    createdAt: daysAgoAt(1, 6, 0),
-    stageEnteredAt: todayAt(7, 30),
+    createdAt: hoursAgo(10),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // Bus 145 — North, Triage: tire blowout
@@ -408,8 +393,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Jackson, L.",
     partsStatus: "needed",
     parts: [{ partId: "tires", partName: "Bus Tire (each)", qty: 2 }],
-    createdAt: todayAt(3, 45),
-    stageEnteredAt: todayAt(5, 15),
+    createdAt: hoursAgo(6),
+    stageEnteredAt: hoursAgo(4),
   },
 
   // Bus 185 — South, Intake: wheelchair lift
@@ -425,8 +410,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
-    createdAt: todayAt(5, 0),
-    stageEnteredAt: todayAt(5, 0),
+    createdAt: hoursAgo(5),
+    stageEnteredAt: hoursAgo(5),
   },
 
   // Bus 215 — South, Road Test: HVAC ductwork
@@ -442,8 +427,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Vasquez, D.",
     partsStatus: "not-needed",
     parts: [],
-    createdAt: yesterdayAt(11, 0),
-    stageEnteredAt: todayAt(6, 45),
+    createdAt: hoursAgo(8),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // Bus 245 — South, Triage: fuel system
@@ -459,11 +444,11 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Petrov, A.",
     partsStatus: "not-needed",
     parts: [],
-    createdAt: todayAt(4, 0),
-    stageEnteredAt: todayAt(6, 15),
+    createdAt: hoursAgo(7),
+    stageEnteredAt: hoursAgo(5),
   },
 
-  // Bus 275 — South, Repair: held, air compressor rebuild
+  // Bus 275 — South, Repair: held — ABOVE 12H MEAN (15h in shop, parts ordered) ──
   {
     id: "WO-1270",
     busId: 275,
@@ -476,11 +461,11 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Nguyen, T.",
     partsStatus: "ordered",
     parts: [{ partId: "air-brake-compressor", partName: "Air Brake Compressor", qty: 1 }],
-    createdAt: daysAgoAt(1, 10, 0),
-    stageEnteredAt: yesterdayAt(15, 0),
+    createdAt: hoursAgo(15),
+    stageEnteredAt: hoursAgo(8),
     isHeld: true,
     blockReason: "parts-ordered",
-    blockEta: tomorrowAt(11, 0),
+    blockEta: hoursFromNow(16),
   },
 
   // Bus 290 — South, Road Test: steering gearbox
@@ -496,8 +481,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Jackson, L.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 1 }],
-    createdAt: daysAgoAt(1, 7, 0),
-    stageEnteredAt: todayAt(7, 0),
+    createdAt: hoursAgo(9),
+    stageEnteredAt: hoursAgo(2),
   },
 
   // Bus 295 — South, Triage: electrical multiplexer
@@ -513,8 +498,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: null,
     partsStatus: "needed",
     parts: [],
-    createdAt: todayAt(3, 30),
-    stageEnteredAt: todayAt(5, 45),
+    createdAt: hoursAgo(6),
+    stageEnteredAt: hoursAgo(4),
   },
 
   // Bus 300 — South, Intake: PM-B deep service
@@ -534,7 +519,7 @@ export const workOrders: WorkOrder[] = [
       { partId: "air-filter", partName: "Engine Air Filter", qty: 1 },
       { partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 2 },
     ],
-    createdAt: todayAt(6, 0),
-    stageEnteredAt: todayAt(6, 0),
+    createdAt: hoursAgo(5),
+    stageEnteredAt: hoursAgo(5),
   },
 ];

@@ -295,7 +295,7 @@ export function BusPanelContent({
                         gap: 4,
                       }}
                     >
-                      <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[wo.severity]}</span>
+                      <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[wo.severity]}</span>
                       {SEVERITY_LABELS[wo.severity]}
                     </span>
                   </div>

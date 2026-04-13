@@ -258,6 +258,10 @@ export const ISSUE_TEMPLATES: Array<{ label: string; defaultIssue: string }> = [
  *  Below industry avg → coral. Above avg, below target → amber. At/above target → green. */
 export const AVAILABILITY_THRESHOLDS = { industryAvg: 84, target: 95 } as const;
 
+/** Mean maintenance time threshold in hours. Buses in the shop longer than
+ *  this are flagged as "above mean" for ops triage. */
+export const MAINTENANCE_MEAN_HOURS = 12;
+
 export function getAvailabilityTierColor(rate: number): string {
   if (rate < AVAILABILITY_THRESHOLDS.industryAvg) return "#d4654a";
   if (rate < AVAILABILITY_THRESHOLDS.target) return "#d97706";
