@@ -306,6 +306,7 @@ function ActiveWorkOrderBody({
           severity={order.severity}
           isHeld={order.isHeld}
           size="lg"
+          stageHistory={order.stageHistory}
         />
       </div>
       <p className="pl-0.5 text-xs font-medium text-[#6a6a6a]">
@@ -332,7 +333,7 @@ function ActiveWorkOrderBody({
           <> · ETA {formatEta(order.arrivalEta)}</>
         )}
         {" · "}
-        <TimeDisplay isoDate={order.stageEnteredAt} /> in stage
+        <TimeDisplay isoDate={order.createdAt} /> total
       </p>
       {onStageChange && !terminal && next && (
         <div className="mt-2.5 mb-[26px]">
@@ -375,8 +376,8 @@ function ActiveWorkOrderBody({
       <InfoGrid cols={2}>
         <InfoRow label="Opened" value={formatOpenedDate(order.createdAt)} />
         <InfoRow
-          label="In current stage"
-          valueNode={<TimeDisplay isoDate={order.stageEnteredAt} />}
+          label="Total shop time"
+          valueNode={<TimeDisplay isoDate={order.createdAt} />}
         />
       </InfoGrid>
     </>

@@ -23,6 +23,14 @@ export type WorkOrderStage =
 
 export type PartsStatus = "not-needed" | "in-stock" | "needed" | "ordered";
 
+/** A single stage-entry event in the work order's lifecycle. The array of
+ *  these on a WorkOrder records when each stage was entered, enabling
+ *  per-stage duration drill-down (e.g. "spent 4h in Triage, 6h in Repair"). */
+export interface StageHistoryEntry {
+  stage: WorkOrderStage;
+  enteredAt: string; // ISO datetime
+}
+
 export type BlockReason =
   | "parts-ordered"
   | "parts-needed"
@@ -68,6 +76,9 @@ export interface WorkOrder {
   parts?: PartRequirement[];
   /** True when the system auto-escalated severity to Critical due to accessibility equipment. */
   autoEscalated?: boolean;
+  /** Ordered log of stage transitions. First entry is always intake (=== createdAt).
+   *  Used to compute per-stage dwell times for bottleneck analysis. */
+  stageHistory?: StageHistoryEntry[];
 }
 
 export interface CompletedWorkOrder extends WorkOrder {

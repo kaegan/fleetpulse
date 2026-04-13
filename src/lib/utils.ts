@@ -5,7 +5,9 @@ import type {
   BusHistoryEntry,
   BusStatus,
   Garage,
+  StageHistoryEntry,
   WorkOrder,
+  WorkOrderStage,
 } from "@/data/types";
 
 /** shadcn class-name helper: merge clsx + tailwind-merge */
@@ -148,6 +150,41 @@ export function formatTimeInStatus(isoDate: string): string {
   const days = Math.floor(hours / 24);
   const remainingHours = hours % 24;
   return `${days}d ${remainingHours}h`;
+}
+
+/** Format a raw millisecond duration as "Xm", "Xh Ym", or "Xd Yh". */
+export function formatDurationMs(ms: number): string {
+  const diffMins = Math.floor(ms / 60_000);
+  if (diffMins < 60) return `${diffMins}m`;
+  const hours = Math.floor(diffMins / 60);
+  const mins = diffMins % 60;
+  if (hours < 24) return `${hours}h ${mins}m`;
+  const days = Math.floor(hours / 24);
+  const remainingHours = hours % 24;
+  return `${days}d ${remainingHours}h`;
+}
+
+/** Per-stage dwell time derived from a work order's stageHistory.
+ *  Returns a map from stage → duration in milliseconds.
+ *  The current (last) stage's duration is measured to `now`. */
+export function getStageDurations(
+  stageHistory: StageHistoryEntry[] | undefined,
+  now: Date = new Date()
+): Map<WorkOrderStage, number> {
+  const result = new Map<WorkOrderStage, number>();
+  if (!stageHistory || stageHistory.length === 0) return result;
+
+  for (let i = 0; i < stageHistory.length; i++) {
+    const entry = stageHistory[i];
+    const enteredAt = new Date(entry.enteredAt).getTime();
+    const exitedAt =
+      i < stageHistory.length - 1
+        ? new Date(stageHistory[i + 1].enteredAt).getTime()
+        : now.getTime();
+    result.set(entry.stage, Math.max(0, exitedAt - enteredAt));
+  }
+
+  return result;
 }
 
 /** Miles until next PM, can be negative if overdue */

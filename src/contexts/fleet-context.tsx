@@ -20,6 +20,7 @@ import type {
   BusHistoryEntry,
   CompletedWorkOrder,
   Part,
+  StageHistoryEntry,
   WorkOrder,
   WorkOrderStage,
 } from "@/data/types";
@@ -200,7 +201,13 @@ export function FleetProvider({ children }: { children: ReactNode }) {
       if (!existing) return;
 
       const now = new Date().toISOString();
-      const updated: WorkOrder = { ...existing, stage, stageEnteredAt: now };
+      const historyEntry: StageHistoryEntry = { stage, enteredAt: now };
+      const updated: WorkOrder = {
+        ...existing,
+        stage,
+        stageEnteredAt: now,
+        stageHistory: [...(existing.stageHistory ?? []), historyEntry],
+      };
       const next = workOrdersRef.current.map((wo) =>
         wo.id === woId ? updated : wo
       );
@@ -222,12 +229,21 @@ export function FleetProvider({ children }: { children: ReactNode }) {
       const stageChanged =
         patch.stage !== undefined && patch.stage !== existing.stage;
       const now = new Date().toISOString();
+      const stageHistoryPatch = stageChanged && patch.stage
+        ? {
+            stageHistory: [
+              ...(existing.stageHistory ?? []),
+              { stage: patch.stage, enteredAt: patch.stageEnteredAt ?? now } as StageHistoryEntry,
+            ],
+          }
+        : {};
       const updated: WorkOrder = {
         ...existing,
         ...patch,
         ...(stageChanged && !patch.stageEnteredAt
           ? { stageEnteredAt: now }
           : {}),
+        ...stageHistoryPatch,
       };
       const next = workOrdersRef.current.map((wo) =>
         wo.id === woId ? updated : wo
