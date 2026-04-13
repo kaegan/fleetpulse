@@ -18,7 +18,11 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useFleet } from "@/contexts/fleet-context";
-import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
+import {
+  CURRENT_MECHANIC,
+  CURRENT_MECHANIC_GARAGE,
+  stageIndex,
+} from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { analytics } from "@/lib/analytics";
 import { usePanelNav } from "@/hooks/use-panel-nav";
@@ -161,10 +165,11 @@ export function MechanicView() {
     [nav]
   );
 
-  // When the user clicks "Log new repair", we need a concrete garage to
-  // assign the new WO to. If scope is "all", default to north (the demo
-  // mechanic's home garage). If scope is north/south, use that.
-  const newRepairGarage: Garage = depotScope === "all" ? "north" : depotScope;
+  // When the user clicks "Log new repair", the form needs a starting garage.
+  // Scoped views keep that garage selected; All Garages falls back to the
+  // mechanic's home garage while still letting the mechanic change it.
+  const defaultRepairGarage: Garage =
+    depotScope === "all" ? CURRENT_MECHANIC_GARAGE : depotScope;
 
   const handleStageChange = useCallback(
     (woId: string, newStage: WorkOrderStage) => {
@@ -264,6 +269,7 @@ export function MechanicView() {
     (draft: {
       busId: number;
       busNumber: string;
+      garage: Garage;
       issue: string;
       severity: Severity;
       assignedTo: string | null;
@@ -278,7 +284,7 @@ export function MechanicView() {
         // mechanic can explicitly advance the bus once it is ready for triage.
         stage: "intake",
         bayNumber: null,
-        garage: newRepairGarage,
+        garage: draft.garage,
         mechanicName: draft.assignedTo,
         partsStatus: "not-needed",
         autoEscalated: shouldEscalate || undefined,
@@ -287,7 +293,7 @@ export function MechanicView() {
       analytics.repairLogged(
         draft.busId,
         shouldEscalate ? "critical" : draft.severity,
-        newRepairGarage,
+        draft.garage,
         shouldEscalate,
         draft.assignedTo
       );
@@ -307,7 +313,7 @@ export function MechanicView() {
           : undefined
       );
     },
-    [addWorkOrder, scope, newRepairGarage]
+    [addWorkOrder, scope]
   );
 
   // Mechanic sees the work orders in their current depot scope. Defaults to
@@ -513,7 +519,7 @@ export function MechanicView() {
         >
           <DialogTitle className="sr-only">Log new repair</DialogTitle>
           <LogRepairForm
-            garage={newRepairGarage}
+            defaultGarage={defaultRepairGarage}
             recentBusNumbers={recentBusNumbers}
             initialSnapshot={formDraftRef.current}
             onCancel={() => {

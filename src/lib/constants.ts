@@ -208,6 +208,7 @@ export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles
 // No auth in V1 — hardcoded "signed-in" mechanic for the Mine/All filter demo.
 // Greg T. has 3 WOs in North Garage, which gives a legible Mine/All split.
 export const CURRENT_MECHANIC = "Greg T.";
+export const CURRENT_MECHANIC_GARAGE: Garage = "north";
 
 export const BRAND_COLOR = "#d4654a";
 export const BRAND_COLOR_HOVER = "#be5840";
@@ -307,4 +308,3 @@ export function getAvailabilityTierColor(rate: number): string {
 /** MTIM (Mean Time In Maintenance) benchmark thresholds in hours.
  *  Industry average is 12–18h. ≤12h = excellent, 12–18h = acceptable, >18h = concerning. */
 export const MTIM_THRESHOLDS = { excellent: 12, concerning: 18 } as const;
-
