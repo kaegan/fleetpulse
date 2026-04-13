@@ -122,10 +122,26 @@ export function BusPanelContent({
   const milesLeft = milesUntilPm(bus);
   const canSchedulePm =
     Boolean(onSchedulePm) && milesLeft <= 0 && busWorkOrders.length === 0;
-  const pmProgress = Math.min(
-    ((bus.mileage - bus.lastPmMileage) / PM_INTERVAL_MILES) * 100,
-    100
-  );
+  const OVERDUE_CAP_MILES = 2_000;
+  const isOverdue = milesLeft <= 0;
+  const overdueMiles = Math.abs(milesLeft);
+  const fullScale = isOverdue
+    ? PM_INTERVAL_MILES + OVERDUE_CAP_MILES
+    : PM_INTERVAL_MILES;
+
+  const normalPct = isOverdue
+    ? (PM_INTERVAL_MILES / fullScale) * 100
+    : Math.min(((bus.mileage - bus.lastPmMileage) / PM_INTERVAL_MILES) * 100, 100);
+
+  const overduePct = isOverdue
+    ? (Math.min(overdueMiles, OVERDUE_CAP_MILES) / fullScale) * 100
+    : 0;
+
+  const tickPct = isOverdue
+    ? (PM_INTERVAL_MILES / fullScale) * 100
+    : 100;
+
+  const normalColor = isOverdue || normalPct > 80 ? "#f59e0b" : "#22c55e";
   const history = getBusHistory(bus.id);
 
   return (
@@ -186,17 +202,35 @@ export function BusPanelContent({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-2.5 h-1.5 overflow-hidden rounded-pill bg-[#f2f2f2]">
+        <div className="relative mb-2.5 h-1.5 overflow-hidden rounded-pill bg-[#f2f2f2]">
+          {/* Normal interval fill */}
           <div
-            className="h-full rounded-pill transition-[width] duration-300 ease-out"
+            className="h-full transition-[width] duration-300 ease-out"
             style={{
-              width: `${pmProgress}%`,
-              background:
-                pmProgress >= 100
-                  ? "#ef4444"
-                  : pmProgress > 80
-                    ? "#f59e0b"
-                    : "#22c55e",
+              width: `${normalPct}%`,
+              background: normalColor,
+              borderRadius: isOverdue ? "999px 0 0 999px" : "999px",
+            }}
+          />
+          {/* Overdue extension */}
+          {isOverdue && overduePct > 0 && (
+            <div
+              className="absolute top-0 h-full transition-[width] duration-300 ease-out"
+              style={{
+                left: `${normalPct}%`,
+                width: `${overduePct}%`,
+                background: "#ef4444",
+                borderRadius: "0 999px 999px 0",
+              }}
+            />
+          )}
+          {/* Due tick mark */}
+          <div
+            className="absolute top-0 h-full w-0.5"
+            style={{
+              left: `${tickPct}%`,
+              background: isOverdue ? "#f59e0b" : "#d4d4d4",
+              transform: "translateX(-50%)",
             }}
           />
         </div>
