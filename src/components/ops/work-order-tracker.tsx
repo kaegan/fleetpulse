@@ -75,23 +75,17 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
     <div>
       {/* Section header */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 4 }}>
-          <h2
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: "#222222",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Active Work Orders
-          </h2>
-          {mttr !== null && (
-            <span style={{ fontSize: 13, fontWeight: 500, color: "#929292" }}>
-              Avg. repair: {mttr.toFixed(1)} days
-            </span>
-          )}
-        </div>
+        <h2
+          style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: "#222222",
+            letterSpacing: "-0.02em",
+            marginBottom: 4,
+          }}
+        >
+          Active Work Orders
+        </h2>
         <p
           style={{
             fontSize: 13,
@@ -100,6 +94,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
           }}
         >
           {sorted.length} orders {SCOPE_SUFFIX[scope]}
+          {mttr !== null && <> &middot; avg. {mttr.toFixed(1)}d repair</>}
         </p>
 
         {/* Severity filter pills */}
