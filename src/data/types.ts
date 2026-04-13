@@ -90,6 +90,8 @@ export interface PartRequirement {
   partId: string;
   partName: string;
   qty: number;
+  /** Set when the mechanic requests a cross-depot transfer for this part. */
+  transferRequested?: boolean;
 }
 
 export interface BusHistoryEntry {

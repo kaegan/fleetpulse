@@ -1,5 +1,5 @@
 export const MECHANICS = [
-  "Torres, M.",
+  "Greg T.",
   "Chen, R.",
   "Okafor, E.",
   "Vasquez, D.",
