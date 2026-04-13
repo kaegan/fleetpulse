@@ -17,8 +17,7 @@ import {
 } from "@/components/ui/responsive-sheet";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useWorkOrders } from "@/contexts/work-orders-context";
-import { useBuses } from "@/hooks/use-buses";
+import { useFleet } from "@/contexts/fleet-context";
 import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { analytics } from "@/lib/analytics";
@@ -89,9 +88,8 @@ type MechanicPanelEntry =
   | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function MechanicView() {
-  const buses = useBuses();
-  const { workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
-    useWorkOrders();
+  const { buses, workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
+    useFleet();
   const [scope, setScope] = useState<Scope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
   const formDraftRef = useRef<LogRepairFormSnapshot | null>(null);

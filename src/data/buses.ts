@@ -102,7 +102,7 @@ function generateBuses(): Bus[] {
   return buses;
 }
 
-/** Raw bus array — no in-maintenance status. Use `useBuses()` in components. */
+/** Raw bus array — seed statuses only. Components should use `useFleet()` for live-reactive data. */
 export const baseBuses = generateBuses();
 
 /**
@@ -110,6 +110,6 @@ export const baseBuses = generateBuses();
  * Used by module-scope history generators (status-history.ts,
  * availability-history.ts) that need deterministic data at import time.
  *
- * Components should use the `useBuses()` hook instead for live-reactive data.
+ * Components should use `useFleet()` instead for live-reactive data.
  */
 export const buses = deriveBusStatuses(baseBuses, seedWorkOrders);
