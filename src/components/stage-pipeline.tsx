@@ -33,10 +33,11 @@ interface StagePipelineProps {
   staggerDelay?: number;
 }
 
-// Held palette — warmer slate so it reads as blocked, not just active.
-const HELD_BORDER = "#b4541a";
-const HELD_BG = "#fff4ed";
-const HELD_TEXT = "#b4541a";
+// Held palette — neutral dashed treatment so it reads as blocked via
+// shape language (dashed border + hand icon), not via color.
+const HELD_BORDER = "#6a6a6a";
+const HELD_BG = "#f5f5f5";
+const HELD_TEXT = "#6a6a6a";
 
 export function StagePipeline({
   currentStage,
