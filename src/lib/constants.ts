@@ -287,3 +287,8 @@ export function getAvailabilityTierColor(rate: number): string {
   if (rate < AVAILABILITY_THRESHOLDS.target) return "#d97706";
   return "#22c55e";
 }
+
+/** MTIM (Mean Time In Maintenance) benchmark thresholds in hours.
+ *  Industry average is 12–18h. ≤12h = excellent, 12–18h = acceptable, >18h = concerning. */
+export const MTIM_THRESHOLDS = { excellent: 12, concerning: 18 } as const;
+

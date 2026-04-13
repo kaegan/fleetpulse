@@ -1,11 +1,10 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { useFleet } from "@/contexts/fleet-context";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
-  MAINTENANCE_MEAN_HOURS,
   SEVERITY_COLORS,
   SEVERITY_ICONS,
   SEVERITY_LABELS,
@@ -14,10 +13,9 @@ import {
 import {
   formatNumber,
   formatTimeInStatus,
-  hoursSince,
   milesUntilPm,
 } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
+import { MTIM_THRESHOLDS } from "@/lib/constants";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
@@ -64,7 +62,7 @@ const META: Record<BusListKind, StatusMeta> = {
     pillLabel: "In Maintenance",
     heading: "In the shop",
     subtitle: () =>
-      `Sorted by dwell time. Repairs above the 12h mean are shown first.`,
+      `Sorted by total time in maintenance. Buses above the fleet average are flagged.`,
     emptyMessage: "No buses in the shop right now.",
   },
   "road-call": {
@@ -152,7 +150,7 @@ export function BusListPanelContent({
         // Most overdue first
         return [...filtered].sort((a, b) => milesUntilPm(a) - milesUntilPm(b));
       case "in-maintenance":
-        // Longest dwell time first, based on the matching WO's stageEnteredAt.
+        // Longest total time in maintenance first (createdAt → now).
         // Buses without a WO drop to the bottom.
         return [...filtered].sort((a, b) => {
           const aWo = worksByBus.get(a.id);
@@ -168,18 +166,23 @@ export function BusListPanelContent({
     }
   }, [buses, kind, scope, worksByBus, workOrders]);
 
-  // Count of in-maintenance buses whose total shop time exceeds the 12h mean.
-  // Since rows are already sorted oldest-first, above-mean buses sit at the top.
-  const aboveMeanCount = useMemo(() => {
-    if (kind !== "in-maintenance") return 0;
-    const now = new Date();
-    return rows.filter((bus) => {
+  // Split in-maintenance buses at the fixed 12h median target.
+  const { aboveMean, belowMean } = useMemo(() => {
+    if (kind !== "in-maintenance")
+      return { aboveMean: [] as Bus[], belowMean: [] as Bus[] };
+    const now = Date.now();
+    const thresholdMs = MTIM_THRESHOLDS.excellent * 60 * 60 * 1000;
+    const above: Bus[] = [];
+    const below: Bus[] = [];
+    for (const bus of rows) {
       const wo = worksByBus.get(bus.id);
-      return wo && hoursSince(wo.createdAt, now) >= MAINTENANCE_MEAN_HOURS;
-    }).length;
+      const elapsed = wo ? now - new Date(wo.createdAt).getTime() : 0;
+      if (elapsed > thresholdMs) above.push(bus);
+      else below.push(bus);
+    }
+    return { aboveMean: above, belowMean: below };
   }, [kind, rows, worksByBus]);
 
-  const showPartition = kind === "in-maintenance" && aboveMeanCount > 0 && aboveMeanCount < rows.length;
 
   return (
     <div ref={topRef} className="flex h-full flex-col p-5 pb-6 sm:p-7">
@@ -219,8 +222,61 @@ export function BusListPanelContent({
         </p>
       </div>
 
-      {/* List */}
-      {rows.length > 0 && (
+      {/* List — in-maintenance splits into above/below mean sections */}
+      {rows.length > 0 && kind === "in-maintenance" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, flex: 1 }}>
+          {aboveMean.length > 0 && (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#d4654a" }}>
+                  Above average
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: "#b5b5b5" }}>
+                  Above the 12 hour median target
+                </span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {aboveMean.map((bus) => (
+                  <BusRow
+                    key={bus.id}
+                    bus={bus}
+                    kind={kind}
+                    workOrder={worksByBus.get(bus.id) ?? null}
+                    onClick={() => onSelectBus(bus)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          {belowMean.length > 0 && (
+            <div>
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#929292" }}>
+                  Below average
+                </span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {belowMean.map((bus) => (
+                  <BusRow
+                    key={bus.id}
+                    bus={bus}
+                    kind={kind}
+                    workOrder={worksByBus.get(bus.id) ?? null}
+                    onClick={() => onSelectBus(bus)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : rows.length > 0 ? (
         <div
           style={{
             display: "flex",
@@ -229,44 +285,17 @@ export function BusListPanelContent({
             flex: 1,
           }}
         >
-          {/* Above-mean section title */}
-          {showPartition && (
-            <p style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#b4541a",
-              letterSpacing: "0.01em",
-              margin: "0 0 2px",
-            }}>
-              Over 12h &middot; {aboveMeanCount}
-            </p>
-          )}
-          {rows.map((bus, idx) => (
-            <Fragment key={bus.id}>
-              {/* Within-mean section title + separator */}
-              {showPartition && idx === aboveMeanCount && (
-                <div style={{ margin: "10px 0 6px" }}>
-                  <Separator style={{ marginBottom: 10 }} />
-                  <p style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#929292",
-                    letterSpacing: "0.01em",
-                  }}>
-                    Within 12h &middot; {rows.length - aboveMeanCount}
-                  </p>
-                </div>
-              )}
-              <BusRow
-                bus={bus}
-                kind={kind}
-                workOrder={worksByBus.get(bus.id) ?? null}
-                onClick={() => onSelectBus(bus)}
-              />
-            </Fragment>
+          {rows.map((bus) => (
+            <BusRow
+              key={bus.id}
+              bus={bus}
+              kind={kind}
+              workOrder={worksByBus.get(bus.id) ?? null}
+              onClick={() => onSelectBus(bus)}
+            />
           ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -383,7 +412,8 @@ function RightValue({
   }
 
   if (kind === "in-maintenance" && workOrder) {
-    const isAboveMean = hoursSince(workOrder.createdAt) >= MAINTENANCE_MEAN_HOURS;
+    const elapsedMs = Date.now() - new Date(workOrder.createdAt).getTime();
+    const isAboveMean = elapsedMs > MTIM_THRESHOLDS.excellent * 60 * 60 * 1000;
     return (
       <span
         style={{
@@ -393,8 +423,7 @@ function RightValue({
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        {formatTimeInStatus(workOrder.stageEnteredAt)} in{" "}
-        {STAGE_LABELS[workOrder.stage]}
+        {formatTimeInStatus(workOrder.createdAt)} total
       </span>
     );
   }
