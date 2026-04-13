@@ -1,11 +1,11 @@
 import type { PartRequirement, WorkOrder } from "./types";
 
 /**
- * 12 hand-authored work orders exercising the five-stage pipeline.
- * Distribution: 2 Intake (1 held), 5 Triage (1 held), 2 Repair, 2 Road Test, 0 Done.
- * Severity mix: 3 critical / 4 high / 5 routine.
- * Cross-garage: 7 North, 5 South.
- * Torres, M. (CURRENT_MECHANIC) owns 2 North WOs so Mine/All still tells a story.
+ * 13 hand-authored work orders exercising the five-stage pipeline.
+ * Distribution: 2 Intake, 5 Triage (1 held), 3 Repair (1 held), 2 Road Test, 0 Done.
+ * Severity mix: 3 critical / 5 high / 5 routine.
+ * Cross-garage: 8 North, 5 South.
+ * Torres, M. (CURRENT_MECHANIC) owns 3 North WOs so Mine/All still tells a story.
  *
  * Timestamps are fixed offsets from today to avoid SSR hydration mismatches.
  */
@@ -165,6 +165,29 @@ export const workOrders: WorkOrder[] = [
     ],
     createdAt: yesterdayAt(5, 30),
     stageEnteredAt: todayAt(6, 15),
+  },
+
+  // ── Repair: held — waiting on fuel injector kit, Torres ─────────────────
+  {
+    id: "WO-1259",
+    busId: 134,
+    busNumber: "134",
+    issue: "Fuel injector replacement",
+    severity: "high",
+    stage: "repair",
+    bayNumber: 8,
+    garage: "north",
+    mechanicName: "Torres, M.",
+    partsStatus: "ordered",
+    parts: [
+      { partId: "fuel-injector", partName: "Fuel Injector Kit", qty: 1 },
+      { partId: "fuel-filter", partName: "Fuel Filter", qty: 1 },
+    ],
+    createdAt: daysAgoAt(1, 8, 0),
+    stageEnteredAt: yesterdayAt(14, 0),
+    isHeld: true,
+    blockReason: "parts-ordered",
+    blockEta: tomorrowAt(14, 0),
   },
 
   // ── Repair: mid-job, Vasquez ────────────────────────────────────────────
