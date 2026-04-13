@@ -100,7 +100,7 @@ interface ResponsiveSheetContentProps {
   side?: "top" | "right" | "bottom" | "left";
   /**
    * Show the X close button. Defaults to `true` on desktop and `false` on
-   * mobile (the grab handle replaces it on the bottom drawer).
+   * mobile (the drawer has its own X close button built into the drag strip).
    */
   showCloseButton?: boolean;
   className?: string;
