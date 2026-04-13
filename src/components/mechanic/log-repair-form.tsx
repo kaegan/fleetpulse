@@ -406,9 +406,13 @@ export function LogRepairForm({
                 <span
                   style={{
                     display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    lineHeight: 0,
                     color: isActive ? sc.dot : "#b5b5b5",
                     width: 16,
                     height: 16,
+                    flexShrink: 0,
                   }}
                 >
                   {SEVERITY_ICONS[sev]}

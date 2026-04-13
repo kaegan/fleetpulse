@@ -213,7 +213,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                   outline: "none",
                 }}
               >
-                <span style={{ display: "flex", color: isActive ? "#ffffff" : "#a0a0a0", width: 14, height: 14 }}>
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 0, color: isActive ? "#ffffff" : "#a0a0a0", width: 14, height: 14, flexShrink: 0 }}>
                   {STAGE_ICONS[stage]}
                 </span>
                 <span
@@ -263,7 +263,7 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               outline: "none",
             }}
           >
-            <span style={{ display: "flex", color: stageFilter === "held" ? "#ffffff" : "#a0a0a0", width: 14, height: 14 }}>
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 0, color: stageFilter === "held" ? "#ffffff" : "#a0a0a0", width: 14, height: 14, flexShrink: 0 }}>
               <IconHandFillDuo18 />
             </span>
             <span

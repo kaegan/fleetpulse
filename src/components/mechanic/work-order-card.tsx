@@ -161,7 +161,7 @@ export function WorkOrderCard({
             size="sm"
             className="gap-1"
           >
-            <span className="flex h-3 w-3 shrink-0 items-center [&>svg]:h-full [&>svg]:w-full">
+            <span className="flex h-3 w-3 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
               {SEVERITY_ICONS[order.severity]}
             </span>
             {SEVERITY_LABELS[order.severity]}
