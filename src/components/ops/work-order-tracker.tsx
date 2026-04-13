@@ -35,6 +35,7 @@ interface WorkOrderTrackerProps {
 
 export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = {}) {
   const [filter, setFilter] = useState<Severity | "all">("all");
+  const [stageFilter, setStageFilter] = useState<string | null>(null);
   const { scope } = useDepot();
   const { workOrders } = useFleet();
 
@@ -47,10 +48,13 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   const mttr = useMemo(() => getMTTR(scopedOrders), [scopedOrders]);
 
   const severityOrder = { critical: 0, high: 1, routine: 2 };
-  const filtered =
-    filter === "all"
-      ? scopedOrders
-      : scopedOrders.filter((wo) => wo.severity === filter);
+  const filtered = scopedOrders
+    .filter((wo) => filter === "all" || wo.severity === filter)
+    .filter((wo) => {
+      if (stageFilter === "held") return wo.isHeld;
+      if (stageFilter !== null) return wo.stage === stageFilter;
+      return true;
+    });
   const sorted = [...filtered].sort((a, b) => {
     const sevDiff = severityOrder[a.severity] - severityOrder[b.severity];
     if (sevDiff !== 0) return sevDiff;
@@ -159,23 +163,28 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
           {STAGE_ORDER.map((stage, i) => {
             const count = stageCounts[i];
             const isPeak = hasPeak && count === maxCount;
+            const isActive = stageFilter === stage;
             return (
-              <div
+              <button
                 key={stage}
+                onClick={() => setStageFilter(isActive ? null : stage)}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 6,
                   padding: "3px 10px",
                   borderRadius: 999,
-                  background: isPeak ? "#fdf0ed" : "#f7f7f7",
+                  background: isActive ? BRAND_COLOR : isPeak ? "#fdf0ed" : "#f7f7f7",
+                  border: "none",
+                  cursor: "pointer",
+                  outline: "none",
                 }}
               >
                 <span
                   style={{
                     fontSize: 12,
                     fontWeight: 500,
-                    color: isPeak ? BRAND_COLOR : "#929292",
+                    color: isActive ? "#ffffff" : isPeak ? BRAND_COLOR : "#929292",
                   }}
                 >
                   {STAGE_LABELS[stage]}
@@ -184,12 +193,12 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
                   style={{
                     fontSize: 12,
                     fontWeight: 600,
-                    color: isPeak ? BRAND_COLOR : "#6a6a6a",
+                    color: isActive ? "#ffffff" : isPeak ? BRAND_COLOR : "#6a6a6a",
                   }}
                 >
                   {count}
                 </span>
-              </div>
+              </button>
             );
           })}
           {/* Divider + cross-cutting Held pill */}
@@ -201,21 +210,25 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               alignSelf: "center",
             }}
           />
-          <div
+          <button
+            onClick={() => setStageFilter(stageFilter === "held" ? null : "held")}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
               padding: "3px 10px",
               borderRadius: 999,
-              background: heldCount > 0 ? HELD_PILL.bg : "#f7f7f7",
+              background: stageFilter === "held" ? HELD_PILL.color : heldCount > 0 ? HELD_PILL.bg : "#f7f7f7",
+              border: "none",
+              cursor: "pointer",
+              outline: "none",
             }}
           >
             <span
               style={{
                 fontSize: 12,
                 fontWeight: 500,
-                color: heldCount > 0 ? HELD_PILL.color : "#929292",
+                color: stageFilter === "held" ? "#ffffff" : heldCount > 0 ? HELD_PILL.color : "#929292",
               }}
             >
               Held
@@ -224,12 +237,12 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               style={{
                 fontSize: 12,
                 fontWeight: 600,
-                color: heldCount > 0 ? HELD_PILL.color : "#6a6a6a",
+                color: stageFilter === "held" ? "#ffffff" : heldCount > 0 ? HELD_PILL.color : "#6a6a6a",
               }}
             >
               {heldCount}
             </span>
-          </div>
+          </button>
         </div>
       </div>
 
