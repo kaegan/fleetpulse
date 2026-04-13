@@ -12,7 +12,7 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./kanban-column";
 import { WorkOrderCard } from "./work-order-card";
-import { STAGE_ORDER, STAGE_LABELS, nextStage } from "@/lib/constants";
+import { STAGE_ORDER, STAGE_LABELS, nextStage, prevStage } from "@/lib/constants";
 import type {
   PartsStatus,
   WorkOrder,
@@ -88,6 +88,7 @@ export function KanbanBoard({
         {STAGE_ORDER.map((stage) => {
           const stageOrders = workOrders.filter((wo) => wo.stage === stage);
           const next = nextStage(stage);
+          const prev = prevStage(stage);
           return (
             <KanbanColumn
               key={stage}
@@ -101,6 +102,9 @@ export function KanbanBoard({
               onUpdateParts={onUpdateParts}
               onAdvance={(woId) => {
                 if (next) onStageChange(woId, next);
+              }}
+              onRetreat={(woId) => {
+                if (prev) onStageChange(woId, prev);
               }}
               layoutPrefix={layoutPrefix}
             />

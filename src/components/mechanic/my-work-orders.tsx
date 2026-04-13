@@ -10,6 +10,7 @@ import {
   BLOCK_REASON_LABELS,
   isTerminalStage,
   nextStage,
+  prevStage,
   getCrossDepotPartsTip,
 } from "@/lib/constants";
 import { StagePipeline } from "@/components/stage-pipeline";
@@ -133,6 +134,7 @@ function MyWorkOrderCard({
   const isIntake = order.stage === "intake";
   const isHeld = order.isHeld === true;
   const next = nextStage(order.stage);
+  const prev = prevStage(order.stage);
 
   const contextLine = (() => {
     if (isHeld) {
@@ -251,7 +253,19 @@ function MyWorkOrderCard({
       <Separator />
 
       {/* Action footer */}
-      <CardFooter className="justify-end px-5 py-2.5">
+      <CardFooter className={`px-5 py-2.5 ${prev ? "justify-between" : "justify-end"}`}>
+        {prev && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onStageChange(order.id, prev);
+            }}
+          >
+            &larr; {STAGE_LABELS[prev]}
+          </Button>
+        )}
         {!terminal && next && (
           <Button
             variant="ghost"

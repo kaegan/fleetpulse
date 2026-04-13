@@ -10,6 +10,7 @@ import {
   BLOCK_REASON_LABELS,
   isTerminalStage,
   nextStage,
+  prevStage,
   getCrossDepotPartsTip,
 } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
@@ -62,6 +63,7 @@ interface WorkOrderCardProps {
   onComplete?: (woId: string) => void;
   onSelectWorkOrder?: (order: WorkOrder) => void;
   onAdvance?: (woId: string) => void;
+  onRetreat?: (woId: string) => void;
   onUpdateParts?: (woId: string, partsStatus: PartsStatus) => void;
   /** When rendered inside a DragOverlay we skip the draggable hook and any hover styles. */
   isOverlay?: boolean;
@@ -72,6 +74,7 @@ export function WorkOrderCard({
   onComplete,
   onSelectWorkOrder,
   onAdvance,
+  onRetreat,
   onUpdateParts,
   isOverlay = false,
 }: WorkOrderCardProps) {
@@ -85,6 +88,7 @@ export function WorkOrderCard({
   const isIntake = order.stage === "intake";
   const isHeld = order.isHeld === true;
   const next = nextStage(order.stage);
+  const prev = prevStage(order.stage);
 
   const handleClick = (e: React.MouseEvent) => {
     if (isOverlay || !onSelectWorkOrder) return;
@@ -127,7 +131,7 @@ export function WorkOrderCard({
       className={
         isOverlay
           ? "touch-none select-none cursor-grabbing border border-border shadow-panel"
-          : "touch-none select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
+          : "touch-none [@media(pointer:coarse)]:touch-auto select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
       }
       style={{
         opacity: isDragging && !isOverlay ? 0 : 1,
@@ -223,9 +227,22 @@ export function WorkOrderCard({
       </CardContent>
 
       {!isOverlay && (
-        <>
+        <div className="hidden [@media(pointer:coarse)]:block">
           <Separator />
-          <CardFooter className="justify-end px-4 py-2">
+          <CardFooter className={`px-4 py-2 ${prev ? "justify-between" : "justify-end"}`}>
+            {prev && onRetreat && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRetreat(order.id);
+                }}
+              >
+                ← {STAGE_LABELS[prev]}
+              </Button>
+            )}
             {!terminal && onAdvance && next && (
               <Button
                 variant="ghost"
@@ -258,7 +275,7 @@ export function WorkOrderCard({
               </Button>
             )}
           </CardFooter>
-        </>
+        </div>
       )}
     </Card>
   );
