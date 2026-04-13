@@ -1,10 +1,10 @@
 import type { PartRequirement, WorkOrder } from "./types";
 
 /**
- * 10 hand-authored work orders exercising the six-stage pipeline.
- * Distribution: 1 Inbound, 1 Triage, 2 Diagnosing, 2 Held, 2 Repairing, 2 Road Test.
- * Severity mix: 3 critical / 4 high / 3 routine.
- * Cross-garage: 6 North, 4 South.
+ * 12 hand-authored work orders exercising the five-stage pipeline.
+ * Distribution: 2 Intake (1 held), 5 Triage (1 held), 2 Repair, 2 Road Test, 0 Done.
+ * Severity mix: 3 critical / 4 high / 5 routine.
+ * Cross-garage: 7 North, 5 South.
  * Torres, M. (CURRENT_MECHANIC) owns 2 North WOs so Mine/All still tells a story.
  *
  * Timestamps are fixed offsets from today to avoid SSR hydration mismatches.
@@ -38,14 +38,14 @@ function tomorrowAt(hours: number, minutes = 0): string {
 }
 
 export const workOrders: WorkOrder[] = [
-  // ── Inbound: road call, bus being towed back to the depot ──────────────
+  // ── Intake: road call, bus being towed back to the depot ────────────────
   {
     id: "WO-1247",
     busId: 182,
     busNumber: "182",
     issue: "Air brake compressor (road call)",
     severity: "critical",
-    stage: "inbound",
+    stage: "intake",
     bayNumber: null,
     garage: "south",
     mechanicName: null,
@@ -56,7 +56,7 @@ export const workOrders: WorkOrder[] = [
     arrivalEta: todayAt(14, 30),
   },
 
-  // ── Triage: just arrived, not yet assigned ─────────────────────────────
+  // ── Triage: arrived, not yet assigned ───────────────────────────────────
   {
     id: "WO-1248",
     busId: 195,
@@ -73,14 +73,14 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: todayAt(7, 40),
   },
 
-  // ── Diagnosing: Torres actively working it ─────────────────────────────
+  // ── Triage: Torres actively investigating ──────────────────────────────
   {
     id: "WO-1249",
     busId: 56,
     busNumber: "056",
     issue: "Wheelchair ramp hydraulic",
     severity: "high",
-    stage: "diagnosing",
+    stage: "triage",
     bayNumber: 4,
     garage: "north",
     mechanicName: "Torres, M.",
@@ -90,14 +90,14 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: todayAt(5, 0),
   },
 
-  // ── Diagnosing: stuck, trips the aging tag on the Ops tracker ──────────
+  // ── Triage: stuck, trips the aging tag on the Ops tracker ──────────────
   {
     id: "WO-1250",
     busId: 203,
     busNumber: "203",
     issue: "Transmission fluid leak",
     severity: "critical",
-    stage: "diagnosing",
+    stage: "triage",
     bayNumber: 1,
     garage: "south",
     mechanicName: "Chen, R.",
@@ -107,14 +107,14 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: daysAgoAt(1, 14, 0),
   },
 
-  // ── Held: parts ordered, ETA tomorrow ──────────────────────────────────
+  // ── Triage: held — parts ordered, ETA tomorrow ─────────────────────────
   {
     id: "WO-1251",
     busId: 267,
     busNumber: "267",
     issue: "Alternator replacement",
     severity: "high",
-    stage: "held",
+    stage: "triage",
     bayNumber: 2,
     garage: "south",
     mechanicName: "Chen, R.",
@@ -122,18 +122,19 @@ export const workOrders: WorkOrder[] = [
     parts: [{ partId: "alternator", partName: "Alternator Assembly", qty: 1 }],
     createdAt: yesterdayAt(0, 30),
     stageEnteredAt: yesterdayAt(11, 0),
+    isHeld: true,
     blockReason: "parts-ordered",
     blockEta: tomorrowAt(10, 0),
   },
 
-  // ── Held: awaiting bay assignment (all critical bays occupied) ─────────
+  // ── Intake: awaiting bay (all critical bays occupied) ─────────────────
   {
     id: "WO-1252",
     busId: 41,
     busNumber: "041",
     issue: "Coolant system flush (PM-B)",
     severity: "routine",
-    stage: "held",
+    stage: "intake",
     bayNumber: null,
     garage: "north",
     mechanicName: null,
@@ -144,17 +145,16 @@ export const workOrders: WorkOrder[] = [
     ],
     createdAt: yesterdayAt(6, 0),
     stageEnteredAt: todayAt(6, 30),
-    blockReason: "awaiting-bay",
   },
 
-  // ── Repairing: Torres on the rack, critical brake job ──────────────────
+  // ── Repair: Torres on the rack, critical brake job ─────────────────────
   {
     id: "WO-1253",
     busId: 147,
     busNumber: "147",
     issue: "Brake pad replacement",
     severity: "critical",
-    stage: "repairing",
+    stage: "repair",
     bayNumber: 3,
     garage: "north",
     mechanicName: "Torres, M.",
@@ -167,14 +167,14 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: todayAt(6, 15),
   },
 
-  // ── Repairing: mid-job, Vasquez ────────────────────────────────────────
+  // ── Repair: mid-job, Vasquez ────────────────────────────────────────────
   {
     id: "WO-1254",
     busId: 78,
     busNumber: "078",
     issue: "Engine oil change (preventive maintenance A)",
     severity: "routine",
-    stage: "repairing",
+    stage: "repair",
     bayNumber: 7,
     garage: "north",
     mechanicName: "Vasquez, D.",
@@ -220,10 +220,10 @@ export const workOrders: WorkOrder[] = [
     createdAt: daysAgoAt(2, 4, 0),
     stageEnteredAt: todayAt(7, 0),
   },
-  // Pre-seeded PM-A triage WOs — buses that ops already scheduled out of
-  // the overdue pool. They sit in Triage unassigned, waiting for a
-  // mechanic to pick them up. Gives the mechanic kanban lived-in density
-  // and foreshadows the ops-side "Schedule PM service" action.
+  // Pre-seeded PM-A WOs — buses that ops already scheduled out of the
+  // overdue pool. They sit in Triage unassigned, waiting for a mechanic
+  // to pick them up. Gives the mechanic kanban lived-in density and
+  // foreshadows the ops-side "Schedule PM service" action.
   {
     id: "WO-1257",
     busId: 55,

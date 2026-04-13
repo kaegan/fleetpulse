@@ -34,7 +34,8 @@ interface WorkOrdersContextValue {
   updateStage: (woId: string, stage: WorkOrderStage) => void;
   /** Full partial update — used by mechanic view for complex transitions. */
   updateWorkOrder: (woId: string, patch: Partial<WorkOrder>) => void;
-  completeWorkOrder: (woId: string) => void;
+  /** Remove a WO from the board entirely (dismiss from Done). */
+  dismissWorkOrder: (woId: string) => void;
 }
 
 const WorkOrdersContext = createContext<WorkOrdersContextValue | null>(null);
@@ -88,13 +89,13 @@ export function WorkOrdersProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const completeWorkOrder = useCallback((woId: string) => {
+  const dismissWorkOrder = useCallback((woId: string) => {
     setWorkOrders((prev) => prev.filter((wo) => wo.id !== woId));
   }, []);
 
   return (
     <WorkOrdersContext.Provider
-      value={{ workOrders, addWorkOrder, updateStage, updateWorkOrder, completeWorkOrder }}
+      value={{ workOrders, addWorkOrder, updateStage, updateWorkOrder, dismissWorkOrder }}
     >
       {children}
     </WorkOrdersContext.Provider>

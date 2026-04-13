@@ -5,28 +5,27 @@ export type Garage = "north" | "south";
 export type Severity = "critical" | "high" | "routine";
 
 /**
- * Six-stage work order lifecycle aligned with real bus depot workflows:
- *  - inbound   : WO exists, bus not yet in the depot (driver defect, road call, scheduled PM)
- *  - triage    : bus arrived, not yet assigned to a mechanic
- *  - diagnosing: mechanic identifying root cause
- *  - held      : blocked on parts/bay/approval — detour, not a linear step
- *  - repairing : parts kitted, actively wrenching
+ * Five-stage work order lifecycle aligned with real bus depot workflows:
+ *  - intake    : WO exists, bus not yet in a work bay (en route, awaiting bay)
+ *  - triage    : bus in bay, pre-repair investigation (assignment + root-cause)
+ *  - repair    : parts kitted, actively wrenching
  *  - road-test : verifying repair before release to dispatch
+ *  - done      : repair verified, awaiting dismissal from the board
+ *
+ * "Held" is an orthogonal boolean flag (isHeld), not a pipeline stage.
  */
 export type WorkOrderStage =
-  | "inbound"
+  | "intake"
   | "triage"
-  | "diagnosing"
-  | "held"
-  | "repairing"
-  | "road-test";
+  | "repair"
+  | "road-test"
+  | "done";
 
 export type PartsStatus = "not-needed" | "in-stock" | "needed" | "ordered";
 
 export type BlockReason =
   | "parts-ordered"
   | "parts-needed"
-  | "awaiting-bay"
   | "awaiting-approval"
   | "awaiting-customer"
   | "other";
@@ -57,11 +56,13 @@ export interface WorkOrder {
   partsStatus: PartsStatus;
   createdAt: string; // ISO datetime
   stageEnteredAt: string; // ISO datetime — for time-in-status calc
-  /** Reason the WO is parked in Held. Only set when stage === "held". */
+  /** True when the WO is blocked (parts, approval, etc.). Orthogonal to stage. */
+  isHeld?: boolean;
+  /** Reason the WO is blocked. Set when isHeld is true. */
   blockReason?: BlockReason;
   /** ETA when the blocker is expected to clear (e.g. parts arrival). ISO datetime. */
   blockEta?: string;
-  /** ETA when the bus will physically arrive at the depot. Only meaningful while stage === "inbound". */
+  /** ETA when the bus will physically arrive at the depot. Only meaningful while stage === "intake". */
   arrivalEta?: string;
   /** Specific parts needed for this work order. */
   parts?: PartRequirement[];

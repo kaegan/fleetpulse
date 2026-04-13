@@ -152,6 +152,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         <StagePipeline
           currentStage={order.stage}
           severity={order.severity}
+          isHeld={order.isHeld}
           size="sm"
           staggerDelay={index * 0.06}
         />

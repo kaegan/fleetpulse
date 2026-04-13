@@ -268,22 +268,23 @@ function ActiveWorkOrderBody({
         <StagePipeline
           currentStage={order.stage}
           severity={order.severity}
+          isHeld={order.isHeld}
           size="lg"
         />
       </div>
       <p className="mb-[26px] pl-0.5 text-xs font-medium text-[#6a6a6a]">
         Currently{" "}
         <strong className="text-[#222222]">{STAGE_LABELS[order.stage]}</strong>
-        {order.stage === "held" && order.blockReason && (
+        {order.isHeld && order.blockReason && (
           <>
             {" · "}
             <span className="text-[#b4541a]">
-              {BLOCK_REASON_LABELS[order.blockReason]}
+              Held · {BLOCK_REASON_LABELS[order.blockReason]}
             </span>
             {order.blockEta && <> · ETA {formatEta(order.blockEta)}</>}
           </>
         )}
-        {order.stage === "inbound" && order.arrivalEta && (
+        {order.stage === "intake" && order.arrivalEta && (
           <> · ETA {formatEta(order.arrivalEta)}</>
         )}
         {" · "}

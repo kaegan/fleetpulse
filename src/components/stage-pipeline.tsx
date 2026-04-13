@@ -18,6 +18,8 @@ import type { Severity, WorkOrderStage } from "@/data/types";
 interface StagePipelineProps {
   currentStage: WorkOrderStage;
   severity: Severity;
+  /** Whether the WO is blocked (orthogonal held state). */
+  isHeld?: boolean;
   /**
    * "sm" = 26px circles, no labels (ops tracker row)
    * "lg" = 36px circles with stage labels beneath (work order detail panel)
@@ -37,6 +39,7 @@ const HELD_TEXT = "#b4541a";
 export function StagePipeline({
   currentStage,
   severity,
+  isHeld,
   size = "sm",
   animated = true,
   staggerDelay = 0,
@@ -46,7 +49,7 @@ export function StagePipeline({
   const connectorHeight = size === "lg" ? 3 : 2;
   const showLabels = size === "lg";
 
-  const stageStates = getStageStates(currentStage);
+  const stageStates = getStageStates(currentStage, isHeld);
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -79,7 +82,6 @@ export function StagePipeline({
               color = HELD_TEXT;
               glyph = "\u23F8";
               break;
-            case "skipped":
             case "pending":
             default:
               bg = "#f2f2f2";
@@ -93,11 +95,10 @@ export function StagePipeline({
           // Solid when the WO has left this stage (complete or skipped).
           // "current" and "current-held" mean the WO is still here, so the
           // outgoing connector stays muted.
-          const connectorSolid = state === "complete" || state === "skipped";
+          const connectorSolid = state === "complete";
 
           // ── Label text & color ─────────────────────────────────────────
-          const labelText =
-            showLabels && state === "current-held" ? "Held" : STAGE_LABELS[stage];
+          const labelText = STAGE_LABELS[stage];
           const labelColor =
             state === "current-held"
               ? HELD_TEXT
@@ -105,11 +106,11 @@ export function StagePipeline({
                 ? sev.text
                 : state === "complete"
                   ? "#6a6a6a"
-                  : "#b5b5b5"; // pending + skipped both muted
+                  : "#b5b5b5"; // pending muted
 
           const tooltipText =
             state === "current-held"
-              ? `Held · ${STAGE_LABELS[stage]}`
+              ? `${STAGE_LABELS[stage]} · Held`
               : STAGE_LABELS[stage];
 
           const circle = (

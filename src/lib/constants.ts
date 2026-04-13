@@ -20,27 +20,27 @@ export const SEVERITY_ICONS: Record<Severity, ReactNode> = {
 };
 
 /**
- * The six stages in order — canonical for both the mechanic kanban and every
+ * The five stages in order — canonical for both the mechanic kanban and every
  * view that renders repair progress (detail panel stepper, Domino's tracker
  * rows, future surfaces). Any new progress view should derive its state from
  * `getStageStates`, not re-implement the stage comparison logic inline.
+ *
+ * "Held" is an orthogonal boolean flag on the work order, not a pipeline stage.
  */
 export const STAGE_ORDER: readonly WorkOrderStage[] = [
-  "inbound",
+  "intake",
   "triage",
-  "diagnosing",
-  "held",
-  "repairing",
+  "repair",
   "road-test",
+  "done",
 ] as const;
 
 export const STAGE_LABELS: Record<WorkOrderStage, string> = {
-  inbound: "Inbound",
+  intake: "Intake",
   triage: "Triage",
-  diagnosing: "Diagnosing",
-  held: "Held",
-  repairing: "Repairing",
+  repair: "Repair",
   "road-test": "Road Test",
+  done: "Done",
 };
 
 export function stageIndex(stage: WorkOrderStage): number {
@@ -54,24 +54,22 @@ export function stageIndex(stage: WorkOrderStage): number {
  */
 export function nextStage(stage: WorkOrderStage): WorkOrderStage | null {
   switch (stage) {
-    case "inbound":
+    case "intake":
       return "triage";
     case "triage":
-      return "diagnosing";
-    case "diagnosing":
-      return "repairing";
-    case "held":
-      return "repairing";
-    case "repairing":
+      return "repair";
+    case "repair":
       return "road-test";
     case "road-test":
+      return "done";
+    case "done":
       return null;
   }
 }
 
-/** True once a WO has reached Road Test (the terminal forward stage). */
+/** True once a WO has reached Done (the terminal forward stage). */
 export function isTerminalStage(stage: WorkOrderStage): boolean {
-  return stage === "road-test";
+  return stage === "done";
 }
 
 /**
@@ -79,41 +77,34 @@ export function isTerminalStage(stage: WorkOrderStage): boolean {
  *
  * - `complete`      — WO has passed this stage
  * - `current`       — WO is actively in this stage
- * - `current-held`  — WO is blocked in this stage (Held column)
- * - `skipped`       — stage was bypassed (Held when WO went straight through)
+ * - `current-held`  — WO is in this stage AND blocked (isHeld flag)
  * - `pending`       — stage not yet reached
  */
 export type StageState =
   | "complete"
   | "current"
   | "current-held"
-  | "skipped"
   | "pending";
 
 /**
  * Canonical per-stage state resolver for any view that renders WO progress.
  * Use this instead of re-deriving state from (currentStage, idx) comparisons
- * inline — keeps Held semantics, skipped semantics, and future additions
- * consistent across every surface (detail panel, tracker rows, card widgets…).
+ * inline — keeps Held semantics consistent across every surface (detail
+ * panel, tracker rows, card widgets…).
  */
 export function getStageStates(
   currentStage: WorkOrderStage,
+  isHeld?: boolean,
 ): Array<{ stage: WorkOrderStage; state: StageState }> {
   const currentIdx = STAGE_ORDER.indexOf(currentStage);
   return STAGE_ORDER.map((stage, idx) => {
     if (idx === currentIdx) {
       return {
         stage,
-        state: currentStage === "held" ? "current-held" : "current",
+        state: isHeld ? "current-held" : "current",
       };
     }
     if (idx < currentIdx) {
-      // Held is skippable — most WOs pass straight from Diagnosing to
-      // Repairing without entering Held. Render as skipped (not complete)
-      // so the dot stays visually muted rather than showing a green check.
-      if (stage === "held") {
-        return { stage, state: "skipped" };
-      }
       return { stage, state: "complete" };
     }
     return { stage, state: "pending" };
@@ -214,20 +205,22 @@ export const KPI_PILLS: Record<string, { color: string; bg: string }> = {
 };
 
 /**
- * Pill color per kanban stage. Neutral across the board except Held,
- * which keeps its warm copper accent as a genuine blocker signal.
+ * Pill color per kanban stage. Neutral across the board; Done gets a
+ * quiet green. Held is an orthogonal overlay — see HELD_PILL.
  */
 export const KANBAN_STAGE_PILLS: Record<
   WorkOrderStage,
   { color: string; bg: string }
 > = {
-  inbound: { color: "#6a6a6a", bg: "#f5f5f5" },
+  intake: { color: "#6a6a6a", bg: "#f5f5f5" },
   triage: { color: "#6a6a6a", bg: "#f5f5f5" },
-  diagnosing: { color: "#6a6a6a", bg: "#f5f5f5" },
-  held: { color: "#b4541a", bg: "#fff4ed" },
-  repairing: { color: "#6a6a6a", bg: "#f5f5f5" },
+  repair: { color: "#6a6a6a", bg: "#f5f5f5" },
   "road-test": { color: "#6a6a6a", bg: "#f5f5f5" },
+  done: { color: "#166534", bg: "#f0fdf4" },
 };
+
+/** Copper accent for held-state badges and pills. */
+export const HELD_PILL = { color: "#b4541a", bg: "#fff4ed" } as const;
 
 export const PARTS_STATUS_LABELS: Record<PartsStatus, string> = {
   "not-needed": "Not needed",
@@ -239,7 +232,6 @@ export const PARTS_STATUS_LABELS: Record<PartsStatus, string> = {
 export const BLOCK_REASON_LABELS: Record<BlockReason, string> = {
   "parts-ordered": "Parts ordered",
   "parts-needed": "Parts needed",
-  "awaiting-bay": "Awaiting bay",
   "awaiting-approval": "Awaiting approval",
   "awaiting-customer": "Awaiting customer",
   other: "Held",
