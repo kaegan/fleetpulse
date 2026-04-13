@@ -15,10 +15,11 @@ import {
   getForecastAvailableCount,
   getForecastCounts,
   getStatusCounts,
+  hoursSince,
   milesUntilPm,
 } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { KPI_PILLS, getAvailabilityTierColor } from "@/lib/constants";
+import { KPI_PILLS, MAINTENANCE_MEAN_HOURS, getAvailabilityTierColor } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
   IconHandFillDuo18,
@@ -80,6 +81,18 @@ export function KpiStrip({ onOpenStatusList, onOpenHeldList }: KpiStripProps) {
   );
   const pmComplianceRate = (pmCompliantCount / scopedBuses.length) * 100;
   const pmOverdueCount = scopedBuses.length - pmCompliantCount;
+
+  // Buses in maintenance longer than the 12h mean — surfaced on the KPI card
+  // so ops can see at a glance how many repairs are dragging.
+  const aboveMeanCount = useMemo(() => {
+    const now = new Date();
+    const woByBus = new Map(scopedWorkOrders.map((wo) => [wo.busId, wo]));
+    return scopedBuses.filter((b) => {
+      if (b.status !== "in-maintenance") return false;
+      const wo = woByBus.get(b.id);
+      return wo && hoursSince(wo.createdAt, now) >= MAINTENANCE_MEAN_HOURS;
+    }).length;
+  }, [scopedBuses, scopedWorkOrders]);
 
   // Yesterday helper: passes the garage when scoped so we pull from the
   // per-depot status history series.
@@ -152,6 +165,7 @@ export function KpiStrip({ onOpenStatusList, onOpenHeldList }: KpiStripProps) {
         <KpiCard
           label="In Maintenance"
           value={counts["in-maintenance"]}
+          subtitle={aboveMeanCount > 0 ? `${aboveMeanCount} above 12h mean` : undefined}
           color="#222222"
           pillColor={p["In Maintenance"].color}
           pillBg={p["In Maintenance"].bg}

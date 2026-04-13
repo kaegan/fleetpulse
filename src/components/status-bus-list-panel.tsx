@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
 import { useFleet } from "@/contexts/fleet-context";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
+  MAINTENANCE_MEAN_HOURS,
   SEVERITY_COLORS,
   SEVERITY_ICONS,
   SEVERITY_LABELS,
@@ -13,8 +14,10 @@ import {
 import {
   formatNumber,
   formatTimeInStatus,
+  hoursSince,
   milesUntilPm,
 } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
@@ -61,7 +64,7 @@ const META: Record<BusListKind, StatusMeta> = {
     pillLabel: "In Maintenance",
     heading: "In the shop",
     subtitle: () =>
-      `Sorted by dwell time. Longest-open jobs first so you can escalate what's stuck.`,
+      `Sorted by dwell time. Repairs above the 12h mean are shown first.`,
     emptyMessage: "No buses in the shop right now.",
   },
   "road-call": {
@@ -165,6 +168,19 @@ export function BusListPanelContent({
     }
   }, [buses, kind, scope, worksByBus, workOrders]);
 
+  // Count of in-maintenance buses whose total shop time exceeds the 12h mean.
+  // Since rows are already sorted oldest-first, above-mean buses sit at the top.
+  const aboveMeanCount = useMemo(() => {
+    if (kind !== "in-maintenance") return 0;
+    const now = new Date();
+    return rows.filter((bus) => {
+      const wo = worksByBus.get(bus.id);
+      return wo && hoursSince(wo.createdAt, now) >= MAINTENANCE_MEAN_HOURS;
+    }).length;
+  }, [kind, rows, worksByBus]);
+
+  const showPartition = kind === "in-maintenance" && aboveMeanCount > 0 && aboveMeanCount < rows.length;
+
   return (
     <div ref={topRef} className="flex h-full flex-col p-5 pb-6 sm:p-7">
       {/* Header */}
@@ -213,14 +229,41 @@ export function BusListPanelContent({
             flex: 1,
           }}
         >
-          {rows.map((bus) => (
-            <BusRow
-              key={bus.id}
-              bus={bus}
-              kind={kind}
-              workOrder={worksByBus.get(bus.id) ?? null}
-              onClick={() => onSelectBus(bus)}
-            />
+          {/* Above-mean section title */}
+          {showPartition && (
+            <p style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#b4541a",
+              letterSpacing: "0.01em",
+              margin: "0 0 2px",
+            }}>
+              Over 12h &middot; {aboveMeanCount}
+            </p>
+          )}
+          {rows.map((bus, idx) => (
+            <Fragment key={bus.id}>
+              {/* Within-mean section title + separator */}
+              {showPartition && idx === aboveMeanCount && (
+                <div style={{ margin: "10px 0 6px" }}>
+                  <Separator style={{ marginBottom: 10 }} />
+                  <p style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#929292",
+                    letterSpacing: "0.01em",
+                  }}>
+                    Within 12h &middot; {rows.length - aboveMeanCount}
+                  </p>
+                </div>
+              )}
+              <BusRow
+                bus={bus}
+                kind={kind}
+                workOrder={worksByBus.get(bus.id) ?? null}
+                onClick={() => onSelectBus(bus)}
+              />
+            </Fragment>
           ))}
         </div>
       )}
@@ -340,12 +383,13 @@ function RightValue({
   }
 
   if (kind === "in-maintenance" && workOrder) {
+    const isAboveMean = hoursSince(workOrder.createdAt) >= MAINTENANCE_MEAN_HOURS;
     return (
       <span
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "#6a6a6a",
+          color: isAboveMean ? "#b4541a" : "#6a6a6a",
           fontVariantNumeric: "tabular-nums",
         }}
       >
@@ -416,7 +460,7 @@ function SecondaryLine({
             fontWeight: 600,
           }}
         >
-          <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 11, height: 11, flexShrink: 0, lineHeight: 0 }}>
             {SEVERITY_ICONS[workOrder.severity]}
           </span>
           {SEVERITY_LABELS[workOrder.severity]}
