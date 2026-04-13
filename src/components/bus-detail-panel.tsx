@@ -150,7 +150,7 @@ export function BusPanelContent({
         {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* Bus number */}
-      <h2 className="mb-1 text-[28px] font-bold tracking-[-0.03em] text-[#222222]">
+      <h2 className="mb-1 text-[28px] font-semibold tracking-[-0.03em] text-[#222222]">
         Bus #{bus.busNumber}
       </h2>
 
@@ -175,7 +175,7 @@ export function BusPanelContent({
       </div>
 
       {/* Vehicle info */}
-      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Vehicle Info</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Vehicle Info</h3>
       <InfoGrid>
         <InfoRow label="Model" value={bus.model} />
         <InfoRow label="Year" value={String(bus.year)} />
@@ -183,7 +183,7 @@ export function BusPanelContent({
       </InfoGrid>
 
       {/* PM Status */}
-      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Preventive Maintenance</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Preventive Maintenance</h3>
       <div className="mb-6 rounded-md border border-black/[0.04] bg-[#fafaf9] p-4">
         <div className="mb-2.5 flex justify-between">
           <span className="text-[13px] font-medium text-[#6a6a6a]">
@@ -245,7 +245,7 @@ export function BusPanelContent({
       {/* Active Work Orders */}
       {busWorkOrders.length > 0 && (
         <>
-          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Active Work Orders</h3>
+          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Active Work Orders</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
             {busWorkOrders.map((wo) => {
               const sev = SEVERITY_COLORS[wo.severity];
@@ -332,7 +332,7 @@ export function BusPanelContent({
 
       {busWorkOrders.length === 0 && (
         <>
-          <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Work Orders</h3>
+          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Work Orders</h3>
           <p
             style={{
               fontSize: 13,
@@ -391,7 +391,7 @@ function ServiceHistorySection({
     <>
       {callout && <CrossGarageCallout entry={callout.entry} />}
 
-      <h3 className="mb-2.5 text-[11px] font-bold uppercase tracking-[0.06em] text-[#929292]">Service History</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Service History</h3>
 
       {history.length === 0 ? (
         <p
@@ -462,7 +462,7 @@ function CrossGarageCallout({ entry }: { entry: BusHistoryEntry }) {
         <div
           style={{
             fontSize: 13,
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#d4654a",
             letterSpacing: "-0.01em",
             marginBottom: 4,

@@ -78,7 +78,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <span className="block size-2.5 rounded-full bg-white" aria-hidden />
               </div>
               <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate text-[15px] font-bold tracking-tight">
+                <span className="truncate text-[15px] font-semibold tracking-tight">
                   FleetPulse
                 </span>
                 <span className="truncate text-xs text-sidebar-foreground/60">

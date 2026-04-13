@@ -77,7 +77,7 @@ export function KanbanColumn({
           </span>
         </div>
         <span
-          className="min-w-5 shrink-0 rounded-full px-2.5 py-[3px] text-center text-[11px] font-bold"
+          className="min-w-5 shrink-0 rounded-full px-2.5 py-[3px] text-center text-[11px] font-semibold"
           style={{
             background: orders.length > 0 ? pill.bg : "transparent",
             color: orders.length > 0 ? pill.color : "transparent",

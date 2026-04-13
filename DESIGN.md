@@ -236,6 +236,21 @@ What distinguishes Airbnb is its palette-based token system (`--palette-*`) and 
 - "Create a CTA button: #222222 background, white text, 8px radius, 16px Cereal VF weight 500, 0px 24px padding. Hover: brand red accent."
 - "Design a heart/wishlist button: transparent background, 50% radius, white heart icon with dark shadow outline."
 
+### Dashboard Density Rules
+
+Rules for data-dense dashboard screens (KPI strips, tracker tables, kanban boards). These override the Airbnb-magazine defaults for information-dense layouts:
+
+| Token | Value | Rationale |
+|-------|-------|-----------|
+| Base body font-size | 14px | Readable default for dashboard text |
+| Base icon size | 16px (`size-4`) | Consistent UI icon baseline |
+| Icon stroke widths | 1 / 1.2 / 1.5 | Lighter strokes reduce visual noise; Lucide global default set to 1.5 via CSS |
+| Font weight range | regular (400) / medium (500) / semibold (600) | Bold (700) reserved for hero KPI numbers only |
+
+**Weight discipline:** Semibold (600) is the emphasis ceiling for headings, bus numbers, section labels, and pill text. Bold (700) is reserved exclusively for primary KPI values (the big 72px / 40px numbers on the fleet overview). This keeps the hierarchy clean — when everything is bold, nothing is.
+
+**Icon convention:** Lucide icons get `stroke-width: 1.5` via a global CSS rule (`.lucide { stroke-width: 1.5 !important; }`). Phosphor icons use `weight="duotone"` by default, `weight="fill"` for active nav state. Nucleo icons are filled by nature.
+
 ### Iteration Guide
 1. Start with white — the photography provides all the color
 2. Rausch Red (#ff385c) is the singular accent — use sparingly for CTAs only

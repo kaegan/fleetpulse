@@ -183,7 +183,7 @@ export function LogRepairForm({
           id="log-repair-title"
           className="text-[19px] sm:text-[22px]"
           style={{
-            fontWeight: 700,
+            fontWeight: 600,
             color: "#222222",
             letterSpacing: "-0.03em",
             margin: 0,
@@ -237,7 +237,7 @@ export function LogRepairForm({
                 <span
                   style={{
                     fontSize: 16,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: "#222222",
                     letterSpacing: "-0.02em",
                   }}
@@ -285,7 +285,7 @@ export function LogRepairForm({
                     key={b.id}
                     type="button"
                     onClick={() => handlePickBus(b.id)}
-                    className="rounded-[10px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2.5 text-sm font-bold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
+                    className="rounded-[10px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2.5 text-sm font-semibold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
                   >
                     #{b.busNumber}
                   </button>
@@ -355,7 +355,7 @@ export function LogRepairForm({
                 role="radio"
                 aria-checked={isActive}
                 onClick={() => setSeverity(sev)}
-                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-2.5 text-sm font-bold transition-colors cursor-pointer sm:min-h-14 sm:py-3.5"
+                className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-[12px] border-2 px-3 py-2.5 text-sm font-semibold transition-colors cursor-pointer sm:min-h-14 sm:py-3.5"
                 style={{
                   color: isActive ? sc.text : "#6a6a6a",
                   background: isActive ? sc.bg : "#f7f7f7",
@@ -512,7 +512,7 @@ function CrossGarageInlineWarning({
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className="text-[12px] font-bold"
+          className="text-[12px] font-semibold"
           style={{ color: "#d4654a", marginBottom: 2, letterSpacing: "-0.01em" }}
         >
           Arrived from {otherGarageLabel} · {whenLabel}

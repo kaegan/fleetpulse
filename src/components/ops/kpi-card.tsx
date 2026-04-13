@@ -224,7 +224,7 @@ export function KpiCard({
             Tomorrow (est.)
           </span>
           <span
-            className="text-[15px] font-bold"
+            className="text-[15px] font-semibold"
             style={{ color: getAvailabilityTierColor(forecast) }}
           >
             {forecast.toFixed(1)}%
