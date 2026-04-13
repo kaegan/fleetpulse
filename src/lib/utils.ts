@@ -60,7 +60,7 @@ function isPmWorkOrder(wo: WorkOrder): boolean {
  *  Distribution chart all tell the same story.
  *
  *  Signals we use:
- *   - Repairing + Road Test work orders finish overnight →
+ *   - Repair + Road Test work orders finish overnight →
  *     those buses move from in-maintenance back into the available pool.
  *     Visible in the In Maintenance drill-down sheet and the WO tracker.
  *   - A completing WO classified as a PM job returns its bus to `running`
@@ -81,9 +81,9 @@ export function getForecastCounts(
 ): Record<BusStatus, number> {
   const counts = getStatusCounts(buses);
 
-  // Repairing + Road Test WOs — these buses leave in-maintenance overnight.
+  // Repair + Road Test WOs — these buses leave in-maintenance overnight.
   const completing = workOrders.filter(
-    (wo) => wo.stage === "repairing" || wo.stage === "road-test"
+    (wo) => wo.stage === "repair" || wo.stage === "road-test"
   );
   const completingPm = completing.filter(isPmWorkOrder).length;
   const completingRepair = completing.length - completingPm;

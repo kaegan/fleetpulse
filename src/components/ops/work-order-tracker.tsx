@@ -10,6 +10,7 @@ import {
   STAGE_ORDER,
   SEVERITY_COLORS,
   BRAND_COLOR,
+  HELD_PILL,
   stageIndex,
 } from "@/lib/constants";
 import { getMTTR } from "@/lib/utils";
@@ -61,6 +62,8 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
   const stageCounts = STAGE_ORDER.map(
     (stage) => scopedOrders.filter((wo) => wo.stage === stage).length
   );
+  // Cross-cutting held count (orthogonal to stage).
+  const heldCount = scopedOrders.filter((wo) => wo.isHeld).length;
   // A "peak" only exists when one stage is strictly ahead of the rest.
   // When counts are tied (e.g. 2/2/2/2/2), nothing should glow — the whole
   // point of the bar is to surface an actual pile-up, not to decorate.
@@ -194,6 +197,44 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
               </div>
             );
           })}
+          {/* Divider + cross-cutting Held pill */}
+          <div
+            style={{
+              width: 1,
+              height: 18,
+              background: "rgba(0,0,0,0.08)",
+              alignSelf: "center",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "3px 10px",
+              borderRadius: 999,
+              background: heldCount > 0 ? HELD_PILL.bg : "#f7f7f7",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: heldCount > 0 ? HELD_PILL.color : "#929292",
+              }}
+            >
+              Held
+            </span>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: heldCount > 0 ? HELD_PILL.color : "#6a6a6a",
+              }}
+            >
+              {heldCount}
+            </span>
+          </div>
         </div>
       </div>
 

@@ -80,7 +80,7 @@ export function KanbanBoard({
       onDragCancel={handleDragCancel}
     >
       <div
-        className={`-mx-4 flex gap-2 overflow-x-auto scroll-smooth px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 xl:mx-0 xl:grid xl:grid-cols-6 xl:gap-3 xl:overflow-visible xl:px-0 ${snapClass}`}
+        className={`-mx-4 flex gap-2 overflow-x-auto scroll-smooth px-4 sm:-mx-6 sm:gap-2.5 sm:px-6 xl:mx-0 xl:grid xl:grid-cols-5 xl:gap-3 xl:overflow-visible xl:px-0 ${snapClass}`}
       >
         {STAGE_ORDER.map((stage) => {
           const stageOrders = workOrders.filter((wo) => wo.stage === stage);

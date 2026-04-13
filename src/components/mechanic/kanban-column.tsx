@@ -10,20 +10,18 @@ import { KANBAN_STAGE_PILLS } from "@/lib/constants";
 import type { PartsStatus, WorkOrder, WorkOrderStage } from "@/data/types";
 import {
   IconTruckFillDuo18,
-  IconClipboardFillDuo18,
   IconMagnifierCheckFillDuo18,
-  IconHourglassFillDuo18,
   IconWrenchFillDuo18,
   IconBadgeCheckFillDuo18,
+  IconCheckFillDuo18,
 } from "nucleo-ui-fill-duo-18";
 
 const STAGE_ICONS: Record<WorkOrderStage, React.ReactNode> = {
-  inbound: <IconTruckFillDuo18 />,
-  triage: <IconClipboardFillDuo18 />,
-  diagnosing: <IconMagnifierCheckFillDuo18 />,
-  held: <IconHourglassFillDuo18 />,
-  repairing: <IconWrenchFillDuo18 />,
+  intake: <IconTruckFillDuo18 />,
+  triage: <IconMagnifierCheckFillDuo18 />,
+  repair: <IconWrenchFillDuo18 />,
   "road-test": <IconBadgeCheckFillDuo18 />,
+  done: <IconCheckFillDuo18 />,
 };
 
 const LAYOUT_TRANSITION = { type: "spring", stiffness: 300, damping: 30 } as const;

@@ -90,7 +90,7 @@ export function LogRepairForm({
 
   // M-2: if the selected bus was recently worked on at the *other* garage,
   // surface that the moment the mechanic picks the bus — before they start
-  // diagnosing. Reuses the same 14-day window the BusDetailPanel uses.
+  // triaging. Reuses the same 14-day window the BusDetailPanel uses.
   const crossGarageCallout = useMemo(() => {
     if (!selectedBus) return null;
     return getCrossGarageCallout(selectedBus, getBusHistory(selectedBus.id));

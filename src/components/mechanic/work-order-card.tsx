@@ -30,7 +30,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const SEVERITY_VARIANT = {
   critical: "destructive",
@@ -80,8 +79,8 @@ export function WorkOrderCard({
   });
 
   const terminal = isTerminalStage(order.stage);
-  const isInbound = order.stage === "inbound";
-  const isHeld = order.stage === "held";
+  const isIntake = order.stage === "intake";
+  const isHeld = order.isHeld === true;
   const next = nextStage(order.stage);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -93,7 +92,7 @@ export function WorkOrderCard({
   };
 
   // Context line under the meta row. Held shows the blocker + ETA (so ops
-  // sees why the card is parked), Inbound shows the arrival ETA (so ops
+  // sees why the card is parked), Intake shows the arrival ETA (so ops
   // knows when the bus is expected), everything else shows bay + mechanic.
   const contextLine = (() => {
     if (isHeld) {
@@ -103,7 +102,7 @@ export function WorkOrderCard({
       const eta = order.blockEta ? ` · ETA ${formatShortEta(order.blockEta)}` : "";
       return `${reason}${eta}`;
     }
-    if (isInbound) {
+    if (isIntake) {
       const eta = order.arrivalEta
         ? `Arriving ${formatShortEta(order.arrivalEta)}`
         : "En route";
@@ -126,7 +125,12 @@ export function WorkOrderCard({
           ? "touch-none select-none cursor-grabbing border border-border shadow-panel"
           : "touch-none select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
       }
-      style={{ opacity: isDragging && !isOverlay ? 0 : 1 }}
+      style={{
+        opacity: isDragging && !isOverlay ? 0 : 1,
+        ...(isHeld && !isOverlay
+          ? { borderLeft: "3px dashed #b4541a", background: "#fffbf8" }
+          : {}),
+      }}
     >
       <CardHeader className="px-4 pb-3 pt-4">
         <div className="flex items-start justify-between gap-2">
@@ -210,14 +214,14 @@ export function WorkOrderCard({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={isInbound}
+                disabled={isIntake}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onAdvance(order.id);
                 }}
                 title={
-                  isInbound ? "Bus hasn't arrived at the depot yet" : undefined
+                  isIntake ? "Bus hasn't arrived at the depot yet" : undefined
                 }
               >
                 {STAGE_LABELS[next]} →
@@ -227,17 +231,14 @@ export function WorkOrderCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-severity-routine hover:bg-severity-routine-bg hover:text-severity-routine"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground"
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onComplete(order.id);
                 }}
               >
-                <span className="flex h-3.5 w-3.5">
-                  <IconCheckFillDuo18 />
-                </span>
-                Mark complete
+                Dismiss
               </Button>
             )}
           </CardFooter>

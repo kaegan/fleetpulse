@@ -31,7 +31,6 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconCheckFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 const SEVERITY_VARIANT = {
   critical: "destructive",
@@ -130,8 +129,8 @@ function MyWorkOrderCard({
   onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
 }) {
   const terminal = isTerminalStage(order.stage);
-  const isInbound = order.stage === "inbound";
-  const isHeld = order.stage === "held";
+  const isIntake = order.stage === "intake";
+  const isHeld = order.isHeld === true;
   const next = nextStage(order.stage);
 
   const contextLine = (() => {
@@ -144,7 +143,7 @@ function MyWorkOrderCard({
         : "";
       return `${reason}${eta}`;
     }
-    if (isInbound) {
+    if (isIntake) {
       return order.arrivalEta
         ? `Arriving ${formatShortEta(order.arrivalEta)}`
         : "En route";
@@ -159,8 +158,9 @@ function MyWorkOrderCard({
     <Card
       className={
         "cursor-pointer border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover" +
-        (isHeld ? " border-[#b4541a]" : " border-border")
+        (isHeld ? " border-border" : " border-border")
       }
+      style={isHeld ? { borderLeft: "3px dashed #b4541a", background: "#fffbf8" } : undefined}
       onClick={() => onSelectWorkOrder(order)}
     >
       {/* Header: Bus # + severity + time */}
@@ -195,6 +195,7 @@ function MyWorkOrderCard({
         <StagePipeline
           currentStage={order.stage}
           severity={order.severity}
+          isHeld={order.isHeld}
           size="lg"
           animated={false}
         />
@@ -253,13 +254,13 @@ function MyWorkOrderCard({
           <Button
             variant="ghost"
             size="sm"
-            disabled={isInbound}
+            disabled={isIntake}
             onClick={(e) => {
               e.stopPropagation();
               onStageChange(order.id, next);
             }}
             title={
-              isInbound ? "Bus hasn't arrived at the depot yet" : undefined
+              isIntake ? "Bus hasn't arrived at the depot yet" : undefined
             }
           >
             {STAGE_LABELS[next]} &rarr;
@@ -269,16 +270,13 @@ function MyWorkOrderCard({
           <Button
             variant="ghost"
             size="sm"
-            className="text-severity-routine hover:bg-severity-routine-bg hover:text-severity-routine"
+            className="text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={(e) => {
               e.stopPropagation();
               onComplete(order.id);
             }}
           >
-            <span className="flex h-3.5 w-3.5">
-              <IconCheckFillDuo18 />
-            </span>
-            Mark complete
+            Dismiss
           </Button>
         )}
       </CardFooter>

@@ -38,37 +38,38 @@ import type {
 /**
  * Resolve a requested stage transition against the parts gate.
  *
- * Forward-only gate: dragging a WO into Repairing while parts are unresolved
- * auto-routes to Held with the matching blocker reason. Backward drags always
+ * Forward-only gate: dragging a WO into Repair while parts are unresolved
+ * keeps the WO in its current stage and sets isHeld. Backward drags always
  * succeed — mechanics need to correct their own mistakes without admin help
- * (per PRODUCT_SPEC.md §2). Held → Repairing still has to pass through the
- * parts gate like any other forward move.
+ * (per PRODUCT_SPEC.md §2).
  */
 function resolveStageTransition(
   wo: WorkOrder,
   requested: WorkOrderStage
-): { stage: WorkOrderStage; blockReason?: BlockReason; notice?: string } {
+): { stage: WorkOrderStage; isHeld?: boolean; blockReason?: BlockReason; notice?: string } {
   const isForward = stageIndex(requested) > stageIndex(wo.stage);
-  if (!isForward) return { stage: requested };
+  if (!isForward) return { stage: requested, isHeld: false };
 
-  if (requested === "repairing") {
+  if (requested === "repair") {
     if (wo.partsStatus === "needed") {
       return {
-        stage: "held",
+        stage: wo.stage,
+        isHeld: true,
         blockReason: "parts-needed",
-        notice: "Parts haven't been ordered — parked in Held.",
+        notice: "Parts haven't been ordered — held until parts are resolved.",
       };
     }
     if (wo.partsStatus === "ordered") {
       return {
-        stage: "held",
+        stage: wo.stage,
+        isHeld: true,
         blockReason: "parts-ordered",
-        notice: "Parts on order — parked in Held until the kit arrives.",
+        notice: "Parts on order — held until the kit arrives.",
       };
     }
   }
 
-  return { stage: requested };
+  return { stage: requested, isHeld: false };
 }
 
 // Subtitle suffix keyed by global depot scope. The h1 stays "Service Board";
@@ -88,7 +89,7 @@ type MechanicPanelEntry =
   | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
 
 export function MechanicView() {
-  const { workOrders: orders, addWorkOrder, updateWorkOrder, completeWorkOrder } =
+  const { workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
     useWorkOrders();
   const [scope, setScope] = useState<Scope>("mine");
   const [isLogOpen, setIsLogOpen] = useState(false);
@@ -155,28 +156,27 @@ export function MechanicView() {
       const wo = orders.find((o) => o.id === woId);
       if (!wo) return;
 
-      const { stage, blockReason, notice } = resolveStageTransition(
+      const { stage, isHeld, blockReason, notice } = resolveStageTransition(
         wo,
         newStage
       );
 
       // Always surface the notice — even when the card doesn't actually
-      // move (e.g. clicking advance on a blocked Held card). Otherwise
-      // the mechanic clicks the button and nothing happens.
+      // move (e.g. clicking advance on a blocked card). Otherwise the
+      // mechanic clicks the button and nothing happens.
       if (notice) toast(notice);
 
-      if (stage === wo.stage) return;
+      if (stage === wo.stage && isHeld === wo.isHeld) return;
 
       analytics.woStageAdvanced(woId, wo.stage, stage);
 
       const now = new Date().toISOString();
       updateWorkOrder(woId, {
         stage,
-        stageEnteredAt: now,
-        // Preserve blockReason when landing in Held, clear it otherwise.
-        blockReason:
-          stage === "held" ? blockReason ?? wo.blockReason : undefined,
-        blockEta: stage === "held" ? wo.blockEta : undefined,
+        stageEnteredAt: stage !== wo.stage ? now : wo.stageEnteredAt,
+        isHeld: isHeld ?? false,
+        blockReason: isHeld ? (blockReason ?? wo.blockReason) : undefined,
+        blockEta: isHeld ? wo.blockEta : undefined,
       });
     },
     [orders, updateWorkOrder]
@@ -196,11 +196,11 @@ export function MechanicView() {
     [updateWorkOrder]
   );
 
-  const handleComplete = useCallback(
+  const handleDismiss = useCallback(
     (woId: string) => {
-      completeWorkOrder(woId);
+      dismissWorkOrder(woId);
     },
-    [completeWorkOrder]
+    [dismissWorkOrder]
   );
 
   const handleCreate = useCallback(
@@ -217,7 +217,7 @@ export function MechanicView() {
         issue: draft.issue,
         severity: draft.severity,
         // New WOs land in Triage — the mechanic has the bus in the yard
-        // and still needs to do the walk-around before Diagnosing.
+        // and still needs to do the walk-around before Repair.
         stage: "triage",
         bayNumber: null,
         garage: newRepairGarage,
@@ -349,7 +349,7 @@ export function MechanicView() {
           <MyWorkOrders
             workOrders={mineOrders}
             onStageChange={handleStageChange}
-            onComplete={handleComplete}
+            onComplete={handleDismiss}
             onSelectWorkOrder={openWorkOrderRoot}
             onUpdateParts={handleUpdateParts}
             layoutPrefix="wo"
@@ -360,7 +360,7 @@ export function MechanicView() {
           <KanbanBoard
             workOrders={garageOrders}
             onStageChange={handleStageChange}
-            onComplete={handleComplete}
+            onComplete={handleDismiss}
             onSelectWorkOrder={openWorkOrderRoot}
             onUpdateParts={handleUpdateParts}
             layoutPrefix="wo"
