@@ -92,6 +92,13 @@ export function MechanicView() {
   const { buses, workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
     useFleet();
   const [scope, setScope] = useState<Scope>("mine");
+  const handleScopeChange = useCallback(
+    (next: Scope) => {
+      analytics.mechanicScopeToggled(scope, next);
+      setScope(next);
+    },
+    [scope]
+  );
   const [isLogOpen, setIsLogOpen] = useState(false);
   const formDraftRef = useRef<LogRepairFormSnapshot | null>(null);
   const { scope: depotScope } = useDepot();
@@ -208,6 +215,7 @@ export function MechanicView() {
 
   const handleDismiss = useCallback(
     (woId: string) => {
+      analytics.woDismissed(woId);
       dismissWorkOrder(woId);
     },
     [dismissWorkOrder]
@@ -236,6 +244,14 @@ export function MechanicView() {
         partsStatus: "not-needed",
         autoEscalated: shouldEscalate || undefined,
       });
+
+      analytics.repairLogged(
+        draft.busId,
+        shouldEscalate ? "critical" : draft.severity,
+        newRepairGarage,
+        shouldEscalate,
+        draft.assignedTo
+      );
 
       setIsLogOpen(false);
       toast(
@@ -343,7 +359,7 @@ export function MechanicView() {
       <div className="mb-[18px] flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <ScopeToggle
           scope={scope}
-          onChange={setScope}
+          onChange={handleScopeChange}
           mineCount={mineOrders.length}
           allCount={garageOrders.length}
         />

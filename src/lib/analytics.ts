@@ -40,4 +40,41 @@ export const analytics = {
     woId: string,
     source: "tracker" | "kanban" | "drilldown"
   ) => capture("wo_detail_opened", { woId, source }),
+
+  /** Mechanic submits the Log Repair form, creating a new work order. */
+  repairLogged: (
+    busId: number,
+    severity: string,
+    garage: string,
+    autoEscalated: boolean,
+    assignedTo: string | null
+  ) => capture("repair_logged", { busId, severity, garage, autoEscalated, assignedTo }),
+
+  /** Mechanic dismisses a completed work order from the board. */
+  woDismissed: (woId: string) =>
+    capture("wo_dismissed", { woId }),
+
+  /** User switches the active garage scope via the depot switcher. */
+  depotScopeChanged: (from: string, to: string) =>
+    capture("depot_scope_changed", { from, to }),
+
+  /** Mechanic adds a part to a work order's parts list. */
+  woPartAdded: (woId: string, partId: string, partName: string) =>
+    capture("wo_part_added", { woId, partId, partName }),
+
+  /** Mechanic requests a cross-garage parts transfer for a work order. */
+  partsTransferRequested: (
+    woId: string,
+    partId: string,
+    partName: string,
+    qty: number
+  ) => capture("parts_transfer_requested", { woId, partId, partName, qty }),
+
+  /** Ops manager opens a filtered bus list via a KPI card or held-repairs link. */
+  kpiDrilldownOpened: (kind: string) =>
+    capture("kpi_drilldown_opened", { kind }),
+
+  /** Mechanic switches between "My Work Orders" and "Board" views. */
+  mechanicScopeToggled: (from: string, to: string) =>
+    capture("mechanic_scope_toggled", { from, to }),
 };

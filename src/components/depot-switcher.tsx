@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useDepot, type DepotScope } from "@/hooks/use-depot";
 import { IconGarageFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { analytics } from "@/lib/analytics";
 
 // User-facing label for each scope. Code talks in "depot"
 // (DepotScope / useDepot / filterByDepot), but every piece of visible copy
@@ -62,6 +63,7 @@ export function DepotSwitcher() {
   }, [open]);
 
   const handleSelect = (next: DepotScope) => {
+    if (next !== scope) analytics.depotScopeChanged(scope, next);
     setScope(next);
     setOpen(false);
   };

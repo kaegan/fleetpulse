@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder, WorkOrderStage } from "@/data/types";
+import { analytics } from "@/lib/analytics";
 import { parts as partsCatalog } from "@/data/parts";
 import {
   STAGE_LABELS,
@@ -448,6 +449,7 @@ function PartsRequiredSection({
   const handleAdd = (partId: string) => {
     const catalogEntry = partsCatalog.find((p) => p.id === partId);
     if (!catalogEntry) return;
+    analytics.woPartAdded(order.id, catalogEntry.id, catalogEntry.name);
     onUpdateParts?.(order.id, [
       ...parts,
       { partId: catalogEntry.id, partName: catalogEntry.name, qty: 1 },
@@ -458,6 +460,7 @@ function PartsRequiredSection({
     const req = parts.find((p) => p.partId === partId);
     if (!req) return;
     const otherGarage = order.garage === "north" ? "South" : "North";
+    analytics.partsTransferRequested(order.id, req.partId, req.partName, req.qty);
     onUpdateParts?.(
       order.id,
       parts.map((p) =>

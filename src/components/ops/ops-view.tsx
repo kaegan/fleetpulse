@@ -81,14 +81,18 @@ export function OpsView() {
   // action card row, fleet chart, tracker), not from inside another
   // panel. These `open` the nav with a fresh single-entry stack so no
   // back button is shown.
-  const openBusList = (busListKind: BusListKind) =>
+  const openBusList = (busListKind: BusListKind) => {
+    analytics.kpiDrilldownOpened(busListKind);
     nav.open({
       kind: "busList",
       label: getBusListPillLabel(busListKind),
       busListKind,
     });
-  const openHeldList = () =>
+  };
+  const openHeldList = () => {
+    analytics.kpiDrilldownOpened("held");
     nav.open({ kind: "heldList", label: "Repairs on Hold" });
+  };
   const openBusRoot = (bus: Bus) => {
     analytics.busDetailOpened(bus.id, "chart");
     if (depotScope !== "all" && bus.garage !== depotScope) {
