@@ -15,7 +15,7 @@ import {
   isAccessibilityIssue,
   ACCESSIBILITY_ESCALATION_NOTICE,
 } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18, IconAlertWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconPersonWheelchairFillDuo18, IconAlertWarningFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   BRAND_COLOR,
   CURRENT_MECHANIC,
@@ -632,7 +632,7 @@ function AccessibilityEscalationCallout() {
         style={{ marginTop: 1, color: "#1e40af" }}
         aria-hidden
       >
-        <IconAccessibilityFillDuo18 />
+        <IconPersonWheelchairFillDuo18 />
       </span>
       <div
         className="text-[12px] leading-[1.4]"

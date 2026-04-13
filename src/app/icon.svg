@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Rausch Red background -->
+  <rect width="32" height="32" rx="6" fill="#ff385c"/>
+  <!-- Bus body -->
+  <rect x="4" y="8" width="24" height="13" rx="2" fill="white"/>
+  <!-- Three windows -->
+  <rect x="6" y="10" width="4" height="4" rx="0.5" fill="#ff385c"/>
+  <rect x="14" y="10" width="4" height="4" rx="0.5" fill="#ff385c"/>
+  <rect x="22" y="10" width="4" height="4" rx="0.5" fill="#ff385c"/>
+  <!-- Wheels -->
+  <circle cx="9" cy="21" r="3" fill="white"/>
+  <circle cx="23" cy="21" r="3" fill="white"/>
+</svg>

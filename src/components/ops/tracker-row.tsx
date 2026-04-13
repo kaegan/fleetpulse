@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import type { WorkOrder } from "@/data/types";
 import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
 import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconPersonWheelchairFillDuo18 } from "nucleo-ui-fill-duo-18";
 import { TimeDisplay } from "@/components/time-display";
 import { hoursSince } from "@/lib/utils";
 import { StagePipeline } from "@/components/stage-pipeline";
@@ -111,14 +111,13 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           {SEVERITY_LABELS[order.severity]}
         </Badge>
         {order.autoEscalated && (
-          <Badge
-            className="px-2 py-[3px] gap-1"
+          <span
             title={ACCESSIBILITY_ESCALATION_NOTICE}
-            style={{ color: "#1e40af", background: "#eff6ff", borderColor: "#bfdbfe", border: "1px solid #bfdbfe" }}
+            aria-label="ADA accessibility flag"
+            style={{ display: "inline-flex", width: 16, height: 16, color: "#b5b5b5", flexShrink: 0, lineHeight: 0 }}
           >
-            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}><IconAccessibilityFillDuo18 /></span>
-            ADA
-          </Badge>
+            <IconPersonWheelchairFillDuo18 />
+          </span>
         )}
       </div>
 
@@ -212,13 +211,13 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           {SEVERITY_LABELS[order.severity]}
         </Badge>
         {order.autoEscalated && (
-          <Badge
-            className="px-2 py-[3px] gap-1"
+          <span
             title={ACCESSIBILITY_ESCALATION_NOTICE}
-            style={{ color: "#1e40af", background: "#eff6ff", border: "1px solid #bfdbfe", flexShrink: 0 }}
+            aria-label="ADA accessibility flag"
+            style={{ display: "inline-flex", width: 16, height: 16, color: "#b5b5b5", flexShrink: 0, lineHeight: 0 }}
           >
-            <IconAccessibilityFillDuo18 /> ADA
-          </Badge>
+            <IconPersonWheelchairFillDuo18 />
+          </span>
         )}
       </div>
     </motion.div>
