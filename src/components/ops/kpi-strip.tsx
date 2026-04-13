@@ -19,7 +19,7 @@ import {
   milesUntilPm,
 } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { KPI_PILLS } from "@/lib/constants";
+import { KPI_PILLS, getAvailabilityTierColor } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
   IconBoltSpeedFillDuo18,
@@ -101,7 +101,7 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
         label={SCOPE_LABEL[scope]}
         value={availRate}
         suffix="%"
-        color={availRate < 85 ? "#d4654a" : "#22c55e"}
+        color={getAvailabilityTierColor(availRate)}
         isPrimary
         pillColor={p["Fleet Availability"].color}
         pillBg={p["Fleet Availability"].bg}

@@ -253,3 +253,13 @@ export const ISSUE_TEMPLATES: Array<{ label: string; defaultIssue: string }> = [
   { label: "Tires", defaultIssue: "Tire rotation" },
   { label: "Other", defaultIssue: "" },
 ];
+
+/** Fleet availability thresholds — defines the three-tier color system.
+ *  Below industry avg → coral. Above avg, below target → amber. At/above target → green. */
+export const AVAILABILITY_THRESHOLDS = { industryAvg: 84, target: 95 } as const;
+
+export function getAvailabilityTierColor(rate: number): string {
+  if (rate < AVAILABILITY_THRESHOLDS.industryAvg) return "#d4654a";
+  if (rate < AVAILABILITY_THRESHOLDS.target) return "#d97706";
+  return "#22c55e";
+}

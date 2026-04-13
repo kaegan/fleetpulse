@@ -2,6 +2,7 @@
 
 import { useMemo, type ReactNode } from "react";
 import { SectionPill } from "@/components/section-pill";
+import { AVAILABILITY_THRESHOLDS, getAvailabilityTierColor } from "@/lib/constants";
 import { Card } from "@/components/ui/card";
 import { AreaChart } from "@/components/ui/area-chart";
 import type { AvailabilityDataPoint } from "@/data/availability-history";
@@ -120,7 +121,7 @@ export function KpiCard({
 
   const cardInner = (
     <Card
-      className={cardClassName}
+      className={cardClassName + " flex flex-col"}
       // When clickable, the outer <button> handles keyboard + click. We still
       // keep the Card's visual hover style above for the shadow lift.
       role={isClickable ? undefined : undefined}
@@ -165,6 +166,12 @@ export function KpiCard({
           </span>
         )}
       </div>
+      {isPrimary && value < AVAILABILITY_THRESHOLDS.target && (
+        <p className="mt-1.5 text-[13px] font-medium" style={{ color: "#929292" }}>
+          {(AVAILABILITY_THRESHOLDS.target - value).toFixed(1)} pts below{" "}
+          {AVAILABILITY_THRESHOLDS.target}% target
+        </p>
+      )}
       {subtitle && (
         <p className="mt-1.5 text-[13px] font-medium" style={{ color: "#929292" }}>
           {subtitle}
@@ -214,7 +221,7 @@ export function KpiCard({
           </span>
           <span
             className="text-[15px] font-bold"
-            style={{ color: forecast > value ? "#22c55e" : "#6a6a6a" }}
+            style={{ color: getAvailabilityTierColor(forecast) }}
           >
             {forecast.toFixed(1)}%
           </span>
@@ -224,7 +231,7 @@ export function KpiCard({
             </span>
           )}
           {forecast > value && (
-            <span className="text-[13px] font-semibold text-[#22c55e]">
+            <span className="text-[13px] font-semibold" style={{ color: getAvailabilityTierColor(forecast) }}>
               +{(forecast - value).toFixed(1)}
             </span>
           )}
@@ -233,7 +240,7 @@ export function KpiCard({
 
       {/* Count-card footer: single directional delta */}
       {footerDelta !== null && (
-        <div className="mt-5 border-t border-black/[0.06] pt-3">
+        <div className="mt-auto border-t border-black/[0.06] pt-3">
           {footerDelta.delta === 0 ? (
             <span className="text-[13px] font-medium text-[#929292]">
               → steady
