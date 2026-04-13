@@ -15,7 +15,7 @@ import {
 } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
 import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18, IconChevronRightFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconPersonWheelchairFillDuo18, IconChevronRightFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   Card,
   CardHeader,
@@ -167,18 +167,13 @@ export function WorkOrderCard({
             {SEVERITY_LABELS[order.severity]}
           </Badge>
           {order.autoEscalated && (
-            <Badge
-              variant="outline"
-              size="sm"
-              className="gap-1"
+            <span
               title={ACCESSIBILITY_ESCALATION_NOTICE}
-              style={{ color: "#1e40af", background: "#eff6ff", borderColor: "#bfdbfe" }}
+              aria-label="ADA accessibility flag"
+              style={{ display: "inline-flex", width: 14, height: 14, color: "#b5b5b5", flexShrink: 0, lineHeight: 0 }}
             >
-              <span className="flex h-3 w-3 shrink-0 items-center [&>svg]:h-full [&>svg]:w-full">
-                <IconAccessibilityFillDuo18 />
-              </span>
-              ADA
-            </Badge>
+              <IconPersonWheelchairFillDuo18 />
+            </span>
           )}
           {onUpdateParts && !isOverlay ? (
             <DropdownMenu>
