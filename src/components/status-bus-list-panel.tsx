@@ -156,8 +156,8 @@ export function BusListPanelContent({
         return [...filtered].sort((a, b) => {
           const aWo = worksByBus.get(a.id);
           const bWo = worksByBus.get(b.id);
-          const aTime = aWo ? new Date(aWo.stageEnteredAt).getTime() : Infinity;
-          const bTime = bWo ? new Date(bWo.stageEnteredAt).getTime() : Infinity;
+          const aTime = aWo ? new Date(aWo.createdAt).getTime() : Infinity;
+          const bTime = bWo ? new Date(bWo.createdAt).getTime() : Infinity;
           return aTime - bTime;
         });
       case "road-call":
