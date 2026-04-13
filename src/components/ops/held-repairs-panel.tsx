@@ -205,7 +205,7 @@ function HeldWoRow({
             fontWeight: 600,
           }}
         >
-          <span style={{ display: "flex", color: sev.dot, width: 11, height: 11 }}>
+          <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 11, height: 11, flexShrink: 0, lineHeight: 0 }}>
             {SEVERITY_ICONS[wo.severity]}
           </span>
           {SEVERITY_LABELS[wo.severity]}
