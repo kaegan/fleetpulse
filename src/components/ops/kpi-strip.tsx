@@ -14,11 +14,12 @@ import {
   getForecastAvailability,
   getForecastAvailableCount,
   getForecastCounts,
+  countAboveMtimThreshold,
   getStatusCounts,
   milesUntilPm,
 } from "@/lib/utils";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
-import { KPI_PILLS, getAvailabilityTierColor } from "@/lib/constants";
+import { KPI_PILLS, getAvailabilityTierColor, MTIM_THRESHOLDS } from "@/lib/constants";
 import {
   IconGaugeFillDuo18,
   IconBoltSpeedFillDuo18,
@@ -77,6 +78,11 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
     () => scopedBuses.filter((b) => milesUntilPm(b) > 0).length,
     [scopedBuses]
   );
+  const aboveMedianCount = useMemo(
+    () => countAboveMtimThreshold(scopedWorkOrders, MTIM_THRESHOLDS.excellent),
+    [scopedWorkOrders]
+  );
+
   const pmComplianceRate = (pmCompliantCount / scopedBuses.length) * 100;
   const pmOverdueCount = scopedBuses.length - pmCompliantCount;
 
@@ -146,6 +152,8 @@ export function KpiStrip({ onOpenStatusList }: KpiStripProps) {
           pillColor={p["In Maintenance"].color}
           pillBg={p["In Maintenance"].bg}
           pillIcon={<IconGearsFillDuo18 />}
+          subtitle={aboveMedianCount > 0 ? `${aboveMedianCount} above median` : undefined}
+          subtitleColor={aboveMedianCount > 0 ? "#d4654a" : undefined}
           yesterdayValue={yesterday("in-maintenance")}
           forecastValue={forecastCounts["in-maintenance"]}
           deltaDirection="down-is-good"

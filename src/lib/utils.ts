@@ -280,6 +280,20 @@ export function getMTTR(workOrders: WorkOrder[]): number | null {
   return total / roadTestWOs.length;
 }
 
+/** Count of active (non-done) WOs whose total time in maintenance
+ *  (createdAt → now) exceeds the given threshold in hours. */
+export function countAboveMtimThreshold(
+  workOrders: WorkOrder[],
+  thresholdHours: number,
+  now: Date = new Date()
+): number {
+  const thresholdMs = thresholdHours * 60 * 60 * 1000;
+  return workOrders.filter((wo) => {
+    if (wo.stage === "done") return false;
+    return now.getTime() - new Date(wo.createdAt).getTime() > thresholdMs;
+  }).length;
+}
+
 /** Hours (integer, non-negative) between an ISO timestamp and `now`. */
 export function hoursSince(isoDate: string, now: Date = new Date()): number {
   const then = new Date(isoDate);

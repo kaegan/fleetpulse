@@ -33,6 +33,8 @@ interface KpiCardProps {
   /** Optional line shown below the main value — used for compliance cards
    *  to surface the raw count (e.g. "10 buses overdue"). */
   subtitle?: string;
+  /** Color override for the subtitle text. Defaults to "#929292". */
+  subtitleColor?: string;
   /** Optional suffix appended to the footer delta value (e.g. "%" for rate
    *  cards). Also switches delta formatting to one decimal place. */
   footerSuffix?: string;
@@ -75,6 +77,7 @@ export function KpiCard({
   forecastValue,
   deltaDirection = "down-is-good",
   subtitle,
+  subtitleColor,
   footerSuffix,
   onClick,
   ariaLabel,
@@ -174,7 +177,7 @@ export function KpiCard({
         </p>
       )}
       {subtitle && (
-        <p className="mt-1.5 text-[13px] font-medium" style={{ color: "#929292" }}>
+        <p className="mt-1.5 text-[13px] font-medium" style={{ color: subtitleColor ?? "#929292" }}>
           {subtitle}
         </p>
       )}
