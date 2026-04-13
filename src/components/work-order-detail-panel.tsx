@@ -245,7 +245,7 @@ export function WorkOrderPanelContent({
       )}
 
       {/* ── Bus context ────────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Bus</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Bus</h3>
       {bus ? (
         <div className="rounded-md border border-black/[0.06] bg-[#fafaf9] p-4">
           <div className="mb-3 flex items-baseline justify-between">
@@ -307,7 +307,7 @@ function ActiveWorkOrderBody({
   return (
     <>
       {/* ── Stage pipeline ─────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Progress</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Progress</h3>
       <div className="mb-2 rounded-md border border-black/[0.04] bg-[#fafaf9] px-[18px] pt-5 pb-[18px]">
         <StagePipeline
           currentStage={order.stage}
@@ -367,7 +367,7 @@ function ActiveWorkOrderBody({
       {!onStageChange && <div className="mb-[26px]" />}
 
       {/* ── Assignment ─────────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Assignment</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Assignment</h3>
       <InfoGrid>
         <InfoRow
           label="Assigned Mechanic"
@@ -390,7 +390,7 @@ function ActiveWorkOrderBody({
       <PartsRequiredSection order={order} onUpdateParts={onUpdateParts} />
 
       {/* ── Timeline ───────────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Timeline</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Timeline</h3>
       <InfoGrid cols={2}>
         <InfoRow label="Opened" value={formatOpenedDate(order.createdAt)} />
         <InfoRow
@@ -412,7 +412,7 @@ function HistoryEntryBody({
   return (
     <>
       {/* ── Service Details ────────────────────────────────────────────── */}
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Service Details</h3>
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Service Details</h3>
       <InfoGrid>
         <InfoRow label="Mechanic" value={entry.mechanicName} />
         <InfoRow
@@ -425,7 +425,7 @@ function HistoryEntryBody({
       {/* ── Handoff note (optional) ────────────────────────────────────── */}
       {entry.note && (
         <>
-          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Handoff Note</h3>
+          <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Handoff Note</h3>
           <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9] px-4 py-3.5">
             <p className="text-[13px] font-medium italic leading-[1.5] text-[#6a6a6a]">
               &ldquo;{entry.note}&rdquo;
@@ -438,7 +438,7 @@ function HistoryEntryBody({
         <>
           <PartsRequiredSection order={archivedOrder} />
 
-          <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">Original Timeline</h3>
+          <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Original Timeline</h3>
           <InfoGrid cols={2}>
             <InfoRow label="Opened" value={formatOpenedDate(archivedOrder.createdAt)} />
             <InfoRow label="Completed" value={formatOpenedDate(archivedOrder.stageEnteredAt)} />
@@ -501,7 +501,7 @@ function PartsRequiredSection({
 
   return (
     <>
-      <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#929292]">
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">
         Assigned Parts
       </h3>
       <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9]">
