@@ -100,7 +100,7 @@ export function PartsRiskPanel() {
             marginBottom: 3,
           }}
         >
-          {entries.length} part{entries.length === 1 ? "" : "s"} approaching stockout
+          Parts at Risk
         </h2>
         <p
           style={{
@@ -110,7 +110,7 @@ export function PartsRiskPanel() {
             margin: 0,
           }}
         >
-          Projected from consumption rate vs. supply &middot; {SCOPE_SUFFIX[scope]}
+          {entries.length} approaching stockout &middot; {SCOPE_SUFFIX[scope]}
         </p>
       </div>
 
