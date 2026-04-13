@@ -247,15 +247,11 @@ export function WorkOrderCard({
               <Button
                 variant="ghost"
                 size="sm"
-                disabled={isIntake}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                   e.stopPropagation();
                   onAdvance(order.id);
                 }}
-                title={
-                  isIntake ? "Bus hasn't arrived at the garage yet" : undefined
-                }
               >
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                   {STAGE_LABELS[next]}
