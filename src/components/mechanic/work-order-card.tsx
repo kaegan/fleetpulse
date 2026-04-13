@@ -134,7 +134,7 @@ export function WorkOrderCard({
     >
       <CardHeader className="px-4 pb-3 pt-4">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="whitespace-nowrap text-[15px] tracking-tight">
+          <CardTitle className="whitespace-nowrap text-[15px] font-mono tracking-tight">
             Bus #{order.busNumber}
           </CardTitle>
           <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">

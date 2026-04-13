@@ -8,6 +8,6 @@ import { formatTimeInStatus } from "@/lib/utils";
  */
 export function TimeDisplay({ isoDate }: { isoDate: string }) {
   return (
-    <span suppressHydrationWarning>{formatTimeInStatus(isoDate)}</span>
+    <span suppressHydrationWarning className="font-mono">{formatTimeInStatus(isoDate)}</span>
   );
 }
