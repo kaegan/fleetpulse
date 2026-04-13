@@ -48,28 +48,26 @@ const META: Record<BusListKind, StatusMeta> = {
     pillLabel: "Running",
     heading: "On the road",
     subtitle: (n) =>
-      `${n} bus${n === 1 ? "" : "es"} running right now. Nothing here needs your attention.`,
+      `${n} bus${n === 1 ? "" : "es"} on the road.`,
     emptyMessage: "No buses running in this garage.",
   },
   "pm-due": {
     pillLabel: "Preventive Maintenance Due",
     heading: "Due for preventive maintenance",
-    subtitle: () =>
-      `Sorted by miles overdue. Pull these in before they break down on route.`,
+    subtitle: () => `Sorted by miles overdue.`,
     emptyMessage: "Nothing overdue right now.",
   },
   "in-maintenance": {
     pillLabel: "In Maintenance",
     heading: "In the shop",
-    subtitle: () =>
-      `Sorted by total time in maintenance. Buses above the fleet average are flagged.`,
+    subtitle: () => `Sorted by time in shop.`,
     emptyMessage: "No buses in the shop right now.",
   },
   "road-call": {
     pillLabel: "Road Calls",
     heading: "Road-called today",
     subtitle: (n) =>
-      `${n} bus${n === 1 ? "" : "es"} pulled from service today and awaiting intake.`,
+      `${n} bus${n === 1 ? "" : "es"} pulled from service today.`,
     emptyMessage: "No road calls in this garage today.",
   },
 };
@@ -236,10 +234,7 @@ export function BusListPanelContent({
                 }}
               >
                 <span style={{ fontSize: 12, fontWeight: 600, color: "#d4654a" }}>
-                  Above average
-                </span>
-                <span style={{ fontSize: 11, fontWeight: 500, color: "#b5b5b5" }}>
-                  Above the 12 hour median target
+                  Above 12h target
                 </span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -523,23 +518,6 @@ function SecondaryLine({
         }}
       >
         <span>{formatNumber(bus.mileage)} mi total · {bus.model}</span>
-        {!workOrder && (
-          <span
-            style={{
-              display: "inline-flex",
-              padding: "1px 6px",
-              borderRadius: 999,
-              background: "#fff7ed",
-              color: "#b4541a",
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: "0.01em",
-              whiteSpace: "nowrap",
-            }}
-          >
-            No active WO
-          </span>
-        )}
       </div>
     );
   }

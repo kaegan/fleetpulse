@@ -91,8 +91,8 @@ export function HeldRepairsPanelContent({
           }}
         >
           {rows.length === 0
-            ? "No repairs are currently on hold. All clear."
-            : "Sorted by time in shop. These repairs are blocked — unstick them by checking parts ETAs or escalating."}
+            ? "No repairs on hold."
+            : "Sorted by time in shop."}
         </p>
       </div>
 
