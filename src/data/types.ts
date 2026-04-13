@@ -66,6 +66,8 @@ export interface WorkOrder {
   arrivalEta?: string;
   /** Specific parts needed for this work order. */
   parts?: PartRequirement[];
+  /** True when the system auto-escalated severity to Critical due to accessibility equipment. */
+  autoEscalated?: boolean;
 }
 
 /**

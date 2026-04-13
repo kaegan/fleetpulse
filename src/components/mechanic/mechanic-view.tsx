@@ -22,6 +22,7 @@ import { CURRENT_MECHANIC, stageIndex } from "@/lib/constants";
 import { useDepot, filterByDepot } from "@/hooks/use-depot";
 import { analytics } from "@/lib/analytics";
 import { usePanelNav } from "@/hooks/use-panel-nav";
+import { hasAccessibilityPart, isAccessibilityIssue } from "@/lib/accessibility";
 import type {
   BlockReason,
   Bus,
@@ -190,9 +191,19 @@ export function MechanicView() {
 
   const handleUpdatePartsList = useCallback(
     (woId: string, parts: PartRequirement[]) => {
-      updateWorkOrder(woId, { parts });
+      const wo = orders.find((o) => o.id === woId);
+      const shouldEscalate =
+        parts.length > 0 &&
+        hasAccessibilityPart(parts) &&
+        wo?.severity !== "critical";
+      updateWorkOrder(woId, {
+        parts,
+        ...(shouldEscalate
+          ? { severity: "critical" as Severity, autoEscalated: true }
+          : {}),
+      });
     },
-    [updateWorkOrder]
+    [orders, updateWorkOrder]
   );
 
   const handleDismiss = useCallback(
@@ -210,11 +221,12 @@ export function MechanicView() {
       severity: Severity;
       assignedTo: string | null;
     }) => {
+      const shouldEscalate = isAccessibilityIssue(draft.issue);
       const newOrder = addWorkOrder({
         busId: draft.busId,
         busNumber: draft.busNumber,
         issue: draft.issue,
-        severity: draft.severity,
+        severity: shouldEscalate ? "critical" : draft.severity,
         // New WOs land in Triage — the mechanic has the bus in the yard
         // and still needs to do the walk-around before Repair.
         stage: "triage",
@@ -222,6 +234,7 @@ export function MechanicView() {
         garage: newRepairGarage,
         mechanicName: draft.assignedTo,
         partsStatus: "not-needed",
+        autoEscalated: shouldEscalate || undefined,
       });
 
       setIsLogOpen(false);

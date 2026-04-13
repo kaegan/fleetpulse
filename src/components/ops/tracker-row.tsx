@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import type { WorkOrder } from "@/data/types";
 import { SEVERITY_COLORS, SEVERITY_LABELS, SEVERITY_ICONS } from "@/lib/constants";
+import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
+import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 import { TimeDisplay } from "@/components/time-display";
 import { hoursSince } from "@/lib/utils";
 import { StagePipeline } from "@/components/stage-pipeline";
@@ -108,6 +110,16 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
           <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
           {SEVERITY_LABELS[order.severity]}
         </Badge>
+        {order.autoEscalated && (
+          <Badge
+            className="px-2 py-[3px] gap-1"
+            title={ACCESSIBILITY_ESCALATION_NOTICE}
+            style={{ color: "#1e40af", background: "#eff6ff", borderColor: "#bfdbfe", border: "1px solid #bfdbfe" }}
+          >
+            <span style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}><IconAccessibilityFillDuo18 /></span>
+            ADA
+          </Badge>
+        )}
       </div>
 
       {/* Desktop-only: Bus info column */}
@@ -195,6 +207,15 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
         <span style={{ display: "flex", alignItems: "center", justifyContent: "center", color: sev.dot, width: 14, height: 14, flexShrink: 0, lineHeight: 0 }}>{SEVERITY_ICONS[order.severity]}</span>
         {SEVERITY_LABELS[order.severity]}
       </Badge>
+      {order.autoEscalated && (
+        <Badge
+          className="hidden lg:inline-flex px-2 py-[3px] gap-1"
+          title={ACCESSIBILITY_ESCALATION_NOTICE}
+          style={{ color: "#1e40af", background: "#eff6ff", border: "1px solid #bfdbfe", flexShrink: 0 }}
+        >
+          ♿ ADA
+        </Badge>
+      )}
     </motion.div>
   );
 }

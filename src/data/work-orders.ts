@@ -70,15 +70,16 @@ export const workOrders: WorkOrder[] = [
     busId: 56,
     busNumber: "056",
     issue: "Wheelchair ramp hydraulic",
-    severity: "high",
+    severity: "critical",
     stage: "triage",
     bayNumber: 4,
     garage: "north",
     mechanicName: "Greg T.",
     partsStatus: "in-stock",
-    parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
+    parts: [{ partId: "hydraulic-cylinder", partName: "Wheelchair Ramp Hydraulic Cylinder", qty: 1 }],
     createdAt: hoursAgo(7),
     stageEnteredAt: hoursAgo(5),
+    autoEscalated: true,
   },
 
   // ── Triage: stuck — ABOVE 12H MEAN (48h in shop, 30h in stage → "Stuck 1d" tag) ──
@@ -411,9 +412,13 @@ export const workOrders: WorkOrder[] = [
     garage: "south",
     mechanicName: null,
     partsStatus: "needed",
-    parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
+    parts: [
+      { partId: "lift-motor", partName: "Wheelchair Lift Motor", qty: 1 },
+      { partId: "hydraulic-cylinder", partName: "Wheelchair Ramp Hydraulic Cylinder", qty: 1 },
+    ],
     createdAt: hoursAgo(5),
     stageEnteredAt: hoursAgo(5),
+    autoEscalated: true,
   },
 
   // Bus 215 — South, Road Test: HVAC ductwork
@@ -523,5 +528,23 @@ export const workOrders: WorkOrder[] = [
     ],
     createdAt: hoursAgo(5),
     stageEnteredAt: hoursAgo(5),
+  },
+
+  // Bus 168 — North, Triage: securement system failure (auto-escalated)
+  {
+    id: "WO-1274",
+    busId: 168,
+    busNumber: "168",
+    issue: "Securement track binding — wheelchair tie-down failure",
+    severity: "critical",
+    stage: "triage",
+    bayNumber: null,
+    garage: "north",
+    mechanicName: "Okafor, E.",
+    partsStatus: "needed",
+    parts: [{ partId: "securement-track", partName: "Securement Track & Tie-Down Kit", qty: 1 }],
+    createdAt: hoursAgo(4),
+    stageEnteredAt: hoursAgo(3),
+    autoEscalated: true,
   },
 ];

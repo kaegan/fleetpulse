@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFleet } from "@/contexts/fleet-context";
 import { getBusHistory } from "@/data/bus-history";
 import { MECHANICS } from "@/data/mechanics";
@@ -11,6 +11,11 @@ import type {
   HistoryOutcome,
   Severity,
 } from "@/data/types";
+import {
+  isAccessibilityIssue,
+  ACCESSIBILITY_ESCALATION_NOTICE,
+} from "@/lib/accessibility";
+import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   BRAND_COLOR,
   CURRENT_MECHANIC,
@@ -110,6 +115,15 @@ export function LogRepairForm({
     }).slice(0, 3);
   }, [issue, selectedBus]);
 
+  // Auto-escalate severity to Critical when the issue involves accessibility equipment.
+  const accessibilityDetected = useMemo(
+    () => issue.trim().length >= 3 && isAccessibilityIssue(issue),
+    [issue]
+  );
+
+  useEffect(() => {
+    if (accessibilityDetected) setSeverity("critical");
+  }, [accessibilityDetected]);
 
   const recentBuses = useMemo(() => {
     if (recentBusNumbers.length === 0) return [];
@@ -334,6 +348,9 @@ export function LogRepairForm({
             matches={similarIssues}
             currentGarage={garage}
           />
+        )}
+        {accessibilityDetected && (
+          <AccessibilityEscalationCallout />
         )}
       </div>
 
@@ -603,3 +620,26 @@ const OUTCOME_MINI: Record<
   deferred: { label: "Deferred", color: "#92400e", bg: "#fffbeb" },
   recurring: { label: "Recurring", color: "#d4654a", bg: "#fdf0ed" },
 };
+
+function AccessibilityEscalationCallout() {
+  return (
+    <div
+      className="mt-2 flex items-start gap-2.5 rounded-[12px] border border-[#bfdbfe] px-3 py-2.5"
+      style={{ background: "#eff6ff" }}
+    >
+      <span
+        className="flex h-4 w-4 flex-shrink-0"
+        style={{ marginTop: 1, color: "#1e40af" }}
+        aria-hidden
+      >
+        <IconAccessibilityFillDuo18 />
+      </span>
+      <div
+        className="text-[12px] leading-[1.4]"
+        style={{ color: "#1e40af", fontWeight: 500 }}
+      >
+        {ACCESSIBILITY_ESCALATION_NOTICE}
+      </div>
+    </div>
+  );
+}
