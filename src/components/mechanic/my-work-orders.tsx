@@ -270,14 +270,10 @@ function MyWorkOrderCard({
           <Button
             variant="ghost"
             size="sm"
-            disabled={isIntake}
             onClick={(e) => {
               e.stopPropagation();
               onStageChange(order.id, next);
             }}
-            title={
-              isIntake ? "Bus hasn't arrived at the garage yet" : undefined
-            }
           >
             {STAGE_LABELS[next]} &rarr;
           </Button>
