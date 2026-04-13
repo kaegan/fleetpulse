@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 interface LogRepairDraft {
   busId: number;
   busNumber: string;
+  garage: Garage;
   issue: string;
   severity: Severity;
   assignedTo: string | null;
@@ -44,13 +45,14 @@ interface LogRepairDraft {
 export interface LogRepairFormSnapshot {
   busId: number | null;
   busQuery: string;
+  garage: Garage;
   issue: string;
   severity: Severity | null;
   assignedTo: string | null;
 }
 
 interface LogRepairFormProps {
-  garage: Garage;
+  defaultGarage: Garage;
   recentBusNumbers: string[];
   /** Restore a previously saved form snapshot (e.g. after returning from a
    *  similar-bus detail drill-down). */
@@ -66,7 +68,7 @@ interface LogRepairFormProps {
 const SEVERITY_ORDER: Severity[] = ["critical", "high", "routine"];
 
 export function LogRepairForm({
-  garage,
+  defaultGarage,
   recentBusNumbers,
   initialSnapshot,
   onCancel,
@@ -75,6 +77,9 @@ export function LogRepairForm({
 }: LogRepairFormProps) {
   const [busId, setBusId] = useState<number | null>(initialSnapshot?.busId ?? null);
   const [busQuery, setBusQuery] = useState(initialSnapshot?.busQuery ?? "");
+  const [repairGarage, setRepairGarage] = useState<Garage>(
+    initialSnapshot?.garage ?? defaultGarage
+  );
   const [issue, setIssue] = useState(initialSnapshot?.issue ?? "");
   const [severity, setSeverity] = useState<Severity | null>(initialSnapshot?.severity ?? null);
   const [assignedTo, setAssignedTo] = useState<string | null>(initialSnapshot?.assignedTo ?? CURRENT_MECHANIC);
@@ -82,15 +87,14 @@ export function LogRepairForm({
   const issueInputRef = useRef<HTMLInputElement>(null);
   const { buses, getBusHistory } = useFleet();
 
-  // Buses in the current garage, for both the prefix filter and recent chips.
-  const garageBuses = useMemo(
-    () => buses.filter((b) => b.garage === garage),
-    [buses, garage]
+  const repairGarageBuses = useMemo(
+    () => buses.filter((b) => b.garage === repairGarage),
+    [buses, repairGarage]
   );
 
   const selectedBus = useMemo(
-    () => (busId ? garageBuses.find((b) => b.id === busId) ?? null : null),
-    [busId, garageBuses]
+    () => (busId ? buses.find((b) => b.id === busId) ?? null : null),
+    [busId, buses]
   );
 
   // M-2: if the selected bus was recently worked on at the *other* garage,
@@ -126,21 +130,21 @@ export function LogRepairForm({
 
   const recentBuses = useMemo(() => {
     if (recentBusNumbers.length === 0) return [];
-    const byNumber = new Map(garageBuses.map((b) => [b.busNumber, b]));
+    const byNumber = new Map(repairGarageBuses.map((b) => [b.busNumber, b]));
     return recentBusNumbers
       .map((n) => byNumber.get(n))
-      .filter((b): b is (typeof garageBuses)[number] => Boolean(b))
+      .filter((b): b is (typeof repairGarageBuses)[number] => Boolean(b))
       .slice(0, 4);
-  }, [recentBusNumbers, garageBuses]);
+  }, [recentBusNumbers, repairGarageBuses]);
 
   const matchingBuses = useMemo(() => {
     if (selectedBus) return [];
     const q = busQuery.trim();
     if (!q) return [];
-    return garageBuses
+    return buses
       .filter((b) => b.busNumber.startsWith(q.padStart(3, "0")) || b.busNumber.startsWith(q))
       .slice(0, 12);
-  }, [busQuery, selectedBus, garageBuses]);
+  }, [busQuery, selectedBus, buses]);
 
   const canSubmit = Boolean(busId && issue.trim() && severity);
 
@@ -152,10 +156,11 @@ export function LogRepairForm({
   };
 
   const handlePickBus = (id: number) => {
-    const b = garageBuses.find((x) => x.id === id);
+    const b = buses.find((x) => x.id === id);
     if (!b) return;
     setBusId(id);
     setBusQuery(b.busNumber);
+    setRepairGarage(b.garage);
   };
 
   const handleClearBus = () => {
@@ -177,13 +182,14 @@ export function LogRepairForm({
     onSubmit({
       busId: selectedBus.id,
       busNumber: selectedBus.busNumber,
+      garage: repairGarage,
       issue: issue.trim(),
       severity,
       assignedTo,
     });
   };
 
-  const garageLabel = garage === "north" ? "North Garage" : "South Garage";
+  const garageLabel = repairGarage === "north" ? "North Garage" : "South Garage";
 
   return (
     <form
@@ -218,7 +224,17 @@ export function LogRepairForm({
         </p>
       </div>
 
-      {/* Field 1: Bus */}
+      {/* Field 1: Garage */}
+      <div>
+        <FieldLabel htmlFor="repair-garage-select">Repair garage</FieldLabel>
+        <GarageSelect
+          id="repair-garage-select"
+          value={repairGarage}
+          onChange={setRepairGarage}
+        />
+      </div>
+
+      {/* Field 2: Bus */}
       <div>
         <FieldLabel htmlFor="bus-number-input">Which bus?</FieldLabel>
 
@@ -258,7 +274,8 @@ export function LogRepairForm({
                   Bus #{selectedBus.busNumber}
                 </span>
                 <span style={{ fontSize: 12, fontWeight: 500, color: "#6a6a6a" }}>
-                  {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi
+                  {selectedBus.model} · {selectedBus.mileage.toLocaleString()} mi ·{" "}
+                  {garageName(selectedBus.garage)}
                 </span>
               </div>
               <Button
@@ -298,18 +315,26 @@ export function LogRepairForm({
                     key={b.id}
                     type="button"
                     onClick={() => handlePickBus(b.id)}
-                    className="rounded-[10px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2.5 text-sm font-semibold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
+                    className="min-h-12 rounded-[8px] border-[1.5px] border-transparent bg-[#f7f7f7] px-2 py-2 text-sm font-semibold text-[#222222] transition-colors hover:border-[var(--primary)] hover:bg-[#fdf0ed] cursor-pointer"
                   >
-                    #{b.busNumber}
+                    <span className="block leading-tight">#{b.busNumber}</span>
+                    <span className="block text-[11px] font-medium leading-tight text-[#929292]">
+                      {garageShortName(b.garage)}
+                    </span>
                   </button>
                 ))}
               </div>
+            )}
+            {busQuery.trim() && matchingBuses.length === 0 && (
+              <p className="mt-2 text-[12px] font-medium text-[#929292]">
+                No bus found across either garage.
+              </p>
             )}
           </>
         )}
       </div>
 
-      {/* Field 2: Issue */}
+      {/* Field 3: Issue */}
       <div>
         <FieldLabel htmlFor="issue-input">What&rsquo;s wrong?</FieldLabel>
         <div className="mb-2 grid grid-cols-3 gap-1.5 sm:mb-2.5">
@@ -345,7 +370,7 @@ export function LogRepairForm({
         {similarIssues.length > 0 && (
           <SimilarIssuesPeek
             matches={similarIssues}
-            currentGarage={garage}
+            currentGarage={repairGarage}
           />
         )}
         {accessibilityDetected && (
@@ -353,7 +378,7 @@ export function LogRepairForm({
         )}
       </div>
 
-      {/* Field 3: Severity */}
+      {/* Field 4: Severity */}
       <div>
         <FieldLabel>How urgent?</FieldLabel>
         <div
@@ -395,7 +420,7 @@ export function LogRepairForm({
         </div>
       </div>
 
-      {/* Field 4: Assigned to */}
+      {/* Field 5: Assigned to */}
       <div>
         <FieldLabel htmlFor="assigned-to-select">Assigned Mechanic</FieldLabel>
         <select
@@ -450,6 +475,62 @@ export function LogRepairForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function garageName(garage: Garage): string {
+  return garage === "north" ? "North Garage" : "South Garage";
+}
+
+function garageShortName(garage: Garage): string {
+  return garage === "north" ? "North" : "South";
+}
+
+function GarageSelect({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: Garage;
+  onChange: (garage: Garage) => void;
+}) {
+  return (
+    <select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(e.target.value as Garage)}
+      className="px-3.5 py-2.5 sm:py-3"
+      style={{
+        width: "100%",
+        fontSize: 14,
+        fontWeight: 500,
+        color: "#222222",
+        background: "#ffffff",
+        border: "1.5px solid #e5e5e5",
+        borderRadius: 8,
+        outline: "none",
+        boxSizing: "border-box",
+        fontFamily: "inherit",
+        appearance: "none",
+        WebkitAppearance: "none",
+        MozAppearance: "none",
+        backgroundImage:
+          "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M3 4.5 6 7.5 9 4.5' stroke='%236a6a6a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "right 14px center",
+        paddingRight: 36,
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.borderColor = BRAND_COLOR;
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.borderColor = "#e5e5e5";
+      }}
+    >
+      <option value="north">North Garage</option>
+      <option value="south">South Garage</option>
+    </select>
   );
 }
 
