@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { PartsStatus, WorkOrder, WorkOrderStage } from "@/data/types";
 import {
   SEVERITY_LABELS,
@@ -61,7 +62,11 @@ interface MyWorkOrdersProps {
   onComplete: (woId: string) => void;
   onSelectWorkOrder: (order: WorkOrder) => void;
   onUpdateParts: (woId: string, partsStatus: PartsStatus) => void;
+  /** When set, cards get a layoutId for cross-view morph animations. */
+  layoutPrefix?: string;
 }
+
+const LAYOUT_TRANSITION = { type: "spring", stiffness: 300, damping: 30 } as const;
 
 export function MyWorkOrders({
   workOrders,
@@ -69,6 +74,7 @@ export function MyWorkOrders({
   onComplete,
   onSelectWorkOrder,
   onUpdateParts,
+  layoutPrefix,
 }: MyWorkOrdersProps) {
   if (workOrders.length === 0) {
     return (
@@ -89,14 +95,20 @@ export function MyWorkOrders({
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
       {workOrders.map((order) => (
-        <MyWorkOrderCard
+        <motion.div
           key={order.id}
-          order={order}
-          onStageChange={onStageChange}
-          onComplete={onComplete}
-          onSelectWorkOrder={onSelectWorkOrder}
-          onUpdateParts={onUpdateParts}
-        />
+          layoutId={layoutPrefix ? `${layoutPrefix}-${order.id}` : undefined}
+          layout={!!layoutPrefix}
+          transition={LAYOUT_TRANSITION}
+        >
+          <MyWorkOrderCard
+            order={order}
+            onStageChange={onStageChange}
+            onComplete={onComplete}
+            onSelectWorkOrder={onSelectWorkOrder}
+            onUpdateParts={onUpdateParts}
+          />
+        </motion.div>
       ))}
     </div>
   );
