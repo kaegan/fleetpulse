@@ -111,9 +111,15 @@ export function BusPanelContent({
   onBack?: () => void;
 }) {
   // Scroll the panel back to top when content swaps in place.
+  // Target the parent scroll container (SheetContent on desktop,
+  // DrawerContent's scroll wrapper on mobile) instead of an inner div
+  // so vaul can correctly track scrollTop for drag-vs-scroll.
   const topRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    topRef.current?.scrollTo(0, 0);
+    const scrollParent = topRef.current?.closest(
+      '[data-slot="sheet-content"], [data-slot="drawer-scroll"]'
+    );
+    scrollParent?.scrollTo(0, 0);
   }, [bus.id]);
 
   const { workOrders } = useFleet();
@@ -145,8 +151,8 @@ export function BusPanelContent({
   const history = getBusHistory(bus.id);
 
   return (
-    <div className="flex h-full flex-col">
-      <div ref={topRef} className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-7">
+    <div className="flex min-h-full flex-col">
+      <div ref={topRef} className="flex-1 p-5 sm:p-7">
         {onBack && backLabel && <BackButton label={backLabel} onClick={onBack} />}
 
       {/* Bus number */}
@@ -356,7 +362,7 @@ export function BusPanelContent({
       </div>
 
       {canSchedulePm && (
-        <div className="shrink-0 border-t border-black/[0.06] px-5 py-4 sm:px-7">
+        <div className="sticky bottom-0 shrink-0 border-t border-black/[0.06] bg-card px-5 py-4 sm:px-7">
           <Button
             type="button"
             onClick={() => onSchedulePm?.(bus)}
