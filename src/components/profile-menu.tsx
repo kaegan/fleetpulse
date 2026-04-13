@@ -101,7 +101,7 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
                 <Settings />
                 Account settings
                 <span className="ml-auto text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover/menu-item:opacity-100">
-                  Coming Soon
+                  V2
                 </span>
               </DropdownMenuItem>
             </div>
@@ -111,7 +111,7 @@ export function ProfileMenu({ onOpenWhatsNew }: ProfileMenuProps) {
                 <LogOut />
                 Sign out
                 <span className="ml-auto text-[11px] font-medium text-muted-foreground opacity-0 transition-opacity group-hover/menu-item:opacity-100">
-                  Coming Soon
+                  V2
                 </span>
               </DropdownMenuItem>
             </div>

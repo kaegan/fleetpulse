@@ -130,7 +130,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   <item.icon weight="duotone" />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
-                <SidebarMenuBadge className="opacity-0 transition-opacity group-hover/menu-item:opacity-100">Coming Soon</SidebarMenuBadge>
+                <SidebarMenuBadge className="opacity-0 transition-opacity group-hover/menu-item:opacity-100">V2</SidebarMenuBadge>
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
