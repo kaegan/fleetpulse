@@ -112,7 +112,7 @@ export function KanbanBoard({
 
       <DragOverlay dropAnimation={null}>
         {activeOrder ? (
-          <div style={{ transform: "rotate(2deg)", cursor: "grabbing" }}>
+          <div style={{ transform: "scale(1.04) rotate(2deg)", cursor: "grabbing" }}>
             <WorkOrderCard order={activeOrder} isOverlay />
           </div>
         ) : null}

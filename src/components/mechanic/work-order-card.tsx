@@ -124,7 +124,7 @@ export function WorkOrderCard({
       onClick={handleClick}
       className={
         isOverlay
-          ? "touch-none select-none cursor-grabbing border border-border shadow-panel"
+          ? "touch-none select-none cursor-grabbing border border-border shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_8px_20px_-4px_rgba(0,0,0,0.15)]"
           : "select-none cursor-grab border border-border shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover"
       }
       style={{
