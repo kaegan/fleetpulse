@@ -105,9 +105,17 @@ export function KanbanColumn({
             />
           </motion.div>
         ))}
-        {orders.length === 0 && (
+        {/* Notion-style drop indicator line */}
+        {isOver && (
+          <div className="flex items-center px-0.5 py-0.5" aria-hidden>
+            <div className="h-2 w-2 shrink-0 rounded-full bg-brand" />
+            <div className="h-[2px] flex-1 bg-brand" />
+            <div className="h-2 w-2 shrink-0 rounded-full bg-brand" />
+          </div>
+        )}
+        {orders.length === 0 && !isOver && (
           <div className="p-6 text-center text-[13px] font-medium text-text-faint">
-            {isOver ? "Drop to move here" : "No work orders"}
+            No work orders
           </div>
         )}
       </div>
