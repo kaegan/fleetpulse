@@ -175,7 +175,8 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
       <div
         className="hidden items-center justify-end gap-2 lg:flex"
         style={{
-          minWidth: 88,
+          width: 120,
+          flexShrink: 0,
           textAlign: "right",
           fontSize: 12,
           fontWeight: 500,
@@ -189,7 +190,7 @@ export function TrackerRow({ order, index, onSelectWorkOrder }: TrackerRowProps)
       {/* Desktop-only: Severity badge */}
       <Badge
         className="hidden lg:inline-flex px-2.5 py-[3px] gap-1"
-        style={{ color: sev.text, background: sev.bg }}
+        style={{ color: sev.text, background: sev.bg, flexShrink: 0 }}
       >
         <span style={{ display: "flex", color: sev.dot, width: 14, height: 14 }}>{SEVERITY_ICONS[order.severity]}</span>
         {SEVERITY_LABELS[order.severity]}
