@@ -247,9 +247,9 @@ export function MechanicView() {
         busNumber: draft.busNumber,
         issue: draft.issue,
         severity: shouldEscalate ? "critical" : draft.severity,
-        // New WOs land in Triage — the mechanic has the bus in the yard
-        // and still needs to do the walk-around before Repair.
-        stage: "triage",
+        // New WOs land in Intake so the board matches the form copy and the
+        // mechanic can explicitly advance the bus once it is ready for triage.
+        stage: "intake",
         bayNumber: null,
         garage: newRepairGarage,
         mechanicName: draft.assignedTo,

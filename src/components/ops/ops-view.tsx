@@ -74,7 +74,7 @@ export function OpsView() {
       busNumber: bus.busNumber,
       issue: "Preventive maintenance — A service",
       severity: "routine",
-      stage: "triage",
+      stage: "intake",
       bayNumber: null,
       garage: bus.garage,
       mechanicName: null,
