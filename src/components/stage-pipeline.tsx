@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { IconHandFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   Tooltip,
   TooltipContent,
@@ -13,6 +14,7 @@ import {
   STAGE_LABELS,
   getStageStates,
 } from "@/lib/constants";
+import type { ReactNode } from "react";
 import type { Severity, WorkOrderStage } from "@/data/types";
 
 interface StagePipelineProps {
@@ -61,7 +63,7 @@ export function StagePipeline({
           let bg: string;
           let border: string;
           let color: string;
-          let glyph: string;
+          let glyph: ReactNode;
 
           switch (state) {
             case "complete":
@@ -80,7 +82,7 @@ export function StagePipeline({
               bg = HELD_BG;
               border = `2px dashed ${HELD_BORDER}`;
               color = HELD_TEXT;
-              glyph = "\u23F8";
+              glyph = <IconHandFillDuo18 style={{ width: size === "lg" ? 14 : 11, height: size === "lg" ? 14 : 11 }} />;
               break;
             case "pending":
             default:
