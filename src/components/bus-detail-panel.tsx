@@ -128,7 +128,7 @@ export function BusPanelContent({
   const busWorkOrders = workOrders.filter((wo) => wo.busId === bus.id);
   const milesLeft = milesUntilPm(bus);
   const canSchedulePm =
-    Boolean(onSchedulePm) && milesLeft <= 0 && busWorkOrders.length === 0;
+    Boolean(onSchedulePm) && busWorkOrders.length === 0;
   const OVERDUE_CAP_MILES = 2_000;
   const isOverdue = milesLeft <= 0;
   const overdueMiles = Math.abs(milesLeft);
@@ -369,7 +369,9 @@ export function BusPanelContent({
             onClick={() => onSchedulePm?.(bus)}
             className="w-full"
           >
-            {formatNumber(Math.abs(milesLeft))} mi overdue — Schedule PM service
+            {isOverdue
+              ? `${formatNumber(Math.abs(milesLeft))} mi overdue — Schedule PM service`
+              : "Schedule PM service"}
           </Button>
         </div>
       )}
