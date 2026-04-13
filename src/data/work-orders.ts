@@ -5,7 +5,7 @@ import type { PartRequirement, WorkOrder } from "./types";
  * Distribution: 6 Intake, 9 Triage (1 held), 7 Repair (3 held), 5 Road Test, 0 Done.
  * Severity mix: 5 critical / 10 high / 12 routine.
  * Cross-garage: 16 North, 11 South.
- * Torres, M. (CURRENT_MECHANIC) owns 3 North WOs so Mine/All still tells a story.
+ * Greg T. (CURRENT_MECHANIC) owns 3 North WOs so Mine/All still tells a story.
  *
  * These are the single source of truth for which buses are "in-maintenance".
  * Any bus with an active (non-done) WO here gets derived status "in-maintenance"
@@ -64,7 +64,7 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: hoursAgo(3),
   },
 
-  // ── Triage: Torres actively investigating ──────────────────────────────
+  // ── Triage: Greg actively investigating ──────────────────────────────
   {
     id: "WO-1249",
     busId: 56,
@@ -74,7 +74,7 @@ export const workOrders: WorkOrder[] = [
     stage: "triage",
     bayNumber: 4,
     garage: "north",
-    mechanicName: "Torres, M.",
+    mechanicName: "Greg T.",
     partsStatus: "in-stock",
     parts: [{ partId: "hydraulic-cylinder", partName: "Hydraulic Cylinder (ramp)", qty: 1 }],
     createdAt: hoursAgo(7),
@@ -138,7 +138,7 @@ export const workOrders: WorkOrder[] = [
     stageEnteredAt: hoursAgo(4),
   },
 
-  // ── Repair: Torres on the rack, critical brake job ─────────────────────
+  // ── Repair: Greg on the rack, critical brake job ─────────────────────
   {
     id: "WO-1253",
     busId: 147,
@@ -148,14 +148,16 @@ export const workOrders: WorkOrder[] = [
     stage: "repair",
     bayNumber: 3,
     garage: "north",
-    mechanicName: "Torres, M.",
-    partsStatus: "in-stock",
+    mechanicName: "Greg T.",
+    partsStatus: "needed",
     parts: [
       { partId: "brake-pads", partName: "Brake Pads (set)", qty: 2 },
       { partId: "brake-rotors", partName: "Brake Rotors (pair)", qty: 1 },
     ],
     createdAt: hoursAgo(8),
     stageEnteredAt: hoursAgo(2),
+    isHeld: true,
+    blockReason: "parts-needed",
   },
 
   // ── Repair: held — ABOVE 12H MEAN (36h in shop, windshield parts ordered) ──
@@ -178,7 +180,7 @@ export const workOrders: WorkOrder[] = [
     blockEta: hoursFromNow(14),
   },
 
-  // ── Repair: held — waiting on fuel injector kit, Torres ─────────────────
+  // ── Repair: held — waiting on fuel injector kit, Greg ─────────────────
   {
     id: "WO-1259",
     busId: 134,
@@ -188,7 +190,7 @@ export const workOrders: WorkOrder[] = [
     stage: "repair",
     bayNumber: 8,
     garage: "north",
-    mechanicName: "Torres, M.",
+    mechanicName: "Greg T.",
     partsStatus: "ordered",
     parts: [
       { partId: "fuel-injector", partName: "Fuel Injector Kit", qty: 1 },

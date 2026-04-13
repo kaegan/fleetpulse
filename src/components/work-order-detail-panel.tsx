@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import type { Bus, BusHistoryEntry, Garage, PartRequirement, WorkOrder, WorkOrderStage } from "@/data/types";
 import { parts as partsCatalog } from "@/data/parts";
 import {
@@ -436,6 +437,23 @@ function PartsRequiredSection({
     ]);
   };
 
+  const handleRequestTransfer = (partId: string) => {
+    const req = parts.find((p) => p.partId === partId);
+    if (!req) return;
+    const otherGarage = order.garage === "north" ? "South" : "North";
+    onUpdateParts?.(
+      order.id,
+      parts.map((p) =>
+        p.partId === partId ? { ...p, transferRequested: true } : p
+      )
+    );
+    toast(
+      <span>
+        Transfer requested &mdash; <strong>{req.partName}</strong> &times;{req.qty} from {otherGarage} Garage
+      </span>
+    );
+  };
+
   // Parts from catalog not already on this WO.
   const availableToAdd = partsCatalog.filter(
     (cp) => !parts.some((p) => p.partId === cp.id)
@@ -456,6 +474,11 @@ function PartsRequiredSection({
                 garage={order.garage}
                 editable={!!onUpdateParts}
                 onRemove={() => handleRemove(req.partId)}
+                onRequestTransfer={
+                  onUpdateParts
+                    ? () => handleRequestTransfer(req.partId)
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -495,11 +518,13 @@ function PartRow({
   garage,
   editable,
   onRemove,
+  onRequestTransfer,
 }: {
   req: PartRequirement;
   garage: Garage;
   editable: boolean;
   onRemove: () => void;
+  onRequestTransfer?: () => void;
 }) {
   const catalogPart = partsCatalog.find((p) => p.id === req.partId);
   const garageStock = catalogPart
@@ -526,36 +551,70 @@ function PartRow({
           ? "#166534"
           : "#92400e";
 
+  // Cross-depot availability: show when local stock is insufficient
+  const otherGarageStock = catalogPart
+    ? garage === "north"
+      ? catalogPart.stockSouth
+      : catalogPart.stockNorth
+    : null;
+  const otherGarageName = garage === "north" ? "South" : "North";
+  const otherHasStock =
+    otherGarageStock !== null && otherGarageStock > 0 && !sufficient;
+
   return (
-    <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
-      <div className="min-w-0">
-        <span className="text-[13px] font-semibold text-[#222222]">
-          {req.partName}
-        </span>
-        <span className="ml-1.5 text-[12px] font-medium text-[#929292]">
-          &times;{req.qty}
-        </span>
-      </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <span
-          className="text-[12px] font-semibold"
-          style={{ color: stockColor }}
-        >
-          {stockLabel}
-        </span>
-        {editable && (
-          <button
-            type="button"
-            onClick={onRemove}
-            className="flex h-5 w-5 items-center justify-center rounded-full text-[#b5b5b5] transition-colors hover:bg-[#fef2f2] hover:text-[#991b1b]"
-            aria-label={`Remove ${req.partName}`}
+    <div className="px-3.5 py-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-[13px] font-semibold text-[#222222]">
+            {req.partName}
+          </span>
+          <span className="ml-1.5 text-[12px] font-medium text-[#929292]">
+            &times;{req.qty}
+          </span>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span
+            className="text-[12px] font-semibold"
+            style={{ color: stockColor }}
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-        )}
+            {stockLabel}
+          </span>
+          {editable && (
+            <button
+              type="button"
+              onClick={onRemove}
+              className="flex h-5 w-5 items-center justify-center rounded-full text-[#b5b5b5] transition-colors hover:bg-[#fef2f2] hover:text-[#991b1b]"
+              aria-label={`Remove ${req.partName}`}
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
+      {otherHasStock && (
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <span className="text-[12px] font-medium text-[#16a34a]">
+            {otherGarageStock} at {otherGarageName} Garage
+          </span>
+          {onRequestTransfer && !req.transferRequested && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 px-2.5 text-[11px] font-semibold"
+              onClick={onRequestTransfer}
+            >
+              Request Transfer
+            </Button>
+          )}
+          {req.transferRequested && (
+            <span className="text-[11px] font-semibold text-[#92400e]">
+              Transfer requested
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
