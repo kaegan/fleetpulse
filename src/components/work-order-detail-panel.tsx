@@ -18,6 +18,8 @@ import {
   isTerminalStage,
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
+import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
+import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { TimeDisplay } from "@/components/time-display";
@@ -216,6 +218,20 @@ export function WorkOrderPanelContent({
           </Badge>
         )}
       </div>
+
+      {order?.autoEscalated && (
+        <div
+          className="flex items-start gap-2.5 rounded-[12px] border border-[#bfdbfe] px-3 py-2.5"
+          style={{ background: "#eff6ff" }}
+        >
+          <span className="flex h-4 w-4 flex-shrink-0" style={{ marginTop: 1, color: "#1e40af" }} aria-hidden>
+            <IconAccessibilityFillDuo18 />
+          </span>
+          <span className="text-[12px] font-medium leading-[1.4]" style={{ color: "#1e40af" }}>
+            {ACCESSIBILITY_ESCALATION_NOTICE}
+          </span>
+        </div>
+      )}
 
       {order ? (
         <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} onDismiss={onDismiss} />

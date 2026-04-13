@@ -6,6 +6,7 @@ import { parts as partsCatalog } from "@/data/parts";
 import { useFleet } from "@/contexts/fleet-context";
 import { useDepot, type DepotScope } from "@/hooks/use-depot";
 import type { Part } from "@/data/types";
+import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 
 interface PartsRiskEntry {
   part: Part;
@@ -66,7 +67,13 @@ export function PartsRiskPanel() {
         };
       })
       .filter((e) => e.garageStock <= reorderForScope(e.part, scope) || e.daysUntilStockout <= 60)
-      .sort((a, b) => a.daysUntilStockout - b.daysUntilStockout)
+      .sort((a, b) => {
+        // Accessibility parts always sort above comfort/mechanical parts.
+        const aAcc = a.part.category === "Accessibility" ? 0 : 1;
+        const bAcc = b.part.category === "Accessibility" ? 0 : 1;
+        if (aAcc !== bAcc) return aAcc - bAcc;
+        return a.daysUntilStockout - b.daysUntilStockout;
+      })
       .slice(0, MAX_ROWS);
   }, [scope, workOrders]);
 
@@ -186,6 +193,11 @@ function PartsRiskRow({
           }}
         >
           {part.name}
+          {part.category === "Accessibility" && (
+            <span style={{ display: "inline-flex", marginLeft: 4, width: 14, height: 14, color: "#1e40af", verticalAlign: "middle" }}>
+              <IconAccessibilityFillDuo18 />
+            </span>
+          )}
         </span>
         <span
           style={{

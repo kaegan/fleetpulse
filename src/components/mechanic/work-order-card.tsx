@@ -13,6 +13,8 @@ import {
   getCrossDepotPartsTip,
 } from "@/lib/constants";
 import { TimeDisplay } from "@/components/time-display";
+import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
+import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
 import {
   Card,
   CardHeader,
@@ -160,6 +162,20 @@ export function WorkOrderCard({
             </span>
             {SEVERITY_LABELS[order.severity]}
           </Badge>
+          {order.autoEscalated && (
+            <Badge
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              title={ACCESSIBILITY_ESCALATION_NOTICE}
+              style={{ color: "#1e40af", background: "#eff6ff", borderColor: "#bfdbfe" }}
+            >
+              <span className="flex h-3 w-3 shrink-0 items-center [&>svg]:h-full [&>svg]:w-full">
+                <IconAccessibilityFillDuo18 />
+              </span>
+              ADA
+            </Badge>
+          )}
           {onUpdateParts && !isOverlay ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

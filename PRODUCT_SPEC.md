@@ -8,6 +8,8 @@ Transitland operates 300 paratransit buses across 2 garages. Mechanics have know
 
 The product's core bet is that the right information surfaces, shaped to each persona's mental model, can replace sticky notes, WhatsApp threads, and weekly spreadsheets without adding workflow overhead.
 
+**Paratransit riders have no Plan B.** Unlike general transit passengers who can walk, hail a ride, or take another route, paratransit riders are disabled, elderly, or mobility-dependent — a wheelchair lift failure doesn't inconvenience them, it strands them. FleetPulse treats accessibility equipment failures as categorically different: any work order involving lift, ramp, securement, or kneeling components is auto-escalated to Critical severity, and accessibility parts are weighted above comfort components in stockout risk calculations.
+
 ## Stakeholders
 
 ### Mechanic (Primary User 1)
