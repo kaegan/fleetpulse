@@ -10,8 +10,8 @@ import {
   forceCollide,
   type SimulationNodeDatum,
 } from "d3-force";
-import { buses } from "@/data/buses";
 import type { Bus, BusStatus } from "@/data/types";
+import { useBuses } from "@/hooks/use-buses";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { milesUntilPm, formatNumber } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -105,6 +105,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
   // Depot scope is global (top-bar `DepotSwitcher` → `useDepot`), so the chart
   // follows whatever garage the user has focused without its own local pill.
   const { scope } = useDepot();
+  const buses = useBuses();
 
   // Measure container width (responsive)
   useEffect(() => {
@@ -119,7 +120,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
 
   const filteredBuses = useMemo(
     () => filterByDepot(buses, scope),
-    [scope]
+    [buses, scope]
   );
 
   // Split into buses in the "action" range and the healthy tail (which we summarize).

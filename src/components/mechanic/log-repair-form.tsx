@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { buses } from "@/data/buses";
+import { baseBuses } from "@/data/buses";
 import { getBusHistory } from "@/data/bus-history";
 import { MECHANICS } from "@/data/mechanics";
 import type {
@@ -79,7 +79,7 @@ export function LogRepairForm({
 
   // Buses in the current garage, for both the prefix filter and recent chips.
   const garageBuses = useMemo(
-    () => buses.filter((b) => b.garage === garage),
+    () => baseBuses.filter((b) => b.garage === garage),
     [garage]
   );
 

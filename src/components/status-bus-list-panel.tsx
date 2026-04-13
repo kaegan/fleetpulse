@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Bus, BusStatus, WorkOrder } from "@/data/types";
-import { buses } from "@/data/buses";
 import { useWorkOrders } from "@/contexts/work-orders-context";
+import { useBuses } from "@/hooks/use-buses";
 import { filterByDepot, useDepot } from "@/hooks/use-depot";
 import {
   SEVERITY_COLORS,
@@ -128,6 +128,7 @@ export function BusListPanelContent({
   }, [kind]);
 
   const { scope } = useDepot();
+  const buses = useBuses();
   const { workOrders } = useWorkOrders();
   const meta = META[kind];
 
@@ -164,7 +165,7 @@ export function BusListPanelContent({
       default:
         return [...filtered].sort((a, b) => a.id - b.id);
     }
-  }, [kind, scope, worksByBus, workOrders]);
+  }, [buses, kind, scope, worksByBus, workOrders]);
 
   return (
     <div ref={topRef} className="flex h-full flex-col p-5 pb-6 sm:p-7">
