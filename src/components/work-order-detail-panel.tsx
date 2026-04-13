@@ -201,7 +201,7 @@ export function WorkOrderPanelContent({
           style={{ color: sev.text, background: sev.bg }}
         >
           <span
-            className="flex h-3.5 w-3.5"
+            className="flex h-3.5 w-3.5 shrink-0 items-center justify-center [&>svg]:h-full [&>svg]:w-full"
             style={{ color: sev.dot }}
           >
             {SEVERITY_ICONS[record.severity]}
