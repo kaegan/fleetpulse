@@ -19,7 +19,7 @@ import {
 } from "@/lib/constants";
 import { formatNumber, milesUntilPm } from "@/lib/utils";
 import { ACCESSIBILITY_ESCALATION_NOTICE } from "@/lib/accessibility";
-import { IconAccessibilityFillDuo18 } from "nucleo-ui-fill-duo-18";
+import { IconAccessibilityFillDuo18, IconChevronRightFillDuo18 } from "nucleo-ui-fill-duo-18";
 import { BackButton } from "@/components/back-button";
 import { StagePipeline } from "@/components/stage-pipeline";
 import { TimeDisplay } from "@/components/time-display";
@@ -270,7 +270,7 @@ export function WorkOrderPanelContent({
             className="w-full"
             onClick={() => onOpenBus(bus)}
           >
-            View full bus details <span aria-hidden>→</span>
+            View full bus details <span aria-hidden style={{ display: "inline-flex", width: 14, height: 14, verticalAlign: "middle", lineHeight: 0 }}><IconChevronRightFillDuo18 /></span>
           </Button>
         </div>
       ) : (

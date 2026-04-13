@@ -1,6 +1,11 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
+import {
+  IconArrowSymbolRightFillDuo18,
+  IconArrowSymbolUpFillDuo18,
+  IconArrowSymbolDownFillDuo18,
+} from "nucleo-ui-fill-duo-18";
 import { AVAILABILITY_THRESHOLDS, getAvailabilityTierColor } from "@/lib/constants";
 import { Card } from "@/components/ui/card";
 import { AreaChart } from "@/components/ui/area-chart";
@@ -246,15 +251,19 @@ export function KpiCard({
       {footerDelta !== null && (
         <div className="mt-auto border-t border-black/[0.06] pt-3">
           {footerDelta.delta === 0 ? (
-            <span className="text-[13px] font-medium text-[#929292]">
-              → steady
+            <span className="inline-flex items-center gap-1 text-[13px] font-medium text-[#929292]">
+              <span style={{ display: "inline-flex", width: 14, height: 14, lineHeight: 0 }}><IconArrowSymbolRightFillDuo18 /></span>
+              steady
             </span>
           ) : (
             <span
-              className="text-[13px] font-medium tabular-nums"
+              className="inline-flex items-center gap-0.5 text-[13px] font-medium tabular-nums"
               style={{ color: deltaColor(footerDelta.delta, deltaDirection) }}
             >
-              {footerDelta.delta > 0 ? "↑" : "↓"}{footerSuffix ? Math.abs(footerDelta.delta).toFixed(1) : Math.abs(footerDelta.delta)}{footerSuffix ?? ""} {footerDelta.timeLabel}
+              <span style={{ display: "inline-flex", width: 14, height: 14, lineHeight: 0 }}>
+                {footerDelta.delta > 0 ? <IconArrowSymbolUpFillDuo18 /> : <IconArrowSymbolDownFillDuo18 />}
+              </span>
+              {footerSuffix ? Math.abs(footerDelta.delta).toFixed(1) : Math.abs(footerDelta.delta)}{footerSuffix ?? ""} {footerDelta.timeLabel}
             </span>
           )}
         </div>

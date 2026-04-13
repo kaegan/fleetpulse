@@ -290,25 +290,19 @@ export function WorkOrderTracker({ onSelectWorkOrder }: WorkOrderTrackerProps = 
         </div>
         <div
           style={{
-            width: 120,
+            width: 280,
             flexShrink: 0,
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#b5b5b5",
-            textAlign: "right",
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 8,
           }}
         >
-          Time
-        </div>
-        <div
-          style={{
-            flexShrink: 0,
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#b5b5b5",
-          }}
-        >
-          Severity
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#b5b5b5" }}>
+            Time
+          </span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#b5b5b5", marginLeft: 8 }}>
+            Severity
+          </span>
         </div>
       </div>
 
