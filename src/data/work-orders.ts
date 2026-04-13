@@ -237,8 +237,8 @@ export const workOrders: WorkOrder[] = [
       { partId: "hvac-compressor", partName: "HVAC Compressor", qty: 1 },
       { partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 },
     ],
-    createdAt: hoursAgo(10),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(18),
+    stageEnteredAt: hoursAgo(3),
   },
 
   // ── Road Test: steering fluid leak, final check ────────────────────────
@@ -254,8 +254,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 2 }],
-    createdAt: hoursAgo(11),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(22),
+    stageEnteredAt: hoursAgo(4),
   },
 
   // ── Pre-seeded PM-A WOs ─────────────────────────────────────────────────
@@ -327,7 +327,7 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Okafor, E.",
     partsStatus: "in-stock",
-    parts: [{ partId: "serpentine-belt", partName: "Serpentine Belt", qty: 1 }],
+    parts: [{ partId: "suspension-air-bag", partName: "Air Suspension Bag", qty: 2 }],
     createdAt: hoursAgo(8),
     stageEnteredAt: hoursAgo(2),
   },
@@ -344,7 +344,7 @@ export const workOrders: WorkOrder[] = [
     garage: "north",
     mechanicName: "Kim, S.",
     partsStatus: "in-stock",
-    parts: [],
+    parts: [{ partId: "battery-bank", partName: "12V Battery Bank", qty: 1 }],
     createdAt: hoursAgo(9),
     stageEnteredAt: hoursAgo(3),
   },
@@ -379,7 +379,7 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Nguyen, T.",
     partsStatus: "in-stock",
     parts: [{ partId: "coolant", partName: "Coolant Concentrate (gal)", qty: 2 }],
-    createdAt: hoursAgo(10),
+    createdAt: hoursAgo(16),
     stageEnteredAt: hoursAgo(2),
   },
 
@@ -434,8 +434,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Vasquez, D.",
     partsStatus: "not-needed",
     parts: [],
-    createdAt: hoursAgo(8),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(14),
+    stageEnteredAt: hoursAgo(1),
   },
 
   // Bus 245 — South, Triage: fuel system
@@ -488,8 +488,8 @@ export const workOrders: WorkOrder[] = [
     mechanicName: "Jackson, L.",
     partsStatus: "in-stock",
     parts: [{ partId: "steering-fluid", partName: "Power Steering Fluid (qt)", qty: 1 }],
-    createdAt: hoursAgo(9),
-    stageEnteredAt: hoursAgo(2),
+    createdAt: hoursAgo(20),
+    stageEnteredAt: hoursAgo(5),
   },
 
   // Bus 295 — South, Triage: electrical multiplexer
