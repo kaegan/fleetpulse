@@ -504,7 +504,6 @@ export function MechanicView() {
                   onBack={nav.backButton?.onBack}
                   onUpdateParts={handleUpdatePartsList}
                   onStageChange={handleStageChange}
-                  onDismiss={handleDismiss}
                 />
               )}
             </div>
