@@ -61,11 +61,12 @@ function generateHistory(
 }
 
 // Fleet-wide
-// Fleet-wide startRate ≈ 85.3% — derived from status-history day-0 starts
-// (running≈242 + pm-due≈14 = 256 available out of 300 → 85.3%).
+// Fleet-wide startRate ≈ 80.0% — represents Transitland ~1 month into using
+// FleetPulse. PM backlog was larger, more buses stuck in maintenance. The
+// upward trend to today's ~88% shows measurable impact over 30 days.
 export const availabilityHistory = generateHistory(
   getAvailabilityRate(buses),
-  85.3,
+  80.0,
   137
 );
 
@@ -76,6 +77,6 @@ const southBuses = buses.filter((b) => b.garage === "south");
 
 export const depotAvailabilityHistory: Record<Garage, AvailabilityDataPoint[]> =
   {
-    north: generateHistory(getAvailabilityRate(northBuses), 83.5, 173),
-    south: generateHistory(getAvailabilityRate(southBuses), 85.0, 251),
+    north: generateHistory(getAvailabilityRate(northBuses), 78.0, 173),
+    south: generateHistory(getAvailabilityRate(southBuses), 80.0, 251),
   };

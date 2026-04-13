@@ -8,10 +8,11 @@ import { deriveBusStatuses } from "@/lib/derive-bus-statuses";
  * #001–#175 = North Garage, #176–#300 = South Garage
  *
  * Base status distribution (before work-order derivation):
- * ~88% running (265), ~3% PM due (10), ~0% in-maintenance (0), ~3% road-call (9)
+ * ~87% running (255), ~7% PM due (20), ~0% in-maintenance (0), ~3% road-call (9)
  *
  * "In-maintenance" is derived from active work orders via deriveBusStatuses().
- * After derivation with seed WOs: ~27 in-maintenance, ~238 running, 10 PM due, 9 road-call.
+ * After derivation with seed WOs: ~27 in-maintenance, ~235 running, 20 PM due, 9 road-call.
+ * (Note: Bus 015 is PM-due — its history entry in bus-history.ts supports Greg's triage story.)
  *
  * PM-due buses genuinely have mileage > nextPmDueMileage (usage-based triggers).
  */
@@ -39,7 +40,8 @@ function seededRandom(seed: number): () => number {
 // scheduled most overdue buses into the shop. The stragglers that remain
 // are what ops needs to pull in next.
 const PM_DUE_IDS = new Set([
-  3, 22, 61, 104, 142, 155, 188, 210, 240, 285,
+  3, 15, 22, 38, 61, 72, 95, 104, 118, 142,
+  155, 168, 188, 198, 210, 225, 240, 258, 278, 285,
 ]);
 
 const ROAD_CALL_IDS = new Set([
