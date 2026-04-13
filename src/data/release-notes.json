@@ -41,36 +41,12 @@
       "prNumber": 58
     },
     {
-      "id": "2026-04-11-six-stage-kanban",
-      "date": "2026-04-11",
-      "title": "Mechanic board now mirrors your real shop stages",
-      "body": "The Service Board swim lanes match the six stages mechanics actually use — Intake, Diagnosis, Parts, In Repair, QC, and Complete — with a parts gate that flags jobs waiting on stock.",
-      "category": "improvement",
-      "prNumber": 47
-    },
-    {
-      "id": "2026-04-11-held-stage",
-      "date": "2026-04-11",
-      "title": "\"Held\" is now a real pipeline stage",
-      "body": "Work orders waiting on outside factors — insurance sign-off, inspections, or parts on order — move to a dedicated Held column instead of lingering in a limbo stage.",
-      "category": "improvement",
-      "prNumber": 52
-    },
-    {
       "id": "2026-04-11-pm-scheduling-ops",
       "date": "2026-04-11",
       "title": "Scheduling a PM is now an Ops call",
       "body": "\"Schedule PM service\" moved from the mechanic board to the Ops view, where the people who decide when to pull a bus out of service can act on it directly.",
       "category": "improvement",
       "prNumber": 53
-    },
-    {
-      "id": "2026-04-11-pm-chart-pairing",
-      "date": "2026-04-11",
-      "title": "Overdue PMs and fleet health trend now side by side",
-      "body": "Fleet Overview now puts the 30-day health trend chart next to the list of buses due for preventive maintenance, so you can see what deferring each one costs you.",
-      "category": "improvement",
-      "prNumber": 54
     },
     {
       "id": "2026-04-11-service-history-drill",
@@ -99,16 +75,16 @@
     {
       "id": "2026-04-10-kpi-drilldown",
       "date": "2026-04-10",
-      "title": "KPI cards show yesterday's numbers and drill to the buses behind them",
-      "body": "Each Ops KPI now shows a comparison to yesterday so drift is visible at a glance, and clicking the number opens the list of buses that make up that count.",
+      "title": "Click any KPI to see the buses behind the number",
+      "body": "Every Ops KPI card is now drillable — clicking the count opens the list of buses that make up that figure so you can act on the data, not just read it.",
       "category": "improvement",
       "prNumber": 24
     },
     {
       "id": "2026-04-10-cross-garage-jtbd",
       "date": "2026-04-10",
-      "title": "Cross-garage visibility, aging tags, and a pull-in-next prompt",
-      "body": "Bus detail panels now show repairs from both garages so teams stop duplicating work. Work orders past their SLA grow an aging tag. Ops gets a prompt to pull in the next available bus when availability dips.",
+      "title": "Cross-garage visibility and aging tags",
+      "body": "Bus detail panels now show repairs from both garages so teams stop duplicating work. Work orders that have been sitting in a stage too long grow an aging tag so nothing falls through the cracks.",
       "category": "feature",
       "prNumber": 22
     },
@@ -145,36 +121,12 @@
       "prNumber": 11
     },
     {
-      "id": "2026-04-10-responsive-pass",
-      "date": "2026-04-10",
-      "title": "Triage from a tablet or phone",
-      "body": "Mechanic and Ops views now reflow at tablet and phone widths so you can keep working when you're away from the desk.",
-      "category": "improvement",
-      "prNumber": 10
-    },
-    {
-      "id": "2026-04-10-cross-garage-history",
-      "date": "2026-04-10",
-      "title": "See any bus's full service history across garages",
-      "body": "Click any bus to open its detail panel and inspect cross-garage repairs, so North and South stop duplicating work.",
-      "category": "feature",
-      "prNumber": 9
-    },
-    {
       "id": "2026-04-10-mechanic-intake",
       "date": "2026-04-10",
       "title": "Log new repairs and advance work orders in one tap",
       "body": "Mechanics can now log a fresh work order from intake and push cards through the swim lanes without leaving the board.",
       "category": "feature",
       "prNumber": 8
-    },
-    {
-      "id": "2026-04-10-overdue-buses-first",
-      "date": "2026-04-10",
-      "title": "Ops opens with the buses that need you, not a fleet grid",
-      "body": "The Ops view now leads with overdue buses by name and demotes the fleet grid, so what needs attention is the first thing you see.",
-      "category": "improvement",
-      "prNumber": 7
     },
     {
       "id": "2026-04-09-mechanic-mine-and-drag",
@@ -199,14 +151,6 @@
       "body": "Mechanic cards now show parts status and one-click stage advance. Ops gets a stage-bottleneck bar and a severity filter to decide where to send help.",
       "category": "feature",
       "prNumber": 3
-    },
-    {
-      "id": "2026-04-09-tracker-readability",
-      "date": "2026-04-09",
-      "title": "Read the work order tracker at a glance",
-      "body": "Stages now use full names instead of abbreviations, and severity icons make Critical, High, and Routine work orders easier to scan.",
-      "category": "improvement",
-      "prNumber": 2
     }
   ]
 }
