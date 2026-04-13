@@ -192,7 +192,6 @@ export function WorkOrderPanelContent({
         <span className="font-mono text-xs font-semibold text-[#929292]">
           {record.id}
         </span>
-        <span className="text-xs text-[#d4d4d4]">&middot;</span>
         <Badge variant="outline" className="px-2.5 py-[3px]">
           Bus #{busNumber}
         </Badge>

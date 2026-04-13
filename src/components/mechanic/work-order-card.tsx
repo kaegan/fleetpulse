@@ -194,11 +194,11 @@ export function WorkOrderCard({
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
+          ) : order.partsStatus !== "not-needed" ? (
             <Badge variant={PARTS_VARIANT[order.partsStatus]} size="sm">
               Parts: {PARTS_STATUS_LABELS[order.partsStatus]}
             </Badge>
-          )}
+          ) : null}
         </div>
         <div className="mt-2 text-xs text-muted-foreground">
           <span className="font-mono">{order.id}</span>

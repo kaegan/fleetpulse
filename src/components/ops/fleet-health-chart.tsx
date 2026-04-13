@@ -201,7 +201,7 @@ export function FleetHealthChart({ onBusClick }: FleetHealthChartProps) {
               margin: 0,
             }}
           >
-            Each dot is one bus, positioned by miles until its next preventive maintenance service.
+            Each dot is one bus, positioned by miles until next PM.
           </p>
         </div>
 

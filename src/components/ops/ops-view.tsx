@@ -140,7 +140,7 @@ export function OpsView() {
             color: "#929292",
           }}
         >
-          300 buses across 2 garages &middot; Real-time status
+          300 buses across 2 garages
         </p>
       </div>
 
