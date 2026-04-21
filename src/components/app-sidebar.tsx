@@ -8,6 +8,7 @@ import {
   ClipboardText,
   Gauge,
   Package,
+  SteeringWheel,
   Wrench,
 } from "@phosphor-icons/react/dist/ssr";
 
@@ -31,6 +32,7 @@ import { WhatsNewDialog } from "@/components/whats-new-dialog";
 const heroItems = [
   { label: "Fleet Overview", href: "/fleet-overview", icon: Gauge },
   { label: "Service Board", href: "/service-board", icon: Wrench },
+  { label: "My Shift", href: "/my-shift", icon: SteeringWheel },
 ] as const;
 
 const recordItems = [

@@ -210,6 +210,11 @@ export const PM_INTERVAL_MILES = 6_000; // A-service every 6,000 miles
 export const CURRENT_MECHANIC = "Greg T.";
 export const CURRENT_MECHANIC_GARAGE: Garage = "north";
 
+// Hardcoded "signed-in" driver for the /my-shift view. Marcus W. is rostered
+// at North Garage on Bus #042 — a bus with no active WO so his vehicle card
+// shows the happy-path "Ready to roll" state out of the box.
+export const CURRENT_DRIVER_ID = "DRV-104";
+
 export const BRAND_COLOR = "#d4654a";
 export const BRAND_COLOR_HOVER = "#be5840";
 
