@@ -494,7 +494,7 @@ function adjustmentAt(minutesFromShiftStart: number): string {
 }
 
 export const todayForJane: TodaySnapshot = {
-  driverTypicalWeekdayTrips: 11,
+  driverTypicalWeekdayTrips: 10,
   nearbyActiveDrivers: 12,
   nearbyTotalDrivers: 15,
   todayDemandLevel: "heavy",

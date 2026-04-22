@@ -23,8 +23,11 @@ import {
   nextBreak,
   now,
   riderSummary,
-  timeUntilMinutes,
 } from "@/data/driver-day";
+
+function minutesUntil(iso: string, at: Date): number {
+  return Math.round((new Date(iso).getTime() - at.getTime()) / 60_000);
+}
 
 /**
  * Today tab — the driver's ambient + personal view of their shift.
@@ -99,8 +102,8 @@ function YourDayCard({ shift }: { shift: DriverShift }) {
   const { completed, total } = getProgress(shift, tick);
   const miles = milesSoFar(shift, tick);
   const nb = nextBreak(shift, tick);
-  const minsToBreak = nb ? timeUntilMinutes(nb.scheduledPickupAt, tick) : null;
-  const minsToEnd = timeUntilMinutes(shift.shiftEnd, tick);
+  const minsToBreak = nb ? minutesUntil(nb.scheduledPickupAt, tick) : null;
+  const minsToEnd = minutesUntil(shift.shiftEnd, tick);
   const rider = riderSummary(shift, tick);
 
   return (
