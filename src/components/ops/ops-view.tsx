@@ -6,6 +6,7 @@ import { KpiStrip } from "./kpi-strip";
 import { FleetHealthChart } from "./fleet-health-chart";
 import { BusPanelContent } from "@/components/bus-detail-panel";
 import { WorkOrderPanelContent } from "@/components/work-order-detail-panel";
+import { PartDetailPanelContent } from "@/components/part-detail-panel";
 import {
   BusListPanelContent,
   getBusListPillLabel,
@@ -25,7 +26,7 @@ import { usePanelNav } from "@/hooks/use-panel-nav";
 import { useDepot } from "@/hooks/use-depot";
 import { milesUntilPm } from "@/lib/utils";
 import { analytics } from "@/lib/analytics";
-import type { Bus, BusHistoryEntry, WorkOrder } from "@/data/types";
+import type { Bus, BusHistoryEntry, Part, WorkOrder } from "@/data/types";
 
 // Panels on Fleet Overview form a drill-down graph (list → bus → WO,
 // bus → history entry, WO → bus, etc.). Each entry carries a short
@@ -37,12 +38,13 @@ type OpsPanelEntry =
   | { kind: "heldList"; label: string }
   | { kind: "bus"; label: string; bus: Bus }
   | { kind: "workOrder"; label: string; workOrder: WorkOrder }
-  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
+  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus }
+  | { kind: "part"; label: string; part: Part };
 
 export function OpsView() {
   const nav = usePanelNav<OpsPanelEntry>();
   const current = nav.current;
-  const { buses, workOrders, addWorkOrder } = useFleet();
+  const { buses, workOrders, parts, addWorkOrder } = useFleet();
   const { scope: depotScope } = useDepot();
 
   // Snapshot the last non-null entry so the sheet keeps rendering its
@@ -63,6 +65,11 @@ export function OpsView() {
       renderEntry.workOrder
     );
   }, [renderEntry, workOrders]);
+
+  const livePanelPart = useMemo(() => {
+    if (renderEntry?.kind !== "part") return null;
+    return parts.find((p) => p.id === renderEntry.part.id) ?? renderEntry.part;
+  }, [renderEntry, parts]);
 
   // Ops-side action: scheduling a PM pulls a bus off the road and into
   // the mechanic's Intake column as a routine WO. Mechanic view leaves
@@ -117,6 +124,10 @@ export function OpsView() {
     analytics.woDetailOpened(wo.id, "tracker");
     nav.open({ kind: "workOrder", label: wo.id, workOrder: wo });
   };
+  const openPartRoot = (part: Part) => {
+    analytics.partDetailOpened(part.id, "parts-risk");
+    nav.open({ kind: "part", label: part.name, part });
+  };
 
   // Drill-down callbacks: the click originates from inside the open
   // panel, so we `drill` to push a new entry on top. The hook handles
@@ -134,6 +145,10 @@ export function OpsView() {
   };
   const drillToHistoryEntry = (entry: BusHistoryEntry, bus: Bus) =>
     nav.drill({ kind: "historyEntry", label: entry.id, entry, bus });
+  const drillToPart = (part: Part) => {
+    analytics.partDetailOpened(part.id, "wo-panel");
+    nav.drill({ kind: "part", label: part.name, part });
+  };
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-10">
@@ -166,7 +181,7 @@ export function OpsView() {
         <FleetHealthChart onBusClick={openBusRoot} />
       </div>
       <div className="mb-6">
-        <PartsRiskPanel />
+        <PartsRiskPanel onSelectPart={openPartRoot} />
       </div>
       <WorkOrderTracker onSelectWorkOrder={openWorkOrderRoot} />
 
@@ -190,7 +205,9 @@ export function OpsView() {
                     ? `Work order ${renderEntry.workOrder.id} details`
                     : renderEntry?.kind === "historyEntry"
                       ? `Service history ${renderEntry.entry.id} details`
-                      : "Panel"}
+                      : renderEntry?.kind === "part"
+                        ? `${renderEntry.part.name} details`
+                        : "Panel"}
           </ResponsiveSheetTitle>
           <ResponsiveSheetDescription className="sr-only">
             {renderEntry?.kind === "busList"
@@ -199,7 +216,9 @@ export function OpsView() {
                 ? "Work orders currently blocked, sorted by time in shop."
                 : renderEntry?.kind === "bus"
                   ? "Vehicle info, preventive maintenance status, active work orders, and service history."
-                  : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
+                  : renderEntry?.kind === "part"
+                    ? "Stock levels, consumption rate, lead time, and active work orders using this part."
+                    : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
           </ResponsiveSheetDescription>
           {renderEntry && (
             <div
@@ -250,6 +269,15 @@ export function OpsView() {
                       : renderEntry.bus
                   }
                   onOpenBus={drillToBus}
+                  onSelectPart={drillToPart}
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
+                />
+              )}
+              {renderEntry.kind === "part" && livePanelPart && (
+                <PartDetailPanelContent
+                  part={livePanelPart}
+                  onSelectWorkOrder={drillToWorkOrder}
                   backLabel={nav.backButton?.label}
                   onBack={nav.backButton?.onBack}
                 />

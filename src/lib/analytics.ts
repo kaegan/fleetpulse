@@ -38,8 +38,14 @@ export const analytics = {
   /** User opens a work order detail panel. */
   woDetailOpened: (
     woId: string,
-    source: "tracker" | "kanban" | "drilldown"
+    source: "tracker" | "kanban" | "drilldown" | "part-panel"
   ) => capture("wo_detail_opened", { woId, source }),
+
+  /** User opens a part detail panel from anywhere. */
+  partDetailOpened: (
+    partId: string,
+    source: "parts-index" | "wo-panel" | "parts-risk"
+  ) => capture("part_detail_opened", { partId, source }),
 
   /** Mechanic submits the Log Repair form, creating a new work order. */
   repairLogged: (
