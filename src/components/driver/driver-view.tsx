@@ -9,12 +9,13 @@ import {
 } from "@/components/driver/bottom-tab-bar";
 import { TripTab } from "@/components/driver/tabs/trip-tab";
 import { ScheduleTab } from "@/components/driver/tabs/schedule-tab";
-import { FleetTab } from "@/components/driver/tabs/fleet-tab";
+import { TodayTab } from "@/components/driver/tabs/today-tab";
 import { InboxTab } from "@/components/driver/tabs/inbox-tab";
 import {
-  buildJane,
+  buildShift,
   findActiveTrip,
-  fleetSnapshot,
+  snapshotFor,
+  type DriverPersona,
   type DriverShift,
   type TripSubStatus,
 } from "@/data/driver-day";
@@ -32,16 +33,26 @@ import {
  *    Trip and Schedule tabs; also drives the Inbox unread indicator)
  */
 export function DriverView() {
+  const [persona, setPersona] = useState<DriverPersona>("jane");
   const [shift, setShift] = useState<DriverShift | null>(null);
   const [activeTab, setActiveTab] = useState<DriverTab>("trip");
   const [currentTripId, setCurrentTripId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<TripSubStatus>("en-route");
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
+  // Rebuild the shift whenever the persona changes. Derived state that
+  // depends on the shift (active trip, sub-status, banner dismissal) also
+  // resets so the new persona starts from a clean mid-shift view.
   useEffect(() => {
-    const built = buildJane();
+    const built = buildShift(persona);
     setShift(built);
     setCurrentTripId(findActiveTrip(built)?.id ?? null);
+    setSubStatus("en-route");
+    setBannerDismissed(false);
+  }, [persona]);
+
+  const handleSwapPersona = useCallback(() => {
+    setPersona((p) => (p === "jane" ? "marcus" : "jane"));
   }, []);
 
   const currentTrip = useMemo(() => {
@@ -127,7 +138,14 @@ export function DriverView() {
           onSelectTrip={handleSelectTripFromSchedule}
         />
       )}
-      {activeTab === "fleet" && <FleetTab snapshot={fleetSnapshot} />}
+      {activeTab === "today" && (
+        <TodayTab
+          shift={shift}
+          snapshot={snapshotFor(persona)}
+          persona={persona}
+          onSwapPersona={handleSwapPersona}
+        />
+      )}
       {activeTab === "inbox" && (
         <InboxTab
           shift={shift}

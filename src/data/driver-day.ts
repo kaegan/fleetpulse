@@ -60,14 +60,36 @@ export interface DriverShift {
   latestUpdate: ScheduleUpdate;
 }
 
-export interface FleetSnapshot {
-  driverOtpPct: number;
-  driverOnTimeCount: number;
-  driverTotalSoFar: number;
-  fleetAvgOtpPct: number;
+export type DriverPersona = "jane" | "marcus";
+
+/** A single engine-driven change to the viewing driver's manifest today.
+ *  Rendered as a factual log line on the Today tab. */
+export interface DispatchAdjustment {
+  /** ISO timestamp pinned relative to the mock clock. */
+  at: string;
+  /** Direction of the change relative to the viewing driver's manifest.
+   *  Drives the row's icon + color without naming any peer. */
+  direction: "inflow" | "outflow" | "neutral";
+  /** Short description, e.g. "Trip 5 reassigned" or "2 trips added to your manifest". */
+  summary: string;
+  /** Factual reason suffix, e.g. "pickup window expired" or "cancellation upstream". */
+  reason: string;
+}
+
+/** Ambient + personal context shown on the driver's Today tab. Same shape
+ *  for every persona — only the numbers differ. */
+export interface TodaySnapshot {
+  /** Trips this driver typically runs on this weekday (their own rolling avg). */
+  driverTypicalWeekdayTrips: number;
+  /** Vans on shift in this driver's zone vs. scheduled total. */
   nearbyActiveDrivers: number;
   nearbyTotalDrivers: number;
-  reroutedDuringLastBreak: number;
+  /** Three-bucket ride-volume signal for the zone right now. */
+  todayDemandLevel: "light" | "typical" | "heavy";
+  /** Vans out of service today — explains heavier fleet load. */
+  vansOutOfService: number;
+  /** Engine-driven changes to this driver's manifest today, most recent first. */
+  adjustments: DispatchAdjustment[];
 }
 
 // ---------------------------------------------------------------------------
@@ -325,15 +347,215 @@ export function buildJane(nowDate: Date = now()): DriverShift {
   };
 }
 
-export const fleetSnapshot: FleetSnapshot = {
-  driverOtpPct: 94,
-  driverOnTimeCount: 11,
-  driverTotalSoFar: 12,
-  fleetAvgOtpPct: 87,
+// ---------------------------------------------------------------------------
+// Marcus D. — demo persona for a driver whose morning has been quieter than
+// a typical Wednesday because dispatch has reassigned trips off his van.
+// Same shift window (8:00 AM – 4:30 PM), same mock 10:30 AM "now", 7 trips
+// on his current manifest (down from ~10 typical).
+
+export function buildMarcus(nowDate: Date = now()): DriverShift {
+  const shiftStart = new Date(nowDate);
+  shiftStart.setHours(8, 0, 0, 0);
+  const shiftStartMs = shiftStart.getTime();
+  const nowMs = nowDate.getTime();
+  const minutesFromStart = (mins: number) =>
+    new Date(shiftStartMs + mins * 60_000).toISOString();
+
+  return {
+    driverName: "Marcus D.",
+    driverInitials: "MD",
+    vehicleId: "Van #253",
+    shiftStart: minutesFromStart(0),
+    shiftEnd: minutesFromStart(510),
+    // Neutral banner — manifest was reshuffled earlier this morning; the
+    // next passenger trip was nudged by a few minutes.
+    latestUpdate: {
+      updatedAt: new Date(nowMs - 14 * 60_000).toISOString(),
+      tripId: "T-3-M",
+      summary: "Trip 3 moved 5 min later",
+      reason: "upstream delay",
+    },
+    trips: [
+      {
+        id: "T-1-M",
+        sequence: 1,
+        isBreak: false,
+        passengerName: "Harold B.",
+        pickup: { line1: "812 Chestnut St", city: "Springfield" },
+        dropoff: { line1: "Riverside Medical Center", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(15),
+        scheduledDropoffAt: minutesFromStart(35),
+        estimatedDurationMin: 20,
+        distanceMiles: 4.1,
+      },
+      {
+        id: "T-2-M",
+        sequence: 2,
+        isBreak: false,
+        passengerName: "Lorraine K.",
+        pickup: { line1: "39 Poplar Ave", city: "Springfield" },
+        dropoff: { line1: "Community Health Center", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(55),
+        scheduledDropoffAt: minutesFromStart(85),
+        estimatedDurationMin: 30,
+        distanceMiles: 6.8,
+      },
+      // Gap here (9:25–10:15 AM) — dispatch pulled Trip 3 off the manifest at
+      // 8:40 AM after the van was stationary 22 min; 2 more trips were moved
+      // at 9:14 AM. These show up in the dispatch-adjustments feed, not here.
+      {
+        id: "T-3-M",
+        sequence: 3,
+        isBreak: false,
+        passengerName: "Aaron L.",
+        pickup: { line1: "127 Linden Rd", city: "Springfield" },
+        dropoff: { line1: "VA Hospital", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(135),
+        scheduledDropoffAt: minutesFromStart(165),
+        estimatedDurationMin: 30,
+        distanceMiles: 5.9,
+        wasUpdated: true,
+      },
+      {
+        id: "B-1-M",
+        sequence: 4,
+        isBreak: true,
+        scheduledPickupAt: minutesFromStart(195),
+        scheduledDropoffAt: minutesFromStart(225),
+        estimatedDurationMin: 30,
+      },
+      {
+        id: "T-4-M",
+        sequence: 5,
+        isBreak: false,
+        passengerName: "Delores M.",
+        pickup: { line1: "450 Hazel Ct", city: "Springfield" },
+        dropoff: { line1: "Downtown Dialysis Clinic", city: "Springfield" },
+        passengerNote: "Dialysis — prompt pickup needed",
+        scheduledPickupAt: minutesFromStart(240),
+        scheduledDropoffAt: minutesFromStart(270),
+        estimatedDurationMin: 30,
+        distanceMiles: 7.2,
+      },
+      {
+        id: "T-5-M",
+        sequence: 6,
+        isBreak: false,
+        passengerName: "Gerald P.",
+        pickup: { line1: "78 Dogwood Way", city: "Springfield" },
+        dropoff: { line1: "Sunrise Adult Day Center", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(285),
+        scheduledDropoffAt: minutesFromStart(315),
+        estimatedDurationMin: 30,
+        distanceMiles: 5.5,
+      },
+      {
+        id: "T-6-M",
+        sequence: 7,
+        isBreak: false,
+        passengerName: "Ruth C.",
+        pickup: { line1: "221 Magnolia St", city: "Springfield" },
+        dropoff: { line1: "Physical Therapy Associates", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(345),
+        scheduledDropoffAt: minutesFromStart(375),
+        estimatedDurationMin: 30,
+        distanceMiles: 6.2,
+      },
+      {
+        id: "T-7-M",
+        sequence: 8,
+        isBreak: false,
+        passengerName: "Clarence E.",
+        passengerNote: "Return trip home",
+        pickup: { line1: "Greenfield Senior Center", city: "Springfield" },
+        dropoff: { line1: "Home", city: "Springfield" },
+        scheduledPickupAt: minutesFromStart(405),
+        scheduledDropoffAt: minutesFromStart(435),
+        estimatedDurationMin: 30,
+        distanceMiles: 5.8,
+      },
+    ],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Today snapshots — ambient + personal context for the Today tab.
+// Both personas share the same zone-level state (heavy day, 2 vans OOS)
+// — what differs is the driver-specific numbers and adjustment log.
+
+/** Pin adjustment timestamps relative to the mock clock so the feed always
+ *  reads as "this morning." Mirrors buildJane's latestUpdate pattern. */
+function adjustmentAt(minutesFromShiftStart: number): string {
+  const shiftStart = new Date();
+  shiftStart.setHours(8, 0, 0, 0);
+  return new Date(
+    shiftStart.getTime() + minutesFromShiftStart * 60_000
+  ).toISOString();
+}
+
+export const todayForJane: TodaySnapshot = {
+  driverTypicalWeekdayTrips: 11,
   nearbyActiveDrivers: 12,
   nearbyTotalDrivers: 15,
-  reroutedDuringLastBreak: 3,
+  todayDemandLevel: "heavy",
+  vansOutOfService: 2,
+  adjustments: [
+    {
+      at: adjustmentAt(112), // 9:52 AM
+      direction: "neutral",
+      summary: "Trip 5 moved 10 min earlier",
+      reason: "cancellation upstream",
+    },
+    {
+      at: adjustmentAt(74), // 9:14 AM
+      direction: "inflow",
+      summary: "2 trips added to your manifest",
+      reason: "dispatch rebalance",
+    },
+    {
+      at: adjustmentAt(40), // 8:40 AM
+      direction: "neutral",
+      summary: "Trip 2 dropoff window extended",
+      reason: "traffic",
+    },
+  ],
 };
+
+export const todayForMarcus: TodaySnapshot = {
+  driverTypicalWeekdayTrips: 10,
+  nearbyActiveDrivers: 12,
+  nearbyTotalDrivers: 15,
+  todayDemandLevel: "heavy",
+  vansOutOfService: 2,
+  adjustments: [
+    {
+      at: adjustmentAt(112), // 9:52 AM
+      direction: "outflow",
+      summary: "Trip 5 reassigned",
+      reason: "pickup window expired",
+    },
+    {
+      at: adjustmentAt(74), // 9:14 AM
+      direction: "outflow",
+      summary: "2 trips reassigned from your van",
+      reason: "dispatch rebalance",
+    },
+    {
+      at: adjustmentAt(40), // 8:40 AM
+      direction: "outflow",
+      summary: "Trip 3 reassigned",
+      reason: "van stationary 22 min",
+    },
+  ],
+};
+
+export function buildShift(persona: DriverPersona, nowDate: Date = now()): DriverShift {
+  return persona === "marcus" ? buildMarcus(nowDate) : buildJane(nowDate);
+}
+
+export function snapshotFor(persona: DriverPersona): TodaySnapshot {
+  return persona === "marcus" ? todayForMarcus : todayForJane;
+}
 
 // ---------------------------------------------------------------------------
 // Formatting helpers used across tabs
@@ -362,4 +584,55 @@ export function formatRelative(iso: string, at: Date = now()): string {
   if (diffMin < 60) return `${diffMin} min ago`;
   const h = Math.floor(diffMin / 60);
   return h === 1 ? "1 hr ago" : `${h} hr ago`;
+}
+
+/** Sum of distance (mi) across completed passenger trips at `at`. */
+export function milesSoFar(shift: DriverShift, at: Date = now()): number {
+  return shift.trips
+    .filter(
+      (t) => !t.isBreak && deriveTripStatus(t, at) === "completed"
+    )
+    .reduce((sum, t) => sum + (t.distanceMiles ?? 0), 0);
+}
+
+/** The next scheduled break that comes after `at`, or null. */
+export function nextBreak(shift: DriverShift, at: Date = now()): Trip | null {
+  return (
+    shift.trips.find(
+      (t) => t.isBreak && new Date(t.scheduledPickupAt).getTime() > at.getTime()
+    ) ?? null
+  );
+}
+
+/** Build the Section 1 "riders delivered today" line. Returns null when
+ *  nothing has completed yet so the UI can suppress the row. */
+export function riderSummary(shift: DriverShift, at: Date = now()): string | null {
+  const completed = shift.trips.filter(
+    (t) => !t.isBreak && deriveTripStatus(t, at) === "completed"
+  );
+  if (completed.length === 0) return null;
+
+  const buckets: Record<string, number> = {};
+  for (const trip of completed) {
+    const drop = trip.dropoff?.line1?.toLowerCase() ?? "";
+    const note = trip.passengerNote?.toLowerCase() ?? "";
+    let type: string;
+    if (drop.includes("dialysis") || note.includes("dialysis")) type = "dialysis";
+    else if (drop.includes("adult day")) type = "adult day center";
+    else if (drop.includes("senior center")) type = "senior center";
+    else if (drop.includes("physical therapy")) type = "physical therapy";
+    else if (drop.toLowerCase() === "home") type = "returning home";
+    else type = "medical";
+    buckets[type] = (buckets[type] ?? 0) + 1;
+  }
+
+  const prefix = `${completed.length} rider${completed.length === 1 ? "" : "s"} delivered today`;
+  const entries = Object.entries(buckets);
+  if (entries.length <= 1) return prefix;
+
+  const breakdown = entries
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([t, n]) => `${n} ${t}`)
+    .join(", ");
+  return `${prefix} — ${breakdown}`;
 }
