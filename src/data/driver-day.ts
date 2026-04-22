@@ -362,6 +362,22 @@ export const fleetSnapshot: FleetSnapshot = {
   reroutedDuringLastBreak: 3,
 };
 
+export interface DispatchContact {
+  depotName: string;
+  phoneDisplay: string;
+  phoneHref: string;
+  smsHref: string;
+  avgReplyMinutes: number;
+}
+
+export const dispatchContact: DispatchContact = {
+  depotName: "North Depot dispatch",
+  phoneDisplay: "(604) 555-0142",
+  phoneHref: "tel:+16045550142",
+  smsHref: "sms:+16045550142",
+  avgReplyMinutes: 2,
+};
+
 // ---------------------------------------------------------------------------
 // Formatting helpers used across tabs
 
