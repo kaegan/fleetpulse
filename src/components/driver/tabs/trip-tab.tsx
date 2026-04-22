@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   ArrowRight,
   CheckCircle,
   MapPin,
@@ -203,12 +202,8 @@ function FullscreenNav({
             {actionLabel}
             <ArrowRight size={16} weight="bold" aria-hidden />
           </button>
-          <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-text-muted)]">
-            <span>{shift.vehicleId}</span>
-            <span aria-hidden>·</span>
-            <span>
-              Trip {activeTrip.sequence} of {totalTrips}
-            </span>
+          <div className="mt-2 text-center text-[11px] text-[var(--color-text-muted)]">
+            Trip {activeTrip.sequence} of {totalTrips}
           </div>
         </div>
       </div>
@@ -276,13 +271,8 @@ function Contextual({
           {actionLabel}
           <ArrowRight size={16} weight="bold" aria-hidden />
         </button>
-        <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-text-muted)]">
-          <ArrowLeft size={11} weight="bold" aria-hidden />
-          <span>{shift.vehicleId}</span>
-          <span aria-hidden>·</span>
-          <span>
-            Trip {activeTrip.sequence} of {totalTrips}
-          </span>
+        <div className="mt-2 text-center text-[11px] text-[var(--color-text-muted)]">
+          Trip {activeTrip.sequence} of {totalTrips}
         </div>
       </div>
     </div>
