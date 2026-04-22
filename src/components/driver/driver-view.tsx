@@ -49,6 +49,26 @@ export function DriverView() {
     return shift.trips.find((t) => t.id === currentTripId) ?? null;
   }, [shift, currentTripId]);
 
+  const nextTrip = useMemo(() => {
+    if (!shift || !currentTripId) return null;
+    const idx = shift.trips.findIndex((t) => t.id === currentTripId);
+    if (idx === -1) return null;
+    return shift.trips.slice(idx + 1).find((t) => !t.isBreak) ?? null;
+  }, [shift, currentTripId]);
+
+  // A break that sits immediately after the current trip (before the next
+  // passenger trip). Used by the between-rides view to surface "break coming up".
+  const nextBreak = useMemo(() => {
+    if (!shift || !currentTripId) return null;
+    const idx = shift.trips.findIndex((t) => t.id === currentTripId);
+    if (idx === -1) return null;
+    for (let i = idx + 1; i < shift.trips.length; i++) {
+      if (shift.trips[i].isBreak) return shift.trips[i];
+      break;
+    }
+    return null;
+  }, [shift, currentTripId]);
+
   const advance = useCallback(() => {
     if (!shift) return;
     const wasDroppedOff = subStatus === "dropped-off";
@@ -110,6 +130,8 @@ export function DriverView() {
         <TripTab
           shift={shift}
           activeTrip={currentTrip}
+          nextTrip={nextTrip}
+          nextBreak={nextBreak}
           subStatus={subStatus}
           latestUpdate={shift.latestUpdate}
           bannerDismissed={bannerDismissed}
