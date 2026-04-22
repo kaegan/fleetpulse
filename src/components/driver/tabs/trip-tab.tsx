@@ -124,7 +124,6 @@ function FullscreenNav({
     ? "I\u2019ve arrived"
     : "Dropped off \u2014 complete trip";
   const initials = initialsOf(activeTrip.passengerName);
-  const totalTrips = shift.trips.filter((t) => !t.isBreak).length;
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -202,9 +201,6 @@ function FullscreenNav({
             {actionLabel}
             <ArrowRight size={16} weight="bold" aria-hidden />
           </button>
-          <div className="mt-2 text-center text-[11px] text-[var(--color-text-muted)]">
-            Trip {activeTrip.sequence} of {totalTrips}
-          </div>
         </div>
       </div>
     </div>
@@ -236,7 +232,6 @@ function Contextual({
   const isArrived = subStatus === "arrived";
   const nextTrip = !isArrived ? findNextNonBreak(shift, activeTrip.id) : null;
   const actionLabel = isArrived ? "Picked up passenger" : "Start next trip";
-  const totalTrips = shift.trips.filter((t) => !t.isBreak).length;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -271,9 +266,6 @@ function Contextual({
           {actionLabel}
           <ArrowRight size={16} weight="bold" aria-hidden />
         </button>
-        <div className="mt-2 text-center text-[11px] text-[var(--color-text-muted)]">
-          Trip {activeTrip.sequence} of {totalTrips}
-        </div>
       </div>
     </div>
   );
