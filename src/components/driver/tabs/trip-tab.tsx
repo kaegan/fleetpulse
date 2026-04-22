@@ -53,7 +53,7 @@ export function TripTab({
   // than an empty map. The whole day is behind (or ahead of) you.
   if (!activeTrip) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
         <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-brand-light)] text-[var(--color-brand)]">
           <CheckCircle size={30} weight="duotone" aria-hidden />
         </div>
@@ -126,9 +126,9 @@ export function TripTab({
   })();
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Scrollable area: update banner + turn strip + map + passenger card */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         {latestUpdate && !bannerDismissed && (
           <div className="px-4 pt-4">
             <UpdateBanner
