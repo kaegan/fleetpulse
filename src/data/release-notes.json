@@ -1,6 +1,118 @@
 {
   "entries": [
     {
+      "id": "2026-04-22-database-views",
+      "date": "2026-04-22",
+      "title": "Browse every bus, work order, and part in one searchable list",
+      "body": "New Buses, Work Orders, and Parts pages in the sidebar let you search, sort, and filter across the full fleet. Each row opens the same detail panel you already use from Fleet Overview and the Service Board.",
+      "category": "feature",
+      "prNumber": 129
+    },
+    {
+      "id": "2026-04-22-part-detail-panel",
+      "date": "2026-04-22",
+      "title": "Click a part to see stock by garage and which jobs are using it",
+      "body": "Tapping any part — from Parts at Risk, a work order, or the new catalog — opens a panel showing stock per garage, the active work orders consuming it, and a \"running low\" callout before you stock out.",
+      "category": "feature",
+      "prNumber": 128
+    },
+    {
+      "id": "2026-04-13-held-repairs-kpi",
+      "date": "2026-04-13",
+      "title": "See blocked work at a glance with the Repairs on Hold KPI",
+      "body": "The Running card has been replaced with Repairs on Hold — click it to drill into every held job sorted by dwell time, with block reason, ETA, and a tip when the part is in stock at the other garage.",
+      "category": "feature",
+      "prNumber": 90
+    },
+    {
+      "id": "2026-04-13-part-transfer-request",
+      "date": "2026-04-13",
+      "title": "Request a cross-garage parts transfer from the work order",
+      "body": "When a part is out locally but stocked at the other garage, mechanics can now hit \"Request Transfer\" right from the work order panel. A toast fires and the button flips to \"Transfer requested\" so ops know help is on the way.",
+      "category": "feature",
+      "prNumber": 94
+    },
+    {
+      "id": "2026-04-13-ada-auto-escalate",
+      "date": "2026-04-13",
+      "title": "Accessibility repairs auto-escalate to Critical",
+      "body": "Work orders touching wheelchair lifts, ramps, securement, or kneeling valves now automatically flag as Critical with an ADA badge on cards and tracker rows, so repairs that keep buses accessible to riders never get lost in the queue.",
+      "category": "feature",
+      "prNumber": 102
+    },
+    {
+      "id": "2026-04-13-intake-lifecycle",
+      "date": "2026-04-13",
+      "title": "New repairs start in Intake and move cleanly through to Done",
+      "body": "New repair orders and scheduled PMs now enter at Intake (not Triage), you pick the garage when you log them, the Triage button actually advances the card, and marking a job Done updates service history, resets PM mileage, and decrements parts stock.",
+      "category": "improvement",
+      "prNumber": 117
+    },
+    {
+      "id": "2026-04-13-schedule-pm-any-bus",
+      "date": "2026-04-13",
+      "title": "Schedule a PM on any bus, not just overdue ones",
+      "body": "The Schedule PM service button is now available for every bus in the fleet, so ops can plan preventive work ahead of the interval instead of waiting for it to tip overdue.",
+      "category": "improvement",
+      "prNumber": 114
+    },
+    {
+      "id": "2026-04-13-advance-from-panel",
+      "date": "2026-04-13",
+      "title": "Advance a work order without leaving the detail panel",
+      "body": "Mechanics get a \"Move to [Next Stage]\" button inside the WO detail panel. No more closing the drawer just to drag a card on the kanban. The same parts-gating and toasts apply.",
+      "category": "improvement",
+      "prNumber": 93
+    },
+    {
+      "id": "2026-04-13-queue-stage-filters",
+      "date": "2026-04-13",
+      "title": "Tap a queue-by-stage pill to filter the board",
+      "body": "The stage pills above the work order list are now real filters — tap to focus on one stage, tap the × to clear, or hit \"Clear all\" to reset stage and severity together.",
+      "category": "improvement",
+      "prNumber": 106
+    },
+    {
+      "id": "2026-04-13-stage-dwell-time",
+      "date": "2026-04-13",
+      "title": "See how long a bus sat in each pipeline stage",
+      "body": "The work order tracker now shows dwell time per stage, and \"Total shop time\" replaces \"In current stage\" — so you can see where a job actually got stuck, not just where it is now.",
+      "category": "improvement",
+      "prNumber": 126
+    },
+    {
+      "id": "2026-04-13-in-maintenance-signals",
+      "date": "2026-04-13",
+      "title": "Spot which repairs are dragging past the 12-hour median",
+      "body": "The In Maintenance KPI calls out how many active jobs are above the 12-hour median (coral when any slip), the drilldown splits \"Above/Below average,\" and the In the Shop list finally sorts by total dwell — so a two-day repair doesn't sink below one that arrived this morning.",
+      "category": "improvement",
+      "prNumber": 95
+    },
+    {
+      "id": "2026-04-13-availability-and-pm-severity",
+      "date": "2026-04-13",
+      "title": "Availability and PM bars now show how far you've slipped",
+      "body": "The Availability card uses three color tiers (coral under 84%, amber 84–95%, green at 95% target) and annotates \"X pts below 95% target.\" The PM progress bar splits into amber for the 6k-mi interval and red extending for how far past it you are — a 57-mile slip is a thin red sliver, 1,700 miles is a wide red zone.",
+      "category": "improvement",
+      "prNumber": 80
+    },
+    {
+      "id": "2026-04-13-visual-refresh",
+      "date": "2026-04-13",
+      "title": "A cleaner, calmer FleetPulse",
+      "body": "A top-to-bottom design pass: tighter typography and density, Nucleo icons in place of emoji, neutralized pipeline colors, aligned badges and pills, a new burnt-orange bus favicon, and \"V2\" labels where \"Coming Soon\" used to sit.",
+      "category": "improvement",
+      "prNumber": 85
+    },
+    {
+      "id": "2026-04-13-mobile-touch-fixes",
+      "date": "2026-04-13",
+      "title": "Mobile and touch polish across cards, sheets, and the kanban",
+      "body": "Fixed mobile card height, close button, and scroll; swapped the drag-bar for an X on bottom sheets; added a hold-to-drag delay with drop indicators; removed touch drag from the kanban so horizontal scroll actually works; added back/forward nav buttons for touch devices.",
+      "category": "fix",
+      "prNumber": 97
+    },
+    {
       "id": "2026-04-12-pm-compliance-mttr",
       "date": "2026-04-12",
       "title": "PM compliance rate and MTTR now on the dashboard",
