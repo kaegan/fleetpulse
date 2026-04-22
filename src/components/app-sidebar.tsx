@@ -35,8 +35,13 @@ const heroItems = [
 
 const recordItems = [
   { label: "Parts", href: "/parts", icon: Package, disabled: false as const },
-  { label: "Buses", icon: Bus, disabled: true as const },
-  { label: "Work Orders", icon: ClipboardText, disabled: true as const },
+  { label: "Buses", href: "/buses", icon: Bus, disabled: false as const },
+  {
+    label: "Work Orders",
+    href: "/work-orders",
+    icon: ClipboardText,
+    disabled: false as const,
+  },
 ] as const;
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {

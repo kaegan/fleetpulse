@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Part } from "@/data/types";
 import type { DepotScope } from "@/hooks/use-depot";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { SortHeader, type SortDirection } from "@/components/ui/sort-header";
 import { classifyPart } from "@/lib/parts-urgency";
 
 export type PartsSortKey =
@@ -15,7 +16,7 @@ export type PartsSortKey =
   | "stockSouth"
   | "status";
 
-export type SortDirection = "asc" | "desc";
+export type { SortDirection };
 
 interface PartsListProps {
   parts: Part[];
@@ -47,43 +48,11 @@ export function PartsList({
   return (
     <Card className="overflow-hidden rounded-lg p-0 shadow-card">
       <div className="hidden items-center px-5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-text-faint sm:grid sm:grid-cols-[1.7fr_1fr_88px_88px_104px_16px] sm:gap-3">
-        <SortHeader
-          label="Part"
-          columnKey="name"
-          activeKey={sortKey}
-          dir={sortDir}
-          onSort={onSort}
-        />
-        <SortHeader
-          label="Category"
-          columnKey="category"
-          activeKey={sortKey}
-          dir={sortDir}
-          onSort={onSort}
-        />
-        <SortHeader
-          label="North"
-          columnKey="stockNorth"
-          activeKey={sortKey}
-          dir={sortDir}
-          onSort={onSort}
-          align="right"
-        />
-        <SortHeader
-          label="South"
-          columnKey="stockSouth"
-          activeKey={sortKey}
-          dir={sortDir}
-          onSort={onSort}
-          align="right"
-        />
-        <SortHeader
-          label="Status"
-          columnKey="status"
-          activeKey={sortKey}
-          dir={sortDir}
-          onSort={onSort}
-        />
+        <SortHeader<PartsSortKey> label="Part" columnKey="name" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+        <SortHeader<PartsSortKey> label="Category" columnKey="category" activeKey={sortKey} dir={sortDir} onSort={onSort} />
+        <SortHeader<PartsSortKey> label="North" columnKey="stockNorth" activeKey={sortKey} dir={sortDir} onSort={onSort} align="right" />
+        <SortHeader<PartsSortKey> label="South" columnKey="stockSouth" activeKey={sortKey} dir={sortDir} onSort={onSort} align="right" />
+        <SortHeader<PartsSortKey> label="Status" columnKey="status" activeKey={sortKey} dir={sortDir} onSort={onSort} />
         <span aria-hidden />
       </div>
       <Separator />
@@ -94,44 +63,6 @@ export function PartsList({
         </div>
       ))}
     </Card>
-  );
-}
-
-function SortHeader({
-  label,
-  columnKey,
-  activeKey,
-  dir,
-  onSort,
-  align = "left",
-}: {
-  label: string;
-  columnKey: PartsSortKey;
-  activeKey: PartsSortKey;
-  dir: SortDirection;
-  onSort: (key: PartsSortKey) => void;
-  align?: "left" | "right";
-}) {
-  const isActive = columnKey === activeKey;
-  const Icon = !isActive ? ChevronsUpDown : dir === "asc" ? ArrowUp : ArrowDown;
-  return (
-    <button
-      type="button"
-      onClick={() => onSort(columnKey)}
-      className={
-        "inline-flex items-center gap-1 rounded px-1 py-0.5 -mx-1 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors hover:text-text-secondary focus-visible:outline-none focus-visible:bg-muted/60 " +
-        (isActive ? "text-foreground" : "text-text-faint") +
-        (align === "right" ? " justify-end" : "")
-      }
-    >
-      <span>{label}</span>
-      <Icon
-        className={
-          "size-3 shrink-0 " +
-          (isActive ? "text-text-secondary" : "text-text-faint/70")
-        }
-      />
-    </button>
   );
 }
 
@@ -152,7 +83,7 @@ function PartRow({
     <button
       type="button"
       onClick={() => onSelect(part)}
-      className="group grid w-full grid-cols-[1fr_auto_16px] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none sm:grid-cols-[1.7fr_1fr_88px_88px_104px_16px] sm:gap-3 sm:px-5 sm:py-3.5"
+      className="group grid w-full cursor-pointer grid-cols-[1fr_auto_16px] items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50 focus-visible:bg-muted/50 focus-visible:outline-none sm:grid-cols-[1.7fr_1fr_88px_88px_104px_16px] sm:gap-3 sm:px-5 sm:py-3.5"
     >
       <div className="min-w-0">
         <div className="truncate text-[14px] font-semibold tracking-[-0.01em] text-foreground">
