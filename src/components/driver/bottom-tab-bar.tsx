@@ -9,7 +9,7 @@ import {
 import type { Icon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
-export type DriverTab = "trip" | "schedule" | "fleet" | "inbox";
+export type DriverTab = "trip" | "schedule" | "today" | "inbox";
 
 interface TabItem {
   id: DriverTab;
@@ -20,7 +20,7 @@ interface TabItem {
 const TABS: TabItem[] = [
   { id: "trip", label: "Trip", icon: NavigationArrow },
   { id: "schedule", label: "Schedule", icon: CalendarBlank },
-  { id: "fleet", label: "Fleet", icon: Pulse },
+  { id: "today", label: "Today", icon: Pulse },
   { id: "inbox", label: "Inbox", icon: EnvelopeSimple },
 ];
 
