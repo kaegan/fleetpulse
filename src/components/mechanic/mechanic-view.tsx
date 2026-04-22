@@ -9,6 +9,7 @@ import { ScopeToggle, type Scope } from "./scope-toggle";
 import { LogRepairForm, type LogRepairFormSnapshot } from "./log-repair-form";
 import { BusPanelContent } from "@/components/bus-detail-panel";
 import { WorkOrderPanelContent } from "@/components/work-order-detail-panel";
+import { PartDetailPanelContent } from "@/components/part-detail-panel";
 import {
   ResponsiveSheet,
   ResponsiveSheetContent,
@@ -32,6 +33,7 @@ import type {
   Bus,
   BusHistoryEntry,
   Garage,
+  Part,
   PartRequirement,
   PartsStatus,
   Severity,
@@ -98,10 +100,11 @@ const SUBTITLE: Record<"all" | "north" | "south", string> = {
 type MechanicPanelEntry =
   | { kind: "bus"; label: string; bus: Bus }
   | { kind: "workOrder"; label: string; workOrder: WorkOrder }
-  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus };
+  | { kind: "historyEntry"; label: string; entry: BusHistoryEntry; bus: Bus }
+  | { kind: "part"; label: string; part: Part };
 
 export function MechanicView() {
-  const { buses, workOrders: orders, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
+  const { buses, workOrders: orders, parts, addWorkOrder, updateWorkOrder, dismissWorkOrder } =
     useFleet();
   const [scope, setScope] = useState<Scope>("mine");
   const handleScopeChange = useCallback(
@@ -162,6 +165,13 @@ export function MechanicView() {
   const drillToHistoryEntry = useCallback(
     (entry: BusHistoryEntry, bus: Bus) =>
       nav.drill({ kind: "historyEntry", label: entry.id, entry, bus }),
+    [nav]
+  );
+  const drillToPart = useCallback(
+    (part: Part) => {
+      analytics.partDetailOpened(part.id, "wo-panel");
+      nav.drill({ kind: "part", label: part.name, part });
+    },
     [nav]
   );
 
@@ -351,6 +361,11 @@ export function MechanicView() {
     return buses.find((b) => b.id === renderEntry.bus.id) ?? renderEntry.bus;
   }, [buses, renderEntry]);
 
+  const livePanelPart = useMemo(() => {
+    if (renderEntry?.kind !== "part") return null;
+    return parts.find((p) => p.id === renderEntry.part.id) ?? renderEntry.part;
+  }, [parts, renderEntry]);
+
   // Auto-close when a WO is completed and removed from orders. This
   // preserves the existing behavior where completing a card closes the
   // panel automatically.
@@ -460,12 +475,16 @@ export function MechanicView() {
                 ? `Work order ${renderEntry.workOrder.id} details`
                 : renderEntry?.kind === "historyEntry"
                   ? `Service history ${renderEntry.entry.id} details`
-                  : "Panel"}
+                  : renderEntry?.kind === "part"
+                    ? `${renderEntry.part.name} details`
+                    : "Panel"}
           </ResponsiveSheetTitle>
           <ResponsiveSheetDescription className="sr-only">
             {renderEntry?.kind === "bus"
               ? "Vehicle info, preventive maintenance status, active work orders, and service history."
-              : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
+              : renderEntry?.kind === "part"
+                ? "Stock levels, consumption rate, lead time, and active work orders using this part."
+                : "Issue, stage progress, assignment, timeline, and the bus this work order is attached to."}
           </ResponsiveSheetDescription>
           {renderEntry && (
             <div
@@ -504,6 +523,15 @@ export function MechanicView() {
                   onBack={nav.backButton?.onBack}
                   onUpdateParts={handleUpdatePartsList}
                   onStageChange={handleStageChange}
+                  onSelectPart={drillToPart}
+                />
+              )}
+              {renderEntry.kind === "part" && livePanelPart && (
+                <PartDetailPanelContent
+                  part={livePanelPart}
+                  onSelectWorkOrder={drillToWorkOrder}
+                  backLabel={nav.backButton?.label}
+                  onBack={nav.backButton?.onBack}
                 />
               )}
             </div>

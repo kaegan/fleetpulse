@@ -59,6 +59,8 @@ interface WorkOrderDetailPanelProps {
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   /** When provided, the progress section shows a stage-advance button. Mechanic view passes this. */
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  /** When provided, part names in the Assigned Parts list become clickable, drilling into a Part panel. */
+  onSelectPart?: (part: Part) => void;
 }
 
 export function WorkOrderDetailPanel({
@@ -71,6 +73,7 @@ export function WorkOrderDetailPanel({
   onBack,
   onUpdateParts,
   onStageChange,
+  onSelectPart,
 }: WorkOrderDetailPanelProps) {
   // Snapshot the last non-null record so the sheet keeps rendering its
   // contents through the close animation after the parent clears the props.
@@ -128,6 +131,7 @@ export function WorkOrderDetailPanel({
             onBack={onBack}
             onUpdateParts={onUpdateParts}
             onStageChange={onStageChange}
+            onSelectPart={onSelectPart}
           />
         )}
       </ResponsiveSheetContent>
@@ -144,6 +148,7 @@ export function WorkOrderPanelContent({
   onBack,
   onUpdateParts,
   onStageChange,
+  onSelectPart,
 }: {
   order: WorkOrder | null;
   historyEntry: BusHistoryEntry | null;
@@ -153,6 +158,7 @@ export function WorkOrderPanelContent({
   onBack?: () => void;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  onSelectPart?: (part: Part) => void;
 }) {
   // Scroll the panel back to top when content swaps in place (same panel
   // type, different record). Without this the user would land mid-scroll
@@ -233,9 +239,18 @@ export function WorkOrderPanelContent({
       )}
 
       {order ? (
-        <ActiveWorkOrderBody order={order} onUpdateParts={onUpdateParts} onStageChange={onStageChange} />
+        <ActiveWorkOrderBody
+          order={order}
+          onUpdateParts={onUpdateParts}
+          onStageChange={onStageChange}
+          onSelectPart={onSelectPart}
+        />
       ) : (
-        <HistoryEntryBody entry={historyEntry!} archivedOrder={archivedOrder} />
+        <HistoryEntryBody
+          entry={historyEntry!}
+          archivedOrder={archivedOrder}
+          onSelectPart={onSelectPart}
+        />
       )}
 
       {/* ── Bus context ────────────────────────────────────────────────── */}
@@ -289,10 +304,12 @@ function ActiveWorkOrderBody({
   order,
   onUpdateParts,
   onStageChange,
+  onSelectPart,
 }: {
   order: WorkOrder;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
   onStageChange?: (woId: string, newStage: WorkOrderStage) => void;
+  onSelectPart?: (part: Part) => void;
 }) {
   const next = nextStage(order.stage);
   const terminal = isTerminalStage(order.stage);
@@ -369,7 +386,11 @@ function ActiveWorkOrderBody({
       </InfoGrid>
 
       {/* ── Parts Required ─────────────────────────────────────────────── */}
-      <PartsRequiredSection order={order} onUpdateParts={onUpdateParts} />
+      <PartsRequiredSection
+        order={order}
+        onUpdateParts={onUpdateParts}
+        onSelectPart={onSelectPart}
+      />
 
       {/* ── Timeline ───────────────────────────────────────────────────── */}
       <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Timeline</h3>
@@ -387,9 +408,11 @@ function ActiveWorkOrderBody({
 function HistoryEntryBody({
   entry,
   archivedOrder,
+  onSelectPart,
 }: {
   entry: BusHistoryEntry;
   archivedOrder: WorkOrder | null;
+  onSelectPart?: (part: Part) => void;
 }) {
   return (
     <>
@@ -418,7 +441,7 @@ function HistoryEntryBody({
 
       {archivedOrder && (
         <>
-          <PartsRequiredSection order={archivedOrder} />
+          <PartsRequiredSection order={archivedOrder} onSelectPart={onSelectPart} />
 
           <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.01em] text-[#929292]">Original Timeline</h3>
           <InfoGrid cols={2}>
@@ -436,9 +459,11 @@ function HistoryEntryBody({
 function PartsRequiredSection({
   order,
   onUpdateParts,
+  onSelectPart,
 }: {
   order: WorkOrder;
   onUpdateParts?: (woId: string, parts: PartRequirement[]) => void;
+  onSelectPart?: (part: Part) => void;
 }) {
   const { parts: partsCatalog } = useFleet();
   const parts = order.parts ?? [];
@@ -489,23 +514,30 @@ function PartsRequiredSection({
       <div className="mb-[26px] rounded-md border border-black/[0.06] bg-[#fafaf9]">
         {parts.length > 0 ? (
           <div className="divide-y divide-black/[0.04]">
-            {parts.map((req) => (
-              <PartRow
-                key={req.partId}
-                req={req}
-                garage={order.garage}
-                catalogPart={
-                  partsCatalog.find((part) => part.id === req.partId) ?? null
-                }
-                editable={!!onUpdateParts}
-                onRemove={() => handleRemove(req.partId)}
-                onRequestTransfer={
-                  onUpdateParts
-                    ? () => handleRequestTransfer(req.partId)
-                    : undefined
-                }
-              />
-            ))}
+            {parts.map((req) => {
+              const catalogPart =
+                partsCatalog.find((part) => part.id === req.partId) ?? null;
+              return (
+                <PartRow
+                  key={req.partId}
+                  req={req}
+                  garage={order.garage}
+                  catalogPart={catalogPart}
+                  editable={!!onUpdateParts}
+                  onRemove={() => handleRemove(req.partId)}
+                  onRequestTransfer={
+                    onUpdateParts
+                      ? () => handleRequestTransfer(req.partId)
+                      : undefined
+                  }
+                  onSelectPart={
+                    onSelectPart && catalogPart
+                      ? () => onSelectPart(catalogPart)
+                      : undefined
+                  }
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="px-3.5 py-3 text-[13px] font-medium text-[#b5b5b5]">
@@ -545,6 +577,7 @@ function PartRow({
   editable,
   onRemove,
   onRequestTransfer,
+  onSelectPart,
 }: {
   req: PartRequirement;
   garage: Garage;
@@ -552,6 +585,7 @@ function PartRow({
   editable: boolean;
   onRemove: () => void;
   onRequestTransfer?: () => void;
+  onSelectPart?: () => void;
 }) {
   const garageStock = catalogPart
     ? garage === "north"
@@ -591,9 +625,19 @@ function PartRow({
     <div className="px-3.5 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <span className="text-[13px] font-semibold text-[#222222]">
-            {req.partName}
-          </span>
+          {onSelectPart ? (
+            <button
+              type="button"
+              onClick={onSelectPart}
+              className="text-left text-[13px] font-semibold text-[#222222] underline decoration-transparent underline-offset-4 transition-colors hover:text-[#b4541a] hover:decoration-[#b4541a]/40 focus-visible:outline-none focus-visible:text-[#b4541a]"
+            >
+              {req.partName}
+            </button>
+          ) : (
+            <span className="text-[13px] font-semibold text-[#222222]">
+              {req.partName}
+            </span>
+          )}
           <span className="ml-1.5 text-[12px] font-medium text-[#929292]">
             &times;{req.qty}
           </span>

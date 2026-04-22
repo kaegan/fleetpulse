@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useFleet } from "@/contexts/fleet-context";
@@ -38,7 +39,11 @@ const SCOPE_SUFFIX: Record<DepotScope, string> = {
   south: "in garage",
 };
 
-export function PartsRiskPanel() {
+export function PartsRiskPanel({
+  onSelectPart,
+}: {
+  onSelectPart?: (part: Part) => void;
+}) {
   const { scope } = useDepot();
   const { workOrders, parts } = useFleet();
 
@@ -123,7 +128,13 @@ export function PartsRiskPanel() {
       {/* Ranked rows */}
       <div>
         {entries.map((entry, idx) => (
-          <PartsRiskRow key={entry.part.id} entry={entry} rank={idx + 1} isLast={idx === entries.length - 1} />
+          <PartsRiskRow
+            key={entry.part.id}
+            entry={entry}
+            rank={idx + 1}
+            isLast={idx === entries.length - 1}
+            onClick={onSelectPart}
+          />
         ))}
       </div>
     </Card>
@@ -134,13 +145,16 @@ function PartsRiskRow({
   entry,
   rank,
   isLast,
+  onClick,
 }: {
   entry: PartsRiskEntry;
   rank: number;
   isLast: boolean;
+  onClick?: (part: Part) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const { part, garageStock, daysUntilStockout, affectedWoCount } = entry;
+  const interactive = Boolean(onClick);
 
   const isStockout = garageStock === 0;
   const isAtReorder = !isStockout && daysUntilStockout <= 30;
@@ -149,17 +163,18 @@ function PartsRiskRow({
   const urgencyColor = isStockout ? "#991b1b" : isAtReorder ? "#92400e" : "#222222";
   const urgencyBg = isStockout ? "#fef2f2" : isAtReorder ? "#fffbeb" : "#f5f5f4";
 
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className="grid w-full items-center gap-3 p-[12px_14px] grid-cols-[auto_1fr_auto] sm:gap-4 sm:p-[14px_18px] sm:grid-cols-[auto_1fr_auto_auto_auto]"
-      style={{
-        borderBottom: isLast ? "none" : "1px solid #f0f0f0",
-        background: hovered ? "#fafaf9" : "#ffffff",
-        transition: "background 0.12s ease-out",
-      }}
-    >
+  const rowClass =
+    "grid w-full items-center gap-3 p-[12px_14px] grid-cols-[auto_1fr_auto] sm:gap-4 sm:p-[14px_18px] sm:grid-cols-[auto_1fr_auto_auto_auto]" +
+    (interactive
+      ? " cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      : "");
+  const rowStyle: React.CSSProperties = {
+    borderBottom: isLast ? "none" : "1px solid #f0f0f0",
+    background: hovered ? "#fafaf9" : "#ffffff",
+    transition: "background 0.12s ease-out",
+  };
+  const rowBody = (
+    <>
       {/* Rank */}
       <span
         style={{
@@ -252,6 +267,31 @@ function PartsRiskRow({
           {affectedWoCount} WO{affectedWoCount === 1 ? "" : "s"}
         </span>
       )}
+    </>
+  );
+
+  if (interactive) {
+    return (
+      <button
+        type="button"
+        onClick={() => onClick?.(part)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className={rowClass}
+        style={rowStyle}
+      >
+        {rowBody}
+      </button>
+    );
+  }
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={rowClass}
+      style={rowStyle}
+    >
+      {rowBody}
     </div>
   );
 }

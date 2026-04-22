@@ -34,9 +34,9 @@ const heroItems = [
 ] as const;
 
 const recordItems = [
-  { label: "Buses", icon: Bus },
-  { label: "Work Orders", icon: ClipboardText },
-  { label: "Parts", icon: Package },
+  { label: "Parts", href: "/parts", icon: Package, disabled: false as const },
+  { label: "Buses", icon: Bus, disabled: true as const },
+  { label: "Work Orders", icon: ClipboardText, disabled: true as const },
 ] as const;
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -124,15 +124,36 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Records</SidebarGroupLabel>
           <SidebarMenu>
-            {recordItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton disabled tooltip={item.label}>
-                  <item.icon weight="duotone" />
-                  <span>{item.label}</span>
-                </SidebarMenuButton>
-                <SidebarMenuBadge className="opacity-0 transition-opacity group-hover/menu-item:opacity-100">V2</SidebarMenuBadge>
-              </SidebarMenuItem>
-            ))}
+            {recordItems.map((item) => {
+              if (item.disabled) {
+                return (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton disabled tooltip={item.label}>
+                      <item.icon weight="duotone" />
+                      <span>{item.label}</span>
+                    </SidebarMenuButton>
+                    <SidebarMenuBadge className="opacity-0 transition-opacity group-hover/menu-item:opacity-100">
+                      V2
+                    </SidebarMenuBadge>
+                  </SidebarMenuItem>
+                );
+              }
+              const isActive = pathname === item.href;
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive}
+                    tooltip={item.label}
+                  >
+                    <Link href={item.href} onClick={handleNavClick}>
+                      <item.icon weight={isActive ? "fill" : "duotone"} />
+                      <span>{item.label}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
 
