@@ -4,18 +4,16 @@ import {
   ArrowsClockwise,
   ChatCircleText,
   Clock,
+  Phone,
 } from "@phosphor-icons/react/dist/ssr";
 import type { DriverShift, ScheduleUpdate } from "@/data/driver-day";
-import { formatRelative, formatTime } from "@/data/driver-day";
+import { dispatchContact, formatRelative, formatTime } from "@/data/driver-day";
 
 /**
- * Inbox — where schedule updates and dispatch outreach live in the new
- * world of automated dispatching. The historical log behind the banner;
- * the "if dispatch needed me, here's where they'd reach me" surface.
- *
- * Stub for now: one schedule-update entry (the undismissed change), one
- * shift-start housekeeping message, and an empty state for direct
- * dispatch messages.
+ * Inbox — schedule updates, dispatch outreach, and a persistent
+ * "contact dispatch" card at the top. In automated dispatching most
+ * messages are system-generated, so each message is tagged "Auto" or
+ * "Dispatch" to signal origin rather than being split into sections.
  */
 export function InboxTab({
   shift,
@@ -45,34 +43,85 @@ export function InboxTab({
         </p>
       </header>
 
-      <ul className="space-y-2">
-        {latestUpdate && (
-          <InboxMessage
-            icon={<ArrowsClockwise size={16} weight="bold" aria-hidden />}
-            iconTone="brand"
-            title="Schedule updated"
-            body={`${latestUpdate.summary} · ${latestUpdate.reason}`}
-            timestamp={formatRelative(latestUpdate.updatedAt)}
-            unread={unread}
-          />
-        )}
-        <InboxMessage
-          icon={<Clock size={16} weight="duotone" aria-hidden />}
-          iconTone="neutral"
-          title="Shift started"
-          body={shiftStartedBody}
-          timestamp={formatTime(shift.shiftStart)}
-          unread={false}
-        />
-      </ul>
+      <ContactDispatchCard />
 
-      <div className="pt-4">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+      <div className="pt-2">
+        <div className="flex items-center gap-2 text-[12px] font-semibold text-[var(--color-text-muted)]">
           <ChatCircleText size={13} weight="duotone" aria-hidden />
-          Direct messages
+          Messages
         </div>
-        <div className="mt-2 rounded-xl bg-[var(--color-surface-warm)] px-3.5 py-4 text-[12px] leading-snug text-[var(--color-text-secondary)] ring-1 ring-[var(--color-border)]">
-          No direct messages. Dispatch will reach out here if they need you.
+        <ul className="mt-2 space-y-2">
+          {latestUpdate && (
+            <InboxMessage
+              icon={<ArrowsClockwise size={16} weight="bold" aria-hidden />}
+              iconTone="brand"
+              title="Schedule updated"
+              body={`${latestUpdate.summary} · ${latestUpdate.reason}`}
+              timestamp={formatRelative(latestUpdate.updatedAt)}
+              origin="auto"
+              unread={unread}
+            />
+          )}
+          <InboxMessage
+            icon={<Clock size={16} weight="duotone" aria-hidden />}
+            iconTone="neutral"
+            title="Shift started"
+            body={shiftStartedBody}
+            timestamp={formatTime(shift.shiftStart)}
+            origin="auto"
+            unread={false}
+          />
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function ContactDispatchCard() {
+  return (
+    <div className="pt-4">
+      <div className="flex items-center gap-2 text-[12px] font-semibold text-[var(--color-text-muted)]">
+        <Phone size={13} weight="duotone" aria-hidden />
+        Contact dispatch
+      </div>
+      <div className="mt-2 rounded-xl bg-[var(--color-surface-warm)] px-3.5 py-3.5 ring-1 ring-[var(--color-border)]">
+        <div className="flex items-center gap-3">
+          <span
+            className="flex size-9 shrink-0 items-center justify-center rounded-full"
+            style={{
+              background: "rgba(212,101,74,0.14)",
+              color: "var(--color-brand)",
+            }}
+            aria-hidden
+          >
+            <Phone size={16} weight="fill" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[14px] font-semibold text-[var(--color-text-primary)]">
+              {dispatchContact.depotName}
+            </div>
+            <div className="text-[12px] text-[var(--color-text-secondary)]">
+              Avg reply &middot; {dispatchContact.avgReplyMinutes} min
+            </div>
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <a
+            href={dispatchContact.phoneHref}
+            aria-label={`Call ${dispatchContact.depotName} at ${dispatchContact.phoneDisplay}`}
+            className="flex h-11 items-center justify-center gap-1.5 rounded-lg bg-[var(--color-brand)] text-[14px] font-semibold text-white shadow-sm hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/40 focus-visible:ring-offset-2"
+          >
+            <Phone size={16} weight="fill" aria-hidden />
+            Call
+          </a>
+          <a
+            href={dispatchContact.smsHref}
+            aria-label={`Text ${dispatchContact.depotName}`}
+            className="flex h-11 items-center justify-center gap-1.5 rounded-lg bg-card text-[14px] font-semibold text-[var(--color-brand)] ring-1 ring-[var(--color-brand)]/30 hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/40 focus-visible:ring-offset-2"
+          >
+            <ChatCircleText size={16} weight="fill" aria-hidden />
+            Text
+          </a>
         </div>
       </div>
     </div>
@@ -85,6 +134,7 @@ function InboxMessage({
   title,
   body,
   timestamp,
+  origin,
   unread,
 }: {
   icon: React.ReactNode;
@@ -92,6 +142,10 @@ function InboxMessage({
   title: string;
   body: string;
   timestamp: string;
+  /** "auto" = system-generated (optimizer, shift lifecycle). "dispatch" =
+   *  a human dispatcher reached out. Drives a small origin pill in the
+   *  header row so the two are legible without splitting into sections. */
+  origin: "auto" | "dispatch";
   unread: boolean;
 }) {
   return (
@@ -129,7 +183,8 @@ function InboxMessage({
           <span className="text-[14px] font-semibold text-[var(--color-text-primary)]">
             {title}
           </span>
-          <span className="shrink-0 text-[11px] tabular-nums text-[var(--color-text-muted)]">
+          <span className="flex shrink-0 items-center gap-1.5 text-[11px] tabular-nums text-[var(--color-text-muted)]">
+            <OriginTag origin={origin} />
             {timestamp}
           </span>
         </div>
@@ -138,5 +193,27 @@ function InboxMessage({
         </p>
       </div>
     </li>
+  );
+}
+
+function OriginTag({ origin }: { origin: "auto" | "dispatch" }) {
+  const isAuto = origin === "auto";
+  return (
+    <span
+      className="rounded px-1.5 py-0.5 text-[10px] font-semibold leading-none"
+      style={
+        isAuto
+          ? {
+              background: "rgba(0,0,0,0.05)",
+              color: "var(--color-text-muted)",
+            }
+          : {
+              background: "rgba(212,101,74,0.14)",
+              color: "var(--color-brand)",
+            }
+      }
+    >
+      {isAuto ? "Auto" : "Dispatch"}
+    </span>
   );
 }
