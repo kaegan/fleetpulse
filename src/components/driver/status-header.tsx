@@ -1,11 +1,11 @@
 "use client";
 
-import { Van } from "@phosphor-icons/react/dist/ssr";
+import { Bus } from "@phosphor-icons/react/dist/ssr";
 import type { DriverShift } from "@/data/driver-day";
 import { formatTime, now } from "@/data/driver-day";
 
 /**
- * Top bar for the driver view. Shows driver initials, van number, shift
+ * Top bar for the driver view. Shows driver initials, bus number, shift
  * window, and the current time — pulled from the mock clock so the whole
  * app is a consistent mid-morning snapshot.
  */
@@ -30,7 +30,7 @@ export function StatusHeader({ shift }: { shift: DriverShift }) {
             {shift.driverName}
           </div>
           <div className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-secondary)]">
-            <Van size={13} weight="duotone" aria-hidden />
+            <Bus size={13} weight="duotone" aria-hidden />
             <span>{shift.vehicleId}</span>
             <span aria-hidden>·</span>
             <span>

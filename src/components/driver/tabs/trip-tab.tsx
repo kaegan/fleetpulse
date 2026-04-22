@@ -1,10 +1,9 @@
 "use client";
 
 import {
+  ArrowLeft,
   ArrowRight,
   CheckCircle,
-  Clock,
-  Coffee,
   MapPin,
   NavigationArrow,
   Phone,
@@ -17,14 +16,12 @@ import type {
   Trip,
   TripSubStatus,
 } from "@/data/driver-day";
-import { formatDuration, formatTime, getProgress, now, timeUntilMinutes } from "@/data/driver-day";
+import { formatTime } from "@/data/driver-day";
 import { cn } from "@/lib/utils";
 
 interface TripTabProps {
   shift: DriverShift;
   activeTrip: Trip | null;
-  nextTrip: Trip | null;
-  nextBreak: Trip | null;
   subStatus: TripSubStatus;
   latestUpdate: ScheduleUpdate | null;
   bannerDismissed: boolean;
@@ -34,14 +31,19 @@ interface TripTabProps {
 }
 
 /**
- * Primary surface. Context-aware: navigation-first when actively driving,
- * between-rides summary when dropped off.
+ * Primary surface. Two modes, chosen from the sub-status:
+ *  - `en-route` / `picked-up` → **fullscreen navigation**. The map fills
+ *    the tab, floating cards hold the ETA and the forward action. Mirrors
+ *    Uber Driver / Google Maps while the driver is actively on the road.
+ *  - `arrived` / `dropped-off` → **contextual**. Rider info and schedule
+ *    updates surface (arrived), or a next-trip preview (dropped-off) —
+ *    the "between-rides" frame.
+ *
+ * One forward-momentum button advances the state machine across both modes.
  */
 export function TripTab({
   shift,
   activeTrip,
-  nextTrip,
-  nextBreak,
   subStatus,
   latestUpdate,
   bannerDismissed,
@@ -49,7 +51,6 @@ export function TripTab({
   onAdvance,
   onJumpToSchedule,
 }: TripTabProps) {
-  // End-of-shift / no active trip.
   if (!activeTrip) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
@@ -75,28 +76,21 @@ export function TripTab({
     );
   }
 
-  // Between rides: driver just completed a trip and hasn't started the next.
-  if (subStatus === "dropped-off") {
+  if (subStatus === "en-route" || subStatus === "picked-up") {
     return (
-      <BetweenRidesView
+      <FullscreenNav
         shift={shift}
-        completedTrip={activeTrip}
-        nextTrip={nextTrip}
-        nextBreak={nextBreak}
-        latestUpdate={latestUpdate}
-        bannerDismissed={bannerDismissed}
-        onDismissBanner={onDismissBanner}
+        activeTrip={activeTrip}
+        subStatus={subStatus}
         onAdvance={onAdvance}
       />
     );
   }
 
-  // Navigation mode — actively driving (en-route, arrived, picked-up).
   return (
-    <NavigationView
+    <Contextual
       shift={shift}
       activeTrip={activeTrip}
-      nextTrip={nextTrip}
       subStatus={subStatus}
       latestUpdate={latestUpdate}
       bannerDismissed={bannerDismissed}
@@ -108,91 +102,42 @@ export function TripTab({
 }
 
 // ---------------------------------------------------------------------------
-// Navigation mode
+// Fullscreen navigation: map fills the tab with floating cards top/bottom.
 
-function NavigationView({
+function FullscreenNav({
   shift,
   activeTrip,
-  nextTrip,
   subStatus,
-  latestUpdate,
-  bannerDismissed,
-  onDismissBanner,
   onAdvance,
-  onJumpToSchedule,
 }: {
   shift: DriverShift;
   activeTrip: Trip;
-  nextTrip: Trip | null;
-  subStatus: Exclude<TripSubStatus, "dropped-off">;
-  latestUpdate: ScheduleUpdate | null;
-  bannerDismissed: boolean;
-  onDismissBanner: () => void;
+  subStatus: "en-route" | "picked-up";
   onAdvance: () => void;
-  onJumpToSchedule: () => void;
 }) {
-  const isHeadingToPickup =
-    subStatus === "en-route" || subStatus === "arrived";
-  const target = isHeadingToPickup ? activeTrip.pickup : activeTrip.dropoff;
-
-  const turnCopy = (() => {
-    switch (subStatus) {
-      case "en-route":
-        return {
-          eyebrow: "HEADING TO PICKUP",
-          title: activeTrip.pickup?.line1 ?? "Pickup location",
-          meta: `${activeTrip.distanceMiles?.toFixed(1) ?? "—"} mi · arriving ${formatTime(activeTrip.scheduledPickupAt)}`,
-        };
-      case "arrived":
-        return {
-          eyebrow: "AT PICKUP",
-          title: activeTrip.pickup?.line1 ?? "Pickup location",
-          meta: `Pickup window · passenger ${activeTrip.passengerName ?? ""}`,
-        };
-      case "picked-up":
-        return {
-          eyebrow: "HEADING TO DROPOFF",
-          title: activeTrip.dropoff?.line1 ?? "Dropoff location",
-          meta: `${activeTrip.distanceMiles?.toFixed(1) ?? "—"} mi · arriving ${formatTime(activeTrip.scheduledDropoffAt)}`,
-        };
-    }
-  })();
-
-  const actionLabel = (() => {
-    switch (subStatus) {
-      case "en-route":
-        return "I\u2019ve arrived";
-      case "arrived":
-        return "Picked up passenger";
-      case "picked-up":
-        return "Dropped off \u2014 complete trip";
-    }
-  })();
-
-  // Banner is contextual: only show when the update directly affects this
-  // trip or the immediate next one.
-  const showBanner =
-    !bannerDismissed &&
-    latestUpdate != null &&
-    (latestUpdate.tripId === activeTrip.id ||
-      latestUpdate.tripId === nextTrip?.id);
+  const headingToPickup = subStatus === "en-route";
+  const target = headingToPickup ? activeTrip.pickup : activeTrip.dropoff;
+  const arrivalIso = headingToPickup
+    ? activeTrip.scheduledPickupAt
+    : activeTrip.scheduledDropoffAt;
+  const eyebrow = headingToPickup ? "HEADING TO PICKUP" : "HEADING TO DROPOFF";
+  const actionLabel = headingToPickup
+    ? "I\u2019ve arrived"
+    : "Dropped off \u2014 complete trip";
+  const initials = initialsOf(activeTrip.passengerName);
+  const totalTrips = shift.trips.filter((t) => !t.isBreak).length;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-        {showBanner && (
-          <div className="px-4 pt-4">
-            <UpdateBanner
-              update={latestUpdate!}
-              onDismiss={onDismissBanner}
-              onViewChanges={onJumpToSchedule}
-            />
-          </div>
-        )}
+    <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      {/* Full-bleed map */}
+      <div className="absolute inset-0">
+        <MapView className="h-full w-full" />
+      </div>
 
-        {/* Turn strip */}
-        <div className="px-4 py-4">
-          <div className="flex items-start gap-3 rounded-2xl bg-card px-3.5 py-3 shadow-card">
+      {/* Top floating nav card */}
+      <div className="relative z-10 px-4 pt-4">
+        <div className="rounded-2xl bg-white/95 px-3.5 py-3 shadow-card ring-1 ring-black/5 backdrop-blur">
+          <div className="flex items-start gap-3">
             <span
               className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
               style={{ background: "#3b82f6" }}
@@ -202,42 +147,120 @@ function NavigationView({
             </span>
             <div className="min-w-0 flex-1">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-                {turnCopy.eyebrow}
+                {eyebrow}
               </div>
-              <div className="mt-0.5 truncate text-[16px] font-semibold leading-tight text-[var(--color-text-primary)]">
-                {turnCopy.title}
+              <div className="mt-0.5 flex items-baseline gap-1.5">
+                <span className="text-[22px] font-semibold tabular-nums leading-none text-[var(--color-text-primary)]">
+                  {activeTrip.estimatedDurationMin} min
+                </span>
+                <span className="truncate text-[12px] text-[var(--color-text-secondary)]">
+                  {activeTrip.distanceMiles !== undefined
+                    ? `${activeTrip.distanceMiles.toFixed(1)} mi · `
+                    : ""}
+                  arrive {formatTime(arrivalIso)}
+                </span>
               </div>
-              {turnCopy.meta && (
-                <div className="mt-0.5 truncate text-[12px] text-[var(--color-text-secondary)]">
-                  {turnCopy.meta}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Map */}
-        <div className="px-4">
-          <div className="relative h-[260px] overflow-hidden rounded-2xl shadow-card ring-1 ring-black/5">
-            <MapView className="h-full" />
-            <div className="absolute left-3 bottom-3 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow-card backdrop-blur">
-              <MapPin
-                size={14}
-                weight="fill"
-                aria-hidden
-                style={{ color: "var(--color-brand)" }}
-              />
-              <span className="text-[12px] font-semibold text-[var(--color-text-primary)]">
+              <div className="mt-1 truncate text-[13px] font-medium text-[var(--color-text-primary)]">
                 {target?.line1 ?? "Destination"}
-              </span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Passenger / pickup card */}
-        <div className="px-4 pb-4 pt-4">
-          <PassengerCard trip={activeTrip} subStatus={subStatus} />
+      {/* Spacer pushes the action card to the bottom */}
+      <div className="relative flex-1" />
+
+      {/* Bottom floating action card */}
+      <div className="relative z-10 px-4 pb-4">
+        <div className="rounded-2xl bg-card px-3.5 pt-3 pb-3 shadow-card ring-1 ring-black/5">
+          <div className="flex items-center gap-3 pb-3">
+            <div
+              className="flex size-9 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+              style={{ background: "#6a6a6a" }}
+              aria-hidden
+            >
+              {initials || <MapPin size={14} weight="fill" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[14px] font-semibold text-[var(--color-text-primary)]">
+                {activeTrip.passengerName ?? "Passenger"}
+              </div>
+              <div className="truncate text-[12px] text-[var(--color-text-secondary)]">
+                {headingToPickup ? "Pickup" : "Dropoff"} · {target?.line1}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onAdvance}
+            className={cn(
+              "flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-[15px] font-semibold transition-colors cursor-pointer",
+              "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-hover)]",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/40"
+            )}
+          >
+            {actionLabel}
+            <ArrowRight size={16} weight="bold" aria-hidden />
+          </button>
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-text-muted)]">
+            <span>{shift.vehicleId}</span>
+            <span aria-hidden>·</span>
+            <span>
+              Trip {activeTrip.sequence} of {totalTrips}
+            </span>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Contextual: arrived (rider-emphasized) and dropped-off (next-trip preview).
+
+function Contextual({
+  shift,
+  activeTrip,
+  subStatus,
+  latestUpdate,
+  bannerDismissed,
+  onDismissBanner,
+  onAdvance,
+  onJumpToSchedule,
+}: {
+  shift: DriverShift;
+  activeTrip: Trip;
+  subStatus: "arrived" | "dropped-off";
+  latestUpdate: ScheduleUpdate | null;
+  bannerDismissed: boolean;
+  onDismissBanner: () => void;
+  onAdvance: () => void;
+  onJumpToSchedule: () => void;
+}) {
+  const isArrived = subStatus === "arrived";
+  const nextTrip = !isArrived ? findNextNonBreak(shift, activeTrip.id) : null;
+  const actionLabel = isArrived ? "Picked up passenger" : "Start next trip";
+  const totalTrips = shift.trips.filter((t) => !t.isBreak).length;
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        {latestUpdate && !bannerDismissed && (
+          <div className="px-4 pt-4">
+            <UpdateBanner
+              update={latestUpdate}
+              onDismiss={onDismissBanner}
+              onViewChanges={onJumpToSchedule}
+            />
+          </div>
+        )}
+
+        {isArrived ? (
+          <ArrivedBody activeTrip={activeTrip} />
+        ) : (
+          <DroppedOffBody activeTrip={activeTrip} nextTrip={nextTrip} />
+        )}
       </div>
 
       <div className="shrink-0 border-t border-[var(--color-border)] bg-card px-4 py-3">
@@ -254,11 +277,11 @@ function NavigationView({
           <ArrowRight size={16} weight="bold" aria-hidden />
         </button>
         <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] text-[var(--color-text-muted)]">
-          <span>Van {shift.vehicleId.replace(/^Van\s*#?/, "#")}</span>
+          <ArrowLeft size={11} weight="bold" aria-hidden />
+          <span>{shift.vehicleId}</span>
           <span aria-hidden>·</span>
           <span>
-            Trip {activeTrip.sequence} of{" "}
-            {shift.trips.filter((t) => !t.isBreak).length}
+            Trip {activeTrip.sequence} of {totalTrips}
           </span>
         </div>
       </div>
@@ -266,281 +289,188 @@ function NavigationView({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Between-rides mode
-
-function BetweenRidesView({
-  shift,
-  completedTrip,
-  nextTrip,
-  nextBreak,
-  latestUpdate,
-  bannerDismissed,
-  onDismissBanner,
-  onAdvance,
-}: {
-  shift: DriverShift;
-  completedTrip: Trip;
-  nextTrip: Trip | null;
-  nextBreak: Trip | null;
-  latestUpdate: ScheduleUpdate | null;
-  bannerDismissed: boolean;
-  onDismissBanner: () => void;
-  onAdvance: () => void;
-}) {
-  const tick = now();
-
-  // Banner only if the update affects the next trip specifically.
-  const showBanner =
-    !bannerDismissed &&
-    latestUpdate != null &&
-    latestUpdate.tripId === nextTrip?.id;
+function ArrivedBody({ activeTrip }: { activeTrip: Trip }) {
+  const initials = initialsOf(activeTrip.passengerName);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {/* Completion header */}
-        <div className="flex items-center gap-2 text-[var(--color-status-running)]">
-          <CheckCircle size={18} weight="fill" aria-hidden />
-          <span className="text-[14px] font-semibold">
-            Dropped off &middot; {completedTrip.passengerName}
-          </span>
-        </div>
-
-        {/* Contextual banner: only if next trip was updated */}
-        {showBanner && (
-          <UpdateBanner
-            update={latestUpdate!}
-            onDismiss={onDismissBanner}
-          />
-        )}
-
-        {/* Break card — only if a break sits before the next passenger trip */}
-        {nextBreak && (
-          <UpcomingBreakCard trip={nextBreak} at={tick} />
-        )}
-
-        {/* Next trip card */}
-        {nextTrip ? (
-          <NextTripCard trip={nextTrip} at={tick} />
-        ) : (
-          <div className="rounded-2xl bg-[var(--color-brand-light)] px-4 py-5 text-center">
-            <p className="text-[14px] font-semibold text-[var(--color-brand)]">
-              That&rsquo;s your last trip for the day.
-            </p>
-          </div>
-        )}
-
-        {/* Compact shift progress */}
-        <CompactShiftProgress shift={shift} at={tick} />
-      </div>
-
-      <div className="shrink-0 border-t border-[var(--color-border)] bg-card px-4 py-3">
-        <button
-          type="button"
-          onClick={onAdvance}
-          className={cn(
-            "flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-[15px] font-semibold transition-colors cursor-pointer",
-            nextTrip
-              ? "bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-hover)]"
-              : "bg-[var(--color-surface-warm)] text-[var(--color-text-secondary)] cursor-default",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand)]/40"
-          )}
-          disabled={!nextTrip}
-        >
-          {nextTrip ? (
-            <>
-              Start next trip
-              <ArrowRight size={16} weight="bold" aria-hidden />
-            </>
-          ) : (
-            "End of shift"
-          )}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function UpcomingBreakCard({ trip, at }: { trip: Trip; at: Date }) {
-  const minsUntil = timeUntilMinutes(trip.scheduledPickupAt, at);
-  const startsIn =
-    minsUntil <= 0
-      ? "starting now"
-      : minsUntil < 60
-        ? `in ${minsUntil} min`
-        : `in ${Math.floor(minsUntil / 60)}h ${minsUntil % 60}m`;
-
-  return (
-    <article className="flex items-center gap-3 rounded-xl bg-[var(--color-brand-light)]/60 px-4 py-3 ring-1 ring-[var(--color-brand)]/20">
-      <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
-        style={{ background: "var(--color-brand)" }}
-        aria-hidden
-      >
-        <Coffee size={18} weight="fill" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[14px] font-semibold text-[var(--color-text-primary)]">
-          Break coming up &middot; {trip.estimatedDurationMin} min
-        </div>
-        <div className="text-[12px] text-[var(--color-text-secondary)]">
-          {formatTime(trip.scheduledPickupAt)} &ndash;{" "}
-          {formatTime(trip.scheduledDropoffAt)} &middot; {startsIn}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function NextTripCard({ trip, at }: { trip: Trip; at: Date }) {
-  const minsUntil = timeUntilMinutes(trip.scheduledPickupAt, at);
-  const timeLabel =
-    minsUntil <= 0
-      ? "Now"
-      : minsUntil < 60
-        ? `in ${minsUntil} min`
-        : `in ${Math.floor(minsUntil / 60)}h ${minsUntil % 60}m`;
-
-  const initials =
-    trip.passengerName
-      ?.split(/\s+/)
-      .map((s) => s[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() ?? "";
-
-  return (
-    <section className="rounded-2xl bg-card shadow-card ring-1 ring-black/5">
-      <header className="flex items-center justify-between rounded-t-2xl bg-[var(--color-surface-warm)] px-4 py-2.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-          Next trip &middot; {timeLabel}
-        </span>
-        {trip.wasUpdated && (
-          <span className="rounded-full bg-[var(--color-brand-light)] px-2 py-0.5 text-[10px] font-semibold text-[var(--color-brand)]">
-            Updated
-          </span>
-        )}
-      </header>
-
-      <div className="flex items-start gap-3 px-4 pt-4">
-        <div
-          className="flex size-12 shrink-0 items-center justify-center rounded-full text-[14px] font-semibold text-white"
-          style={{ background: "#6a6a6a" }}
-          aria-hidden
-        >
-          {initials}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-[16px] font-semibold text-[var(--color-text-primary)]">
-            {trip.passengerName}
-          </div>
-          <div className="text-[12px] text-[var(--color-text-secondary)]">
-            Pickup &middot; {formatTime(trip.scheduledPickupAt)}
-          </div>
-        </div>
-        <button
-          type="button"
-          aria-label="Call passenger"
-          className="shrink-0 flex size-9 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-black/5 cursor-pointer"
-        >
-          <Phone size={16} weight="duotone" aria-hidden />
-        </button>
-      </div>
-
-      {trip.passengerNote && (
-        <div className="mx-4 mt-3 flex items-center gap-1.5 rounded-full bg-[var(--color-brand-light)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-brand)] w-fit">
+    <>
+      {/* Arrival strip */}
+      <div className="px-4 py-4">
+        <div className="flex items-start gap-3 rounded-2xl bg-card px-3.5 py-3 shadow-card">
           <span
-            className="inline-block size-1.5 rounded-full"
-            style={{ background: "currentColor" }}
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
+            style={{ background: "var(--color-brand)" }}
             aria-hidden
-          />
-          {trip.passengerNote}
-        </div>
-      )}
-
-      <div className="mt-3 flex items-start gap-2 px-4 pb-2 text-[13px] leading-snug text-[var(--color-text-primary)]">
-        <MapPin
-          size={14}
-          weight="fill"
-          aria-hidden
-          className="mt-0.5 shrink-0"
-          style={{ color: "var(--color-brand)" }}
-        />
-        <div className="min-w-0">
-          <div className="truncate font-medium">{trip.pickup?.line1}</div>
-          <div className="truncate text-[var(--color-text-secondary)]">
-            {trip.pickup?.city}
+          >
+            <MapPin size={18} weight="fill" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              AT PICKUP
+            </div>
+            <div className="mt-0.5 truncate text-[16px] font-semibold leading-tight text-[var(--color-text-primary)]">
+              {activeTrip.pickup?.line1 ?? "Pickup location"}
+            </div>
+            <div className="mt-0.5 truncate text-[12px] text-[var(--color-text-secondary)]">
+              Waiting for {activeTrip.passengerName ?? "passenger"}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 border-t border-[var(--color-border)] text-center">
-        <Stat label="Distance" value={trip.distanceMiles ? `${trip.distanceMiles.toFixed(1)} mi` : "—"} />
-        <Stat label="Est. time" value={`${trip.estimatedDurationMin} min`} />
+      {/* Compact map (driver is stopped — doesn't need a big one) */}
+      <div className="px-4">
+        <div className="relative h-[140px] overflow-hidden rounded-2xl shadow-card ring-1 ring-black/5">
+          <MapView className="h-full" />
+          <div className="absolute left-3 bottom-3 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow-card backdrop-blur">
+            <MapPin
+              size={14}
+              weight="fill"
+              aria-hidden
+              style={{ color: "var(--color-brand)" }}
+            />
+            <span className="text-[12px] font-semibold text-[var(--color-text-primary)]">
+              {activeTrip.pickup?.line1 ?? "Pickup"}
+            </span>
+          </div>
+        </div>
       </div>
-    </section>
+
+      {/* Emphasized rider card — this is the moment the driver identifies
+          the passenger, so the accommodation note gets a prominent badge. */}
+      <div className="px-4 pb-4 pt-4">
+        <section className="rounded-2xl bg-card shadow-card ring-1 ring-black/5">
+          <div className="flex items-start gap-3 px-4 pt-4">
+            <div
+              className="flex size-14 shrink-0 items-center justify-center rounded-full text-[16px] font-semibold text-white"
+              style={{ background: "#6a6a6a" }}
+              aria-hidden
+            >
+              {initials || <MapPin size={20} weight="fill" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[18px] font-semibold text-[var(--color-text-primary)]">
+                {activeTrip.passengerName ?? "Passenger"}
+              </div>
+              <div className="text-[12px] text-[var(--color-text-secondary)]">
+                Pickup · {formatTime(activeTrip.scheduledPickupAt)}
+              </div>
+            </div>
+            <button
+              type="button"
+              aria-label="Call passenger"
+              className="shrink-0 flex size-10 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-black/5 cursor-pointer"
+            >
+              <Phone size={18} weight="duotone" aria-hidden />
+            </button>
+          </div>
+
+          {activeTrip.passengerNote && (
+            <div className="mx-4 mt-3 flex items-center gap-1.5 rounded-full bg-[var(--color-brand-light)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-brand)] w-fit">
+              <span
+                className="inline-block size-1.5 rounded-full"
+                style={{ background: "currentColor" }}
+                aria-hidden
+              />
+              {activeTrip.passengerNote}
+            </div>
+          )}
+
+          <div className="mt-4 flex items-start gap-2 px-4 pb-4 text-[13px] leading-snug text-[var(--color-text-primary)]">
+            <MapPin
+              size={14}
+              weight="fill"
+              aria-hidden
+              className="mt-0.5 shrink-0"
+              style={{ color: "var(--color-brand)" }}
+            />
+            <div className="min-w-0">
+              <div className="font-medium">
+                Dropping at {activeTrip.dropoff?.line1}
+              </div>
+              <div className="text-[var(--color-text-secondary)]">
+                {activeTrip.dropoff?.city}
+                {activeTrip.distanceMiles !== undefined && (
+                  <>
+                    {" · "}
+                    {activeTrip.distanceMiles.toFixed(1)} mi ·{" "}
+                    {activeTrip.estimatedDurationMin} min
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </>
   );
 }
 
-function CompactShiftProgress({ shift, at }: { shift: DriverShift; at: Date }) {
-  const startMs = new Date(shift.shiftStart).getTime();
-  const endMs = new Date(shift.shiftEnd).getTime();
-  const nowMs = at.getTime();
-  const shiftDurationMin = Math.round((endMs - startMs) / 60_000);
-  const elapsedMin = Math.max(
-    0,
-    Math.min(shiftDurationMin, Math.round((nowMs - startMs) / 60_000))
-  );
-  const remainingMin = Math.max(0, shiftDurationMin - elapsedMin);
-  const pctElapsed = Math.round((elapsedMin / shiftDurationMin) * 100);
-  const { completed, total } = getProgress(shift, at);
-
-  return (
-    <div className="rounded-xl bg-[var(--color-surface-warm)] px-4 py-3 ring-1 ring-[var(--color-border)]">
-      <div className="flex items-center justify-between text-[12px] mb-2">
-        <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-          <Clock size={13} weight="duotone" aria-hidden />
-          {completed} of {total} stops complete
-        </span>
-        <span className="font-semibold tabular-nums text-[var(--color-brand)]">
-          {formatDuration(remainingMin)} left
-        </span>
-      </div>
-      <div className="relative h-1.5 w-full rounded-full bg-[var(--color-border)]">
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${pctElapsed}%`, background: "var(--color-brand)" }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Shared subcomponents
-
-function PassengerCard({
-  trip,
-  subStatus,
+function DroppedOffBody({
+  activeTrip,
+  nextTrip,
 }: {
-  trip: Trip;
-  subStatus: Exclude<TripSubStatus, "dropped-off">;
+  activeTrip: Trip;
+  nextTrip: Trip | null;
 }) {
-  const initials =
-    trip.passengerName
-      ?.split(/\s+/)
-      .map((s) => s[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase() ?? "";
+  return (
+    <>
+      {/* Completion strip */}
+      <div className="px-4 py-4">
+        <div className="flex items-start gap-3 rounded-2xl bg-card px-3.5 py-3 shadow-card">
+          <span
+            className="flex size-10 shrink-0 items-center justify-center rounded-full text-white"
+            style={{ background: "var(--color-status-running)" }}
+            aria-hidden
+          >
+            <CheckCircle size={20} weight="fill" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+              DROPOFF COMPLETE
+            </div>
+            <div className="mt-0.5 truncate text-[16px] font-semibold leading-tight text-[var(--color-text-primary)]">
+              {activeTrip.passengerName ?? "Passenger"}
+            </div>
+            <div className="mt-0.5 truncate text-[12px] text-[var(--color-text-secondary)]">
+              Arrived at {activeTrip.dropoff?.line1}
+            </div>
+          </div>
+        </div>
+      </div>
 
-  const showingPickup =
-    subStatus === "en-route" || subStatus === "arrived";
+      {/* Next trip preview replaces the stale "completed-trip card" the old
+          flow showed here — gives the driver their immediate next context. */}
+      <div className="px-4 pb-4">
+        {nextTrip ? (
+          <NextTripCard trip={nextTrip} />
+        ) : (
+          <section className="rounded-2xl bg-card px-4 py-6 text-center shadow-card ring-1 ring-black/5">
+            <div className="text-[14px] font-semibold text-[var(--color-text-primary)]">
+              Shift complete
+            </div>
+            <div className="mt-1 text-[12px] text-[var(--color-text-secondary)]">
+              No more trips scheduled.
+            </div>
+          </section>
+        )}
+      </div>
+    </>
+  );
+}
+
+function NextTripCard({ trip }: { trip: Trip }) {
+  const initials = initialsOf(trip.passengerName);
 
   return (
     <section className="rounded-2xl bg-card shadow-card ring-1 ring-black/5">
-      <div className="flex items-start gap-3 px-4 pt-4">
+      <div className="flex items-center justify-between px-4 pt-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+        <span>Next up</span>
+        <span className="tabular-nums text-[var(--color-text-primary)]">
+          {formatTime(trip.scheduledPickupAt)}
+        </span>
+      </div>
+      <div className="flex items-start gap-3 px-4 pt-3 pb-4">
         <div
           className="flex size-12 shrink-0 items-center justify-center rounded-full text-[14px] font-semibold text-white"
           style={{ background: "#6a6a6a" }}
@@ -552,77 +482,53 @@ function PassengerCard({
           <div className="truncate text-[16px] font-semibold text-[var(--color-text-primary)]">
             {trip.passengerName ?? "Passenger"}
           </div>
-          <div className="text-[12px] text-[var(--color-text-secondary)]">
-            {showingPickup ? "Pickup" : "Dropoff"} &middot;{" "}
-            {formatTime(
-              showingPickup ? trip.scheduledPickupAt : trip.scheduledDropoffAt
+          <div className="mt-0.5 flex items-center gap-1.5 text-[13px] text-[var(--color-text-primary)]">
+            <MapPin
+              size={12}
+              weight="fill"
+              aria-hidden
+              style={{ color: "var(--color-brand)" }}
+            />
+            <span className="truncate">{trip.pickup?.line1}</span>
+          </div>
+          <div className="mt-0.5 truncate text-[12px] text-[var(--color-text-secondary)]">
+            to {trip.dropoff?.line1}
+            {trip.distanceMiles !== undefined && (
+              <> · {trip.distanceMiles.toFixed(1)} mi</>
             )}
           </div>
-        </div>
-        <button
-          type="button"
-          aria-label="Call passenger"
-          className="shrink-0 flex size-9 items-center justify-center rounded-full text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-black/5 cursor-pointer"
-        >
-          <Phone size={16} weight="duotone" aria-hidden />
-        </button>
-      </div>
-
-      <div className="mt-3 flex items-start gap-2 px-4 text-[13px] leading-snug text-[var(--color-text-primary)]">
-        <MapPin
-          size={14}
-          weight="fill"
-          aria-hidden
-          className="mt-0.5 shrink-0"
-          style={{ color: "var(--color-brand)" }}
-        />
-        <div className="min-w-0">
-          <div className="truncate font-medium">
-            {(showingPickup ? trip.pickup : trip.dropoff)?.line1}
-          </div>
-          <div className="truncate text-[var(--color-text-secondary)]">
-            {(showingPickup ? trip.pickup : trip.dropoff)?.city}
-          </div>
-        </div>
-      </div>
-
-      {trip.passengerNote && (
-        <div className="mx-4 mt-3 flex items-center gap-1.5 rounded-full bg-[var(--color-brand-light)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-brand)] w-fit">
-          <span
-            className="inline-block size-1.5 rounded-full"
-            style={{ background: "currentColor" }}
-            aria-hidden
-          />
-          {trip.passengerNote}
-        </div>
-      )}
-
-      <div className="mt-4 grid grid-cols-3 border-t border-[var(--color-border)] text-center">
-        <Stat
-          label="ETA"
-          value={formatTime(
-            showingPickup ? trip.scheduledPickupAt : trip.scheduledDropoffAt
+          {trip.passengerNote && (
+            <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[var(--color-brand-light)] px-2.5 py-1 text-[11px] font-semibold text-[var(--color-brand)]">
+              <span
+                className="inline-block size-1.5 rounded-full"
+                style={{ background: "currentColor" }}
+                aria-hidden
+              />
+              {trip.passengerNote}
+            </div>
           )}
-        />
-        <Stat
-          label="Distance"
-          value={trip.distanceMiles ? `${trip.distanceMiles.toFixed(1)} mi` : "—"}
-        />
-        <Stat label="Est. time" value={`${trip.estimatedDurationMin} min`} />
+        </div>
       </div>
     </section>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+// ---------------------------------------------------------------------------
+// Helpers
+
+function initialsOf(name: string | undefined): string {
   return (
-    <div className="flex flex-col items-center gap-0.5 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
-        {label}
-      </div>
-      <div className="text-[14px] font-semibold tabular-nums text-[var(--color-text-primary)]">
-        {value}
-      </div>
-    </div>
+    name
+      ?.split(/\s+/)
+      .map((s) => s[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() ?? ""
   );
+}
+
+function findNextNonBreak(shift: DriverShift, currentId: string): Trip | null {
+  const idx = shift.trips.findIndex((t) => t.id === currentId);
+  if (idx < 0) return null;
+  return shift.trips.slice(idx + 1).find((t) => !t.isBreak) ?? null;
 }
