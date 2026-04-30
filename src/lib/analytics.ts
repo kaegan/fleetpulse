@@ -91,4 +91,8 @@ export const analytics = {
   /** Ops manager clicks a stage on the bottleneck bar to filter by it. */
   trackerStageFiltered: (stage: string | null) =>
     capture("tracker_stage_filtered", { stage }),
+
+  /** User opens the driver app prototype from a cross-link in the desktop app. */
+  driverViewOpened: (source: "fleet-overview-header") =>
+    capture("driver_view_opened", { source }),
 };

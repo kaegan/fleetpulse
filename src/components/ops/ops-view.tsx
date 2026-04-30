@@ -1,7 +1,12 @@
 "use client";
 
 import { useMemo, useRef } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
+import {
+  IconMobileFillDuo18,
+  IconOpenInNewWindowFillDuo18,
+} from "nucleo-ui-fill-duo-18";
 import { KpiStrip } from "./kpi-strip";
 import { FleetHealthChart } from "./fleet-health-chart";
 import { BusPanelContent } from "@/components/bus-detail-panel";
@@ -152,28 +157,49 @@ export function OpsView() {
 
   return (
     <div className="px-4 py-6 sm:px-6 lg:px-10">
-      {/* Section header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1
-          style={{
-            fontSize: 22,
-            fontWeight: 700,
-            color: "#222222",
-            letterSpacing: "-0.03em",
-            marginBottom: 4,
-          }}
+      {/* Section header — title block left, driver-app cross-link right.
+          The driver view is a standalone full-bleed prototype (no sidebar
+          to navigate back from), so the link opens in a new tab to keep
+          the ops manager's fleet context in place. */}
+      <div className="mb-7 flex items-start justify-between gap-4">
+        <div>
+          <h1
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#222222",
+              letterSpacing: "-0.03em",
+              marginBottom: 4,
+            }}
+          >
+            Fleet Overview
+          </h1>
+          <p
+            style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: "#929292",
+            }}
+          >
+            300 buses across 2 garages
+          </p>
+        </div>
+
+        <Link
+          href="/driver"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => analytics.driverViewOpened("fleet-overview-header")}
+          aria-label="Open Spare Driver app preview in a new tab"
+          className="group inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--color-brand-light)] px-3.5 py-2 text-[13px] font-semibold text-[var(--color-brand)] outline-none transition-all hover:bg-[var(--color-brand)] hover:text-white hover:shadow-[rgba(212,101,74,0.25)_0px_4px_12px] focus-visible:ring-2 focus-visible:ring-[var(--color-brand)] focus-visible:ring-offset-2"
         >
-          Fleet Overview
-        </h1>
-        <p
-          style={{
-            fontSize: 14,
-            fontWeight: 500,
-            color: "#929292",
-          }}
-        >
-          300 buses across 2 garages
-        </p>
+          <IconMobileFillDuo18 />
+          <span className="hidden sm:inline">See the driver app</span>
+          <span className="sm:hidden">Driver app</span>
+          <IconOpenInNewWindowFillDuo18
+            className="transition-transform group-hover:translate-x-0.5"
+          />
+        </Link>
       </div>
 
       <KpiStrip onOpenStatusList={openBusList} onOpenHeldList={openHeldList} />
